@@ -32,3 +32,36 @@ path = "benches/cache.rs"
 [features]
 parse = ["pest", "pest_derive"]
 jit = ["cranelift", "memmap2", "target-lexicon"]
+p8-experiments = []
+
+[[example]]
+name = "p8_integrated_corpus"
+required-features = ["p8-experiments"]
+
+[[example]]
+name = "p8_remaining_blockers"
+required-features = ["p8-experiments"]
+
+[[example]]
+name = "p9_41_matrix"
+required-features = ["p8-experiments"]
+
+[[example]]
+name = "p9_lite_corpus"
+required-features = ["p8-experiments"]
+
+[[example]]
+name = "p9_parallel_coverage"
+required-features = ["p8-experiments"]
+
+[[example]]
+name = "p11a_micro_gate"
+required-features = ["parse"]
+
+[[example]]
+name = "p11a_mul_corpus"
+required-features = ["parse"]
+
+[[example]]
+name = "p11a_target_diagnostics"
+required-features = ["parse"]

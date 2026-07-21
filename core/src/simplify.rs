@@ -1656,7 +1656,7 @@ fn certify_p7e_candidate(
     let scoped_candidate = expand_p7e_expression(candidate.clone(), atoms, dependencies);
     let scoped_relation = (scoped_definition.clone() - scoped_candidate).reduce(mask);
     metrics.exact_proof_attempts += 1;
-    if simplify_mba(scoped_relation, bit_width) != Ok(Expr::zero()) {
+    if simplify_mba_baseline(scoped_relation, bit_width) != Ok(Expr::zero()) {
         return None;
     }
     metrics.exact_proofs_succeeded += 1;
@@ -1870,7 +1870,7 @@ pub fn experiment_bitwise_dependency_closure(
         let substituted =
             apply_certified_dependencies(pre_restore_result.clone(), &dependencies);
         let restored = expand_scope_hidden_atoms(substituted.clone(), &atoms);
-        let simplified = simplify_mba(restored.clone(), scope.bit_width)?;
+        let simplified = simplify_mba_baseline(restored.clone(), scope.bit_width)?;
         let residual_zero = simplified == Expr::zero();
         final_state = Some((substituted, restored, simplified));
         if residual_zero {
@@ -1893,7 +1893,7 @@ pub fn experiment_bitwise_dependency_closure(
         let substituted =
             apply_certified_dependencies(pre_restore_result.clone(), &dependencies);
         let restored = expand_scope_hidden_atoms(substituted.clone(), &atoms);
-        let simplified = simplify_mba(restored.clone(), scope.bit_width)?;
+        let simplified = simplify_mba_baseline(restored.clone(), scope.bit_width)?;
         (substituted, restored, simplified)
     };
     metrics.closure_time_micros = started.elapsed().as_micros();
@@ -2358,6 +2358,55 @@ fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize, sublist: &[usize]) {
     }
 }
 
+pub(crate) fn conjunction_sum_from_signature(
+    mut signature: Vec<u64>,
+    variables: &[VarId],
+    mask: u64,
+) -> Expr {
+    assert_eq!(signature.len(), 1usize << variables.len());
+    let mut terms = Vec::new();
+    let constant = signature[0] & mask;
+
+    if constant != 0 {
+        terms.push(Expr::Const(constant.into()));
+        for value in &mut signature {
+            *value = value.wrapping_sub(constant);
+        }
+    }
+
+    let mut sublist = Vec::with_capacity(variables.len());
+    for index in 1..signature.len() {
+        let coefficient = signature[index] & mask;
+        if coefficient == 0 {
+            continue;
+        }
+
+        sublist.clear();
+        for position in 0..variables.len() {
+            if ((index >> position) & 1) == 1 {
+                sublist.push(position);
+            }
+        }
+        let conjunction = Expr::And(
+            sublist
+                .iter()
+                .map(|position| Expr::Var(variables[*position]))
+                .collect(),
+        );
+        terms.push(match coefficient {
+            1 => conjunction,
+            coefficient => coefficient * conjunction,
+        });
+        sub_coeff(&mut signature, coefficient, index, &sublist);
+    }
+
+    match terms.len() {
+        0 => Expr::zero(),
+        1 => terms.pop().unwrap(),
+        _ => Expr::Add(terms),
+    }
+}
+
 fn get_signed(x: u64, n: u8) -> i64 {
     let value = x & make_mask(n);
     let shift = 64 - n;
@@ -2551,55 +2600,9 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 
     /// Creates a conjuction sum for the given signature
-    fn make_conjunction_sum(&self, mut signature: Vec<u64>, t: usize) -> Expr {
-        let mut terms: Vec<Expr> = vec![];
-
-        // The constant term
-        let constant = signature[0];
-
-        if constant != 0 {
-            terms.push(Expr::Const(constant.into()));
-
-            for v in &mut signature {
-                *v = v.wrapping_sub(constant);
-            }
-        }
-
-        let mut sublist = Vec::with_capacity(t);
-        for index in 1..(1usize << t) {
-            let coeff = signature[index] & self.mask;
-
-            if coeff == 0 {
-                continue;
-            }
-
-            sublist.clear();
-            for i in 0..t {
-                if ((index >> i) & 1) == 1 {
-                    sublist.push(i);
-                }
-            }
-            let conjunction = Expr::And(
-                sublist
-                    .iter()
-                    .copied()
-                    .map(|v| Expr::Var(v.into()))
-                    .collect(),
-            );
-
-            terms.push(match coeff {
-                1 => conjunction,
-                c => c * conjunction,
-            });
-
-            sub_coeff(&mut signature, coeff, index, &sublist);
-        }
-
-        match terms.len() {
-            0 => Expr::zero(),
-            1 => terms.into_iter().next().unwrap(),
-            _ => Expr::Add(terms),
-        }
+    fn make_conjunction_sum(&self, signature: Vec<u64>, t: usize) -> Expr {
+        let variables = (0..t).map(|index| VarId(index)).collect::<Vec<_>>();
+        conjunction_sum_from_signature(signature, &variables, self.mask)
     }
 
     fn abstract_bitwise_frontier(
@@ -2710,6 +2713,22 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             _ => e
                 .clone()
                 .map(|e| self.rewrite_bitwise_frontiers(&e, metrics)),
+        }
+    }
+
+    fn rewrite_all_bitwise_frontiers(
+        &self,
+        e: &Expr,
+        metrics: &mut BitwiseFrontierMetrics,
+    ) -> Expr {
+        let children_normalized = e
+            .clone()
+            .map(|child| self.rewrite_all_bitwise_frontiers(&child, metrics));
+        match &children_normalized {
+            Expr::Not(_) | Expr::And(_) | Expr::Or(_) | Expr::Xor(_) => self
+                .normalize_one_bitwise_frontier(&children_normalized, metrics)
+                .unwrap_or(children_normalized),
+            _ => children_normalized,
         }
     }
 
@@ -3214,9 +3233,40 @@ fn simplify_mba_inner<C: LinearCache>(l_cache: &C, e: Expr, n: u8) -> Result<Exp
     solver.solve(e)
 }
 
-// I should probably add a flag for recursive simplification
-pub fn simplify_mba(e: Expr, n: u8) -> Result<Expr, SolveError> {
-    simplify_mba_with_cache(&LocalCache::new(), e, n)
+pub(crate) fn simplify_mba_baseline(e: Expr, n: u8) -> Result<Expr, SolveError> {
+    simplify_mba_baseline_with_cache(&LocalCache::new(), e, n)
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct AlternatingBitwiseNormalForm {
+    pub result: Expr,
+    pub changed: bool,
+    pub attempts: usize,
+    pub normalized: usize,
+    pub aborts_atom_limit: usize,
+    pub aborts_size_limit: usize,
+    pub max_frontier_atoms: usize,
+}
+
+pub(crate) fn bitwise_normal_form_for_alternation(
+    expression: Expr,
+    width: u8,
+) -> AlternatingBitwiseNormalForm {
+    let cache = LocalCache::new();
+    let solver = MBASolver::new(&cache, &expression, width);
+    let mut metrics = BitwiseFrontierMetrics::default();
+    let result = solver
+        .rewrite_all_bitwise_frontiers(&expression, &mut metrics)
+        .reduce(make_mask(width));
+    AlternatingBitwiseNormalForm {
+        changed: result != expression,
+        result,
+        attempts: metrics.attempts,
+        normalized: metrics.normalized,
+        aborts_atom_limit: metrics.aborts_atom_limit,
+        aborts_size_limit: metrics.aborts_size_limit,
+        max_frontier_atoms: metrics.max_frontier_atoms,
+    }
 }
 
 /// Simplify one expression while collecting the hidden atoms created by each
@@ -3232,7 +3282,7 @@ pub fn diagnose_hidden_atoms(
         *state = Some(HiddenTraceState::default());
     });
 
-    let result = simplify_mba(e, n);
+    let result = simplify_mba_baseline(e, n);
     let state = HIDDEN_TRACE_STATE.with(|state| {
         state
             .borrow_mut()
@@ -3284,7 +3334,7 @@ where
 /// expressions — or the same expressions repeatedly across rounds of an analysis
 /// — pays for each distinct linear solve once. Pass a [`LocalCache`] to reuse
 /// results on one thread, or an [`MbaCache`] to share them across several.
-pub fn simplify_mba_with_cache<C: LinearCache>(
+fn simplify_mba_baseline_with_cache<C: LinearCache>(
     cache: &C,
     e: Expr,
     n: u8,
@@ -3297,6 +3347,70 @@ pub fn simplify_mba_with_cache<C: LinearCache>(
         let e = frontier_solver.normalize_bitwise_frontier(&e).unwrap_or(e);
         simplify_mba_inner(cache, e, n)
     })
+}
+
+fn simplify_mba_baseline_with_trace<C: LinearCache>(
+    cache: &C,
+    e: Expr,
+    n: u8,
+) -> Result<(Expr, Vec<HiddenScopeTrace>), SolveError> {
+    HIDDEN_TRACE_STATE.with(|state| {
+        let mut state = state.borrow_mut();
+        assert!(state.is_none(), "hidden-atom diagnostics cannot be nested");
+        *state = Some(HiddenTraceState::default());
+    });
+    let result = simplify_mba_baseline_with_cache(cache, e, n);
+    let state = HIDDEN_TRACE_STATE.with(|state| {
+        state
+            .borrow_mut()
+            .take()
+            .expect("hidden-atom diagnostic state disappeared")
+    });
+    let scopes = finalize_hidden_trace(state)
+        .into_iter()
+        .filter(|scope| !scope.atoms.is_empty())
+        .collect();
+    result.map(|simplified| (simplified, scopes))
+}
+
+fn production_p7e(base: Expr, trace: &[HiddenScopeTrace]) -> Expr {
+    let Some(scope) = trace.iter().find(|scope| scope.input == base) else {
+        return base;
+    };
+    experiment_bitwise_dependency_closure(scope)
+        .ok()
+        .flatten()
+        .map_or(base, |result| result.simplified_after_substitution)
+}
+
+fn production_cost(expression: &Expr) -> (usize, String) {
+    (expression.size(), expression.to_string())
+}
+
+// I should probably add a flag for recursive simplification
+pub fn simplify_mba(e: Expr, n: u8) -> Result<Expr, SolveError> {
+    simplify_mba_with_cache(&LocalCache::new(), e, n)
+}
+
+/// Production simplification pipeline: ordinary RUMBA normalization, the
+/// bounded P7e dependency closure, then a guarded P9-L projection. Every stage
+/// is exact; the least-cost resulting AST is retained.
+pub fn simplify_mba_with_cache<C: LinearCache>(
+    cache: &C,
+    e: Expr,
+    n: u8,
+) -> Result<Expr, SolveError> {
+    let (base, trace) = simplify_mba_baseline_with_trace(cache, e, n)?;
+    let after_p7e = production_p7e(base.clone(), &trace);
+    let after_p9l = crate::p9::simplify_linear_if_smaller(
+        after_p7e.clone(),
+        n,
+        crate::p9::P9Limits::default(),
+    );
+    Ok([base, after_p7e, after_p9l]
+        .into_iter()
+        .min_by_key(production_cost)
+        .unwrap())
 }
 
 #[cfg(test)]

@@ -11,7 +11,7 @@ use crate::{
     expr::{Expr, VarId},
     simplify::{
         BitwiseDependencyClosureExperiment, HiddenScopeTrace, SolveError,
-        experiment_bitwise_dependency_closure, simplify_mba,
+        experiment_bitwise_dependency_closure, simplify_mba_baseline,
     },
     varint::make_mask,
 };
@@ -445,7 +445,7 @@ fn normalize_word_operand(expression: &Expr, width: u8) -> Option<WordTerm> {
             for candidate in [union.clone(), WordTerm::neg(union)] {
                 let candidate_expression = candidate.to_expr();
                 if observations_match(expression, &candidate_expression, width)
-                    && simplify_mba(expression.clone() - candidate_expression, width)
+                    && simplify_mba_baseline(expression.clone() - candidate_expression, width)
                         == Ok(Expr::zero())
                 {
                     return Some(candidate);
@@ -524,7 +524,7 @@ pub fn analyze_submask(expression: Expr, width: u8) -> P8PassResult {
     if !changed {
         return P8PassResult::unchanged(original, metrics);
     }
-    let Ok(simplified) = simplify_mba(rewritten, width) else {
+    let Ok(simplified) = simplify_mba_baseline(rewritten, width) else {
         return P8PassResult::unchanged(original, metrics);
     };
     if simplified != Expr::zero() && simplified.size() >= original.size() {
@@ -738,7 +738,7 @@ pub fn normalize_masked_negations(expression: Expr, width: u8) -> P8PassResult {
     if !changed {
         return P8PassResult::unchanged(original, metrics);
     }
-    let Ok(result) = simplify_mba(current, width) else {
+    let Ok(result) = simplify_mba_baseline(current, width) else {
         return P8PassResult::unchanged(original, metrics);
     };
     if result != Expr::zero() && result.size() >= original.size() {
@@ -867,7 +867,7 @@ pub fn select_lowbit_above(expression: Expr, width: u8) -> P8PassResult {
     if !changed {
         return P8PassResult::unchanged(original, metrics);
     }
-    let Ok(result) = simplify_mba(current, width) else {
+    let Ok(result) = simplify_mba_baseline(current, width) else {
         return P8PassResult::unchanged(original, metrics);
     };
     if result != Expr::zero() && result.size() >= original.size() {

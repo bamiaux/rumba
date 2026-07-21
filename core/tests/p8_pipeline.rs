@@ -1,10 +1,10 @@
-#![cfg(feature = "parse")]
+#![cfg(all(feature = "parse", feature = "p8-experiments"))]
 
 use rumba_core::{
     expr::Expr,
     p8::{P8PipelineExperiment, experiment_pipeline},
     parser::parse_expr,
-    simplify::{diagnose_hidden_atoms, simplify_mba},
+    simplify::diagnose_hidden_atoms,
 };
 
 const WIDTH: u8 = 64;
@@ -13,14 +13,20 @@ const QSYNTH: &str = include_str!("../../third_party/dataset/qsynth_ea.csv");
 
 fn pipeline_for_row(row: &str) -> Option<P8PipelineExperiment> {
     let (mba, ground_truth) = row.split_once(',').unwrap();
-    let mba = simplify_mba(parse_expr(mba.trim()).unwrap(), WIDTH).unwrap();
-    let ground_truth =
-        simplify_mba(parse_expr(ground_truth.trim()).unwrap(), WIDTH).unwrap();
+    // P8 is an historical ablation over the ordinary simplifier. Keep this
+    // fixture on the diagnostic baseline now that the public entry point also
+    // runs the production P7e -> P9-L stages.
+    let mba = diagnose_hidden_atoms(parse_expr(mba.trim()).unwrap(), WIDTH)
+        .unwrap()
+        .0;
+    let ground_truth = diagnose_hidden_atoms(parse_expr(ground_truth.trim()).unwrap(), WIDTH)
+        .unwrap()
+        .0;
     let residual = ground_truth - mba;
-    if simplify_mba(residual.clone(), WIDTH) == Ok(Expr::zero()) {
+    let (diagnosed, trace) = diagnose_hidden_atoms(residual, WIDTH).unwrap();
+    if diagnosed == Expr::zero() {
         return None;
     }
-    let (diagnosed, trace) = diagnose_hidden_atoms(residual, WIDTH).unwrap();
     let scope = trace.iter().find(|scope| scope.input == diagnosed).unwrap();
     experiment_pipeline(scope).unwrap()
 }
