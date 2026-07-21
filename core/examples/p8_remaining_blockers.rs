@@ -215,6 +215,10 @@ fn reduction_percent(before: &Expr, after: &Expr) -> usize {
     100usize.saturating_sub(after.size().saturating_mul(100) / before.size().max(1))
 }
 
+fn csv_field(value: &str) -> String {
+    format!("\"{}\"", value.replace('"', "\"\""))
+}
+
 fn classify(
     sites: &[AnchorSite],
     p8_changed: bool,
@@ -259,6 +263,7 @@ fn classify(
 }
 
 fn main() {
+    let csv_output = std::env::args().any(|argument| argument == "--csv");
     let mut ng_input = 0;
     let mut first_counts = BTreeMap::<&str, usize>::new();
     let mut raw_counts = BTreeMap::<&str, usize>::new();
@@ -267,13 +272,14 @@ fn main() {
     let mut counterfactual_reduced_over_50 = 0;
     let mut causal_lines = Vec::new();
     let mut case_lines = Vec::new();
+    let mut csv_lines = Vec::new();
 
     for (dataset, csv) in DATASETS {
         for (index, row) in csv.lines().filter(|row| !row.trim().is_empty()).enumerate() {
-            let (mba, ground_truth) = row.split_once(',').unwrap();
+            let (mba_text, ground_truth_text) = row.split_once(',').unwrap();
             let (Ok(mba), Ok(ground_truth)) = (
-                simplify_mba(parse_expr(mba.trim()).unwrap(), WIDTH),
-                simplify_mba(parse_expr(ground_truth.trim()).unwrap(), WIDTH),
+                simplify_mba(parse_expr(mba_text.trim()).unwrap(), WIDTH),
+                simplify_mba(parse_expr(ground_truth_text.trim()).unwrap(), WIDTH),
             ) else {
                 continue;
             };
@@ -301,6 +307,15 @@ fn main() {
                 || pipeline.after_p8b.changed
                 || pipeline.after_p8c.changed;
             let (first, symptoms) = classify(&sites, p8_changed, true);
+            csv_lines.push(format!(
+                "{},{},{},{},{},{}",
+                csv_field(dataset),
+                index + 1,
+                csv_field(mba_text.trim()),
+                csv_field(ground_truth_text.trim()),
+                csv_field(&expression.to_string()),
+                csv_field(first.name()),
+            ));
             *first_counts.entry(first.name()).or_default() += 1;
             for (name, present) in [
                 ("NoLowBitCandidate", symptoms.no_lowbit_candidate),
@@ -357,6 +372,14 @@ fn main() {
                 first.name(),
             ));
         }
+    }
+
+    if csv_output {
+        println!("dataset,line,input,expected,remaining_expression,first_blocker");
+        for line in csv_lines {
+            println!("{line}");
+        }
+        return;
     }
 
     println!("NG_input={ng_input}");
