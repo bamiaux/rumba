@@ -62,7 +62,7 @@ cases: the no-oracle ablation of `P7e -> P9-L` directly produces a smaller
 candidate for **85/101**. The remaining 16 are accepted by the official corpus
 because the exact pipeline proves the source/expected residual equal to zero.
 
-Those 16 autonomous-source blockers are:
+Those 16 autonomous-source blockers for the production pipeline are:
 
 - 12 expressions with true word multiplication:
   `qsynth_ea.csv:{13,53,77,125,134,210,234,260,294,369,481,486}`;
@@ -72,6 +72,13 @@ Those 16 autonomous-source blockers are:
 Their full post-P7e expressions are recorded in `p10_results.md` under
 “Expressions with word multiplication” and “Expressions without word
 multiplication”.
+
+The opt-in P11 experiments now reduce all 16 sources without using `expected`
+for candidate generation. P11a reaches or beats the corpus target cost on 6 of
+the 12 multiplication cases; P11b reaches or beats it on all 4 supported cases.
+Thus the experimental aggregate is 10/16 at or below target cost, while the
+production pipeline and its 85/101 autonomous-generation figure remain
+unchanged. See `p11a_results.md` and `p11b_results.md`.
 
 ## Performance delta
 

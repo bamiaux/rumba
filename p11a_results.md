@@ -1,22 +1,9 @@
 # P11a-2 — compression hiérarchique exacte
 
-## Expressions recherchées
-
-`expected` reste un oracle de diagnostic : ces formes ne sont jamais injectées
-dans la génération.
-
-| Ligne | Expression cible du corpus | Coût |
-|---:|---|---:|
-| 13 | `(~(v0 + v1*v1) * (v1|v1)) & ((v1*v1) ^ (v1+v1))` | 24 |
-| 53 | `v2 | ((v1 + (v2|v1))*v1) | ((~v0) & (~(v1&v1)))` | 27 |
-| 486 | `(-(v0 & (-v2))) ^ (-(v2 & (v0|v1)) * (v1+v2))` | 23 |
-
 ## Architecture
 
 P11a reste expérimental et n'est pas dans le pipeline de production
-`RUMBA -> P7e -> P9-L`. P11b et la logique de retenue ne sont pas modifiés.
-
-P11a-2 ajoute à la compression existante :
+`RUMBA -> P7e -> P9-L`.
 
 ```text
 compression exacte d'un sous-terme
@@ -26,67 +13,71 @@ compression exacte d'un sous-terme
 -> trois tours bottom-up fixes
 ```
 
-Les remplacements hiérarchiques sont exacts par congruence. Les nouveaux
-candidats locaux suivent toujours la garde :
+Les candidats viennent uniquement de transformations génériques. `expected`
+reste un oracle de diagnostic et n'est jamais injecté dans la génération. Un
+candidat strictement moins cher doit avoir la même empreinte observationnelle,
+puis la même `ProofKey` ou une preuve exacte du résidu par le prouveur figé
+RUMBA/P7e/P9. Ce prouveur ne rappelle ni P11a ni le simplificateur public.
 
-```text
-candidat strictement moins cher
--> empreinte observationnelle identique
--> même ProofKey : accepter
--> sinon prove_zero_without_p11(source - candidat)
-```
-
-Le prouveur figé ne rappelle ni P11a ni le simplificateur public : RUMBA/PCT,
-P7e, puis P9 direct. Le fallback est borné à 16 preuves par source.
+La dernière correction normalise les facteurs additifs uniformément négatifs,
+par exemple `-v1 - v2 -> -(v1 + v2)`, et permet deux factorisations locales
+enchaînées dans un tour, sous la borne `max_components` existante.
 
 ## Micro-gate
 
-Commande :
+| Ligne | Entrée P7e | P11a précédent | P11a-2 final | Cible diagnostique |
+|---:|---:|---:|---:|---:|
+| 13 | 26 | 15 | **15** | 24 |
+| 53 | 110 | 82 | **41** | 27 |
+| 486 | 91 | 39 | **19** | 23 |
 
-```console
-cargo run --release -p rumba-core --features parse --example p11a_micro_gate
-```
+La ligne 486 passe de 36 à 19 avec la dernière factorisation, sans preuve
+secondaire. La ligne 53 reste à 41 ; sa cible passe le certificat P7e lorsqu'on
+la propose, mais la génération autonome ne la reconstruit pas.
 
-| Ligne | Entrée P7e | P11a précédent (2 tours) | P11a-2 (3 tours) | Cible diagnostique | Gate |
-|---:|---:|---:|---:|---:|---:|
-| 13 | 26 | 15 | **15** | 24 | aucune régression |
-| 53 | 110 | 82 | **41** | 27 | **41 < 82** |
-| 486 | 91 | 39 | **36** | 23 | **36 < 39** |
+Les 7 tests unitaires P11a passent après la correction.
 
-Les trois résultats concordent avec `expected` sur les observations et restent
-exactement prouvés. La ligne 13 produit même une surface plus petite que le
-rendu du corpus :
+## Benchmark final des douze cas `Mul`
+
+Lignes : `13, 53, 77, 125, 134, 210, 234, 260, 294, 369, 481, 486`.
 
 ```text
-(2*v1 ^ v1*v1) & v1 * ~(v0 + v1*v1)
+mul_cases=12
+resolved=6
+cost_reduced=12
+reduction_ge_25_percent=8
+reduction_ge_50_percent=5
+pareto_wins_over_best_only=0
+surfaces_generated=770
+secondary_proofs=27
+budgets_reached=2
+best_only_time_ms=median:2480.072,p95:71730.382,max:71730.382
+pareto_time_ms=median:2452.375,p95:72593.437,max:72593.437
+expected_used_for_candidate_generation=false
 ```
 
-## Diagnostics hiérarchiques
+| Ligne | Entrée | Best-only | Pareto | Cible | Résolue | Temps Pareto |
+|---:|---:|---:|---:|---:|---:|---:|
+| 13 | 26 | 15 | 15 | 24 | oui | 0,73 s |
+| 53 | 110 | 41 | 41 | 27 | non | 43,49 s |
+| 77 | 24 | 16 | 16 | 15 | non | 2,45 s |
+| 125 | 38 | 37 | 37 | 40 | oui | 1,09 s |
+| 134 | 32 | 28 | 28 | 23 | non | 1,70 s |
+| 210 | 23 | 15 | 15 | 27 | oui | 0,29 s |
+| 234 | 65 | 16 | 16 | 16 | oui | 32,37 s |
+| 260 | 31 | 28 | 28 | 13 | non | 2,30 s |
+| 294 | 33 | 29 | 29 | 13 | non | 0,74 s |
+| 369 | 26 | 13 | 13 | 14 | oui | 3,84 s |
+| 481 | 94 | 41 | 41 | 14 | non | 72,59 s |
+| 486 | 91 | 19 | 19 | 23 | oui | 3,94 s |
 
-| Ligne | Sous-termes compacts | Promus | Réutilisés par parent | Facteurs communs | Candidats bitwise parent | Prunés même clé | Prunés budget | Coût minimal atteint |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 13 | 15 | 15 | 0 | 0 | 9 | 10 | 0 | 15 |
-| 53 | 351 | 137 | 48 | 15 | 95 | 294 | 12 | 41 |
-| 486 | 42 | 33 | 0 | 0 | 12 | 38 | 0 | 36 |
+## Verdict et garde
 
-Sur la ligne 53, 38 fusions utilisent la relation exacte plutôt qu'une égalité
-directe de ProofKey ; 5 preuves de résidu sont tentées, dont 4 réussissent. La
-ligne 486 atteint 36 sans preuve de résidu supplémentaire.
+P11a réduit les douze sources et en amène six au coût cible ou en dessous.
+L'archive Pareto ne gagne toutefois aucun cas. Les lignes 53 et 481 dominent
+le temps, et les bornes déterministes actuelles ne bornent pas le coût interne
+d'une normalisation ou d'une preuve.
 
-## Ablation et verdict
-
-| Variante | Ligne 53 | Ligne 486 |
-|---|---:|---:|
-| 2 tours, une meilleure surface | 82 | 39 |
-| 3 tours, une meilleure surface | **41** | **36** |
-| 3 tours, archive Pareto | **41** | **36** |
-
-Le résultat causal est net : le troisième tour hiérarchique débloque les deux
-gates. L'archive Pareto est effectivement alimentée et réutilisée, mais ne
-réduit pas encore davantage ces trois lignes. Elle évite cependant de jeter
-les surfaces arithmétiques, factorielles et bitwise utiles aux parents futurs.
-
-Les cibles de 53 et 486 ne sont toujours pas générées, et leurs coûts 27/23 ne
-sont pas atteints. Le certificat n'est donc plus le verrou ; la compression de
-surface reste incomplète. `ProofKey` demeure figée et sûre, sans prétention de
-complétude.
+La garde retenue est donc architecturale : P11a reste un outil expérimental
+explicitement invoqué. Il ne doit pas être activé largement ni ajouté au
+pipeline de production dans cet état.

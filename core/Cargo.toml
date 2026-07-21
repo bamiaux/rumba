@@ -65,3 +65,7 @@ required-features = ["parse"]
 [[example]]
 name = "p11a_target_diagnostics"
 required-features = ["parse"]
+
+[[example]]
+name = "p11b_corpus"
+required-features = ["parse"]

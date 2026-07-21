@@ -9,6 +9,7 @@ pub mod p10a;
 pub mod p10b;
 pub mod p10c;
 pub mod p11a;
+pub mod p11b;
 pub mod reduce;
 pub mod simplify;
 pub mod varint;
