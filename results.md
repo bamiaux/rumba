@@ -79,27 +79,6 @@ ground truths:
 Both variants reported zero sampled semantic regressions, zero determinism
 violations, and zero cases where an `Unknown` result changed the AST.
 
-### Exact validation
-
-The complete 41,000-case comparison and the exact 64-bit certificate run report:
-
-```text
-baseline_NG=101
-experimental_NG=41
-qsynth_ea.csv experimental_NG=0
-
-no_oracle_changed=24
-exact_UNSAT=24
-exact_SAT=0
-exact_UNKNOWN=0
-p8c_resolved_residuals=25
-```
-
-`changed=24` and `resolved=25` measure different populations: the first is the
-number of ordinary simplified MBA outputs changed by the no-oracle P8c pass;
-the second is the number of known residuals closed by P8c after P7e/P8a/P8b.
-All 24 changed no-oracle outputs were proven exactly equivalent at width 64.
-
 ### Remaining 41 NG: causal blockers
 
 The deterministic first-blocker classification is:
