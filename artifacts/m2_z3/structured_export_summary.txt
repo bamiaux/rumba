@@ -1,0 +1,4 @@
+cases=17
+lemmas=357
+bridges=17
+congruence=bottom_up

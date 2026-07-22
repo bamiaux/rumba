@@ -5,3 +5,5 @@ build
 *.csv
 out
 out.txt
+core/.z3-trace
+artifacts/m2_z3/*.z3.out.work/

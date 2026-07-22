@@ -1,0 +1,15 @@
+roadmap=M2
+historical_cases=101
+required_rewrites=101
+diagnostic_best_rewrites=101
+local_edges=303
+available_slice_fallback_queries=2020
+p7e=16
+p9l=69
+p11a=12
+p11b=4
+best_smaller=98
+best_equal=0
+best_larger=3
+hash=fnv1a64_of_canonical_typed_ast
+expected_used_for_candidate_generation=false

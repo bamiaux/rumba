@@ -1,0 +1,102 @@
+dataset	line	retained_pass	retained_hash	retained_ast	retained_z3	best_pass	best_hash	best_ast	best_z3
+loki_tiny.csv	1841	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2319	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2499	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2631	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2729	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2772	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	2929	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3312	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3424	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3894	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3919	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3928	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	3979	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4081	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4087	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4220	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4310	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNKNOWN
+loki_tiny.csv	4549	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4581	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4583	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4752	p9l	536a9b6c358c7562	v0 + v1	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4900	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	4917	p7e	3d54a8dc81ba06e8	(v0) + (v1)	UNSAT	p9l_base	536a9b6c358c7562	v0 + v1	UNSAT
+loki_tiny.csv	7246	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	7492	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	8173	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	8341	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	8584	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	8982	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	9594	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	9810	p9l	4ccc852f0e53a6dc	v0 & v1	UNSAT	p9l_base	4ccc852f0e53a6dc	v0 & v1	UNSAT
+loki_tiny.csv	11431	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	12529	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNKNOWN
+loki_tiny.csv	12689	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNKNOWN
+loki_tiny.csv	13078	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	13174	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	13238	p7e	21feb9deab5d4a5a	(v0) + (v1) + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	13752	p7e	21feb9deab5d4a5a	(v0) + (v1) + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	14143	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	14221	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	14369	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	14497	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT
+loki_tiny.csv	14545	p9l	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNSAT	p9l_base	22845ff142c4aa6c	v0 + v1 + (-0x1) * (v0 & v1)	UNKNOWN
+loki_tiny.csv	16073	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17380	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17524	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17578	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17633	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17818	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17825	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17972	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17980	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	17981	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18104	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18200	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18437	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18523	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18631	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18685	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	18731	p7e	56661808ab44687d	(v0) + (-0x1) * (v1)	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19290	p7e	56661808ab44687d	(v0) + (-0x1) * (v1)	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNKNOWN
+loki_tiny.csv	19299	p7e	56661808ab44687d	(v0) + (-0x1) * (v1)	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19329	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19565	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19597	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19704	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19728	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	19966	p9l	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNKNOWN
+loki_tiny.csv	19996	p7e	56661808ab44687d	(v0) + (-0x1) * (v1)	UNSAT	p9l_base	a4cfaed11e2fee97	v0 + (-0x1) * v1	UNSAT
+loki_tiny.csv	22103	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	23004	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	23488	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	23652	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	23810	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	23816	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24044	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24286	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24338	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24490	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24796	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT
+loki_tiny.csv	24869	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNKNOWN
+loki_tiny.csv	24932	p9l	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNSAT	p9l_base	6e1d2aff68e3620d	v0 + v1 + (-0x2) * (v0 & v1)	UNKNOWN
+qsynth_ea.csv	13	p11a	50da0417ec6e4c39	(0x2 * v1 ^ v1 * v1) & v1 * ~ (v0 + v1 * v1)	UNKNOWN	p11a	50da0417ec6e4c39	(0x2 * v1 ^ v1 * v1) & v1 * ~ (v0 + v1 * v1)	UNKNOWN
+qsynth_ea.csv	25	p11b	86d5e90cc7a70f8d	~ v2 & ~ v3 | v3 + (v3 | 0x2 * v2)	UNKNOWN	p11b	86d5e90cc7a70f8d	~ v2 & ~ v3 | v3 + (v3 | 0x2 * v2)	UNSAT
+qsynth_ea.csv	53	p11a	fb736aa5ac2f81c4	(-0x1) * (~ (v2 | v1 * (v1 + (v1 | v2))) & v0) + (v0 & v1 & (-0x1) * (0x1 + (v2 | v1 * (v1 + (v1 | v2))))) + ((~ v1 | v2) | v1 * (v1 + (v1 | v2)))	UNKNOWN	p11a	fb736aa5ac2f81c4	(-0x1) * (~ (v2 | v1 * (v1 + (v1 | v2))) & v0) + (v0 & v1 & (-0x1) * (0x1 + (v2 | v1 * (v1 + (v1 | v2))))) + ((~ v1 | v2) | v1 * (v1 + (v1 | v2)))	UNKNOWN
+qsynth_ea.csv	77	p11a	0f803cd9f69b461b	(-0x1) * ((-0x1) * (0x2 * v2 & (v0 + v2 | v2 * v2)) + (v0 | v2))	UNKNOWN	p11a	0f803cd9f69b461b	(-0x1) * ((-0x1) * (0x2 * v2 & (v0 + v2 | v2 * v2)) + (v0 | v2))	UNSAT
+qsynth_ea.csv	114	p11b	06b3d529fcaaa814	(-0x1) * (v4 ^ (-0x1) * v1) & (-0x1) * (v4 & ~ v1)	UNSAT	p11b	06b3d529fcaaa814	(-0x1) * (v4 ^ (-0x1) * v1) & (-0x1) * (v4 & ~ v1)	UNSAT
+qsynth_ea.csv	125	p11a	46ff6f59c67c431b	v2 + (v2 & v3 & v3 + (-0x1)) + (v2 + (-0x1) * v4 & (-0x1) * v2 + (-0x1) * (v2 & v3 & v3 + (-0x1)) + (v2 & v3 + (-0x1)) & v3 * v3) + ~ (v2 & v3 + (-0x1))	UNKNOWN	p11a	46ff6f59c67c431b	v2 + (v2 & v3 & v3 + (-0x1)) + (v2 + (-0x1) * v4 & (-0x1) * v2 + (-0x1) * (v2 & v3 & v3 + (-0x1)) + (v2 & v3 + (-0x1)) & v3 * v3) + ~ (v2 & v3 + (-0x1))	UNSAT
+qsynth_ea.csv	134	p11a	8e743a8ce8c0fcb4	~ (v2 + v4 + (-0x1) + (v2 & v4 & ~ (v2 + v4)) & v2 + (-0x1) + 0x2 * v4 + (-0x2) * (v4 & v2 + v4) + (-0x1) * (v4 * v4))	UNKNOWN	p11a	8e743a8ce8c0fcb4	~ (v2 + v4 + (-0x1) + (v2 & v4 & ~ (v2 + v4)) & v2 + (-0x1) + 0x2 * v4 + (-0x2) * (v4 & v2 + v4) + (-0x1) * (v4 * v4))	UNSAT
+qsynth_ea.csv	139	p11b	3b1b325e3bb94f94	v1 & v2 ^ v2 & v0 ^ (-0x1) * (~ (v1 + v2) ^ v0)	UNKNOWN	p11b	3b1b325e3bb94f94	v1 & v2 ^ v2 & v0 ^ (-0x1) * (~ (v1 + v2) ^ v0)	UNKNOWN
+qsynth_ea.csv	210	p11a	c000e48010eb9fe1	v2 & (0x2 * v3 ^ v3 + (-0x1) * v2) & v3 * ((-0x1) * v3 + v2)	UNKNOWN	p11a	c000e48010eb9fe1	v2 & (0x2 * v3 ^ v3 + (-0x1) * v2) & v3 * ((-0x1) * v3 + v2)	UNKNOWN
+qsynth_ea.csv	234	p11a	1821135fa2ef742b	v2 * v3 ^ v3 * v3 | v2 * v3 * (v3 & v2 + (-0x1))	UNKNOWN	p11a	1821135fa2ef742b	v2 * v3 ^ v3 * v3 | v2 * v3 * (v3 & v2 + (-0x1))	UNKNOWN
+qsynth_ea.csv	249	p7e	b683f48bd39dd294	v1 + 0x2 * v0 + 0x4 * (v0 & v1 & v0 + v1) + 0x4 * (v0 & v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + 0x4 * (v0 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + 0x4 * (v1 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x8) * (v0 & v1 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v0 & v1) + (-0x2) * (v0 & v0 + v1) + (-0x2) * (v0 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v1 & v0 + v1) + (-0x2) * (v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x1) * (v0 * v1)	UNKNOWN	p7e	b683f48bd39dd294	v1 + 0x2 * v0 + 0x4 * (v0 & v1 & v0 + v1) + 0x4 * (v0 & v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + 0x4 * (v0 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + 0x4 * (v1 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x8) * (v0 & v1 & v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v0 & v1) + (-0x2) * (v0 & v0 + v1) + (-0x2) * (v0 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v1 & v0 + v1) + (-0x2) * (v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x2) * (v0 + v1 & (-0x1) * v1 + (-0x1) * (v0 * v1)) + (-0x1) * (v0 * v1)	UNKNOWN
+qsynth_ea.csv	260	p11a	67ad36ac25a46858	~ ((-0x1) + (-0x2) * (v0 * v4) & v3 + (v0 & (-0x1) * v0 + (-0x1) * v3 + (v4 & v0 + (-0x1))) + ~ (v4 & v0 + (-0x1)))	UNKNOWN	p11a	67ad36ac25a46858	~ ((-0x1) + (-0x2) * (v0 * v4) & v3 + (v0 & (-0x1) * v0 + (-0x1) * v3 + (v4 & v0 + (-0x1))) + ~ (v4 & v0 + (-0x1)))	UNSAT
+qsynth_ea.csv	294	p11a	0f516da5d4b53c07	v1 * ((-0x2) * v2 ^ 0x2 * (v2 & v2 + (-0x1))) ^ v1 + v2 * v2 & v1 * ((-0x2) * v2 ^ 0x2 * (v2 & v2 + (-0x1)))	UNKNOWN	p11a	0f516da5d4b53c07	v1 * ((-0x2) * v2 ^ 0x2 * (v2 & v2 + (-0x1))) ^ v1 + v2 * v2 & v1 * ((-0x2) * v2 ^ 0x2 * (v2 & v2 + (-0x1)))	UNKNOWN
+qsynth_ea.csv	309	p7e	0721fcf949ab6e8b	(-0x1) * v4 + (-0x1) * (v2 + 0x1 & v3 + (-0x1) * v4 & v4 + (-0x1)) + (v2 + 0x1 & v4 + (-0x1)) + (v3 + (-0x1) * v4 & v4 + (-0x1))	UNSAT	p7e	0721fcf949ab6e8b	(-0x1) * v4 + (-0x1) * (v2 + 0x1 & v3 + (-0x1) * v4 & v4 + (-0x1)) + (v2 + 0x1 & v4 + (-0x1)) + (v3 + (-0x1) * v4 & v4 + (-0x1))	UNSAT
+qsynth_ea.csv	369	p11a	5f77fed987cd2899	v2 + (-0x1) + (v3 & ~ (v3 * (v2 | v2 + v3)))	UNKNOWN	p11a	5f77fed987cd2899	v2 + (-0x1) + (v3 & ~ (v3 * (v2 | v2 + v3)))	UNKNOWN
+qsynth_ea.csv	392	p7e	185fcf203c4e44b7	0x2 * v3 + 0x3 * v4 + (-0x1) * (v3 & 0x2 * v4) + (-0x1) * (v3 & v3 + v4) + (-0x1) * (0x2 * v4 & v3 + v4) + (v3 & 0x2 * v4 & v3 + v4)	UNKNOWN	p7e	185fcf203c4e44b7	0x2 * v3 + 0x3 * v4 + (-0x1) * (v3 & 0x2 * v4) + (-0x1) * (v3 & v3 + v4) + (-0x1) * (0x2 * v4 & v3 + v4) + (v3 & 0x2 * v4 & v3 + v4)	UNKNOWN
+qsynth_ea.csv	423	p11b	1218f23d6ce9b460	v0 | v2 + v0 + (v2 | 0x2 * v0)	UNKNOWN	p11b	1218f23d6ce9b460	v0 | v2 + v0 + (v2 | 0x2 * v0)	UNKNOWN
+qsynth_ea.csv	481	p11a	079f23db709eae50	(-0x2) * v1 ^ (-0x1) * v0 + (-0x1) * (v0 & v1) + (-0x1) * (v0 & ~ (v0 + (v0 & v1))) + (-0x1) * (v0 * v2 & ~ (v0 + (v0 & v1))) + (v0 & ~ (v0 + (v0 & v1)) & v0 * v2)	UNKNOWN	p11a	079f23db709eae50	(-0x2) * v1 ^ (-0x1) * v0 + (-0x1) * (v0 & v1) + (-0x1) * (v0 & ~ (v0 + (v0 & v1))) + (-0x1) * (v0 * v2 & ~ (v0 + (v0 & v1))) + (v0 & ~ (v0 + (v0 & v1)) & v0 * v2)	UNKNOWN
+qsynth_ea.csv	486	p11a	ab79f0251e3cf510	(-0x1) * v0 + (v0 & v2 + (-0x1)) ^ (v1 + v2) * ((-0x1) * (v2 & (v1 | v0)))	UNKNOWN	p11a	ab79f0251e3cf510	(-0x1) * v0 + (v0 & v2 + (-0x1)) ^ (v1 + v2) * ((-0x1) * (v2 & (v1 | v0)))	UNKNOWN

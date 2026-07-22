@@ -3349,6 +3349,100 @@ fn simplify_mba_baseline_with_cache<C: LinearCache>(
     })
 }
 
+/// One exact transformation performed by the ordinary RUMBA fixed point.
+///
+/// This diagnostic trace is intended for external validation artifacts. It is
+/// not retained by normal simplification calls and does not alter the
+/// production pipeline.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct BaselineProofStep {
+    pub pass: usize,
+    pub stage: BaselineProofStage,
+    pub before: Expr,
+    pub after: Expr,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum BaselineProofStage {
+    Reduce,
+    BitwiseFrontier,
+    OrdinarySolve,
+    BestRetention,
+}
+
+/// Reproduce ordinary RUMBA while retaining every fixed-point edge.
+pub fn diagnose_baseline_steps(
+    expression: Expr,
+    width: u8,
+) -> Result<(Expr, Vec<BaselineProofStep>), SolveError> {
+    let cache = LocalCache::new();
+    let mask = make_mask(width);
+    let reduced = expression.clone().reduce(mask);
+    let mut steps = Vec::new();
+    if reduced != expression {
+        steps.push(BaselineProofStep {
+            pass: 0,
+            stage: BaselineProofStage::Reduce,
+            before: expression,
+            after: reduced.clone(),
+        });
+    }
+
+    let mut current = reduced;
+    let mut seen = HashSet::from([current.clone()]);
+    let mut best = current.clone();
+    for pass in 1..=MAX_SIMPLIFICATION_PASSES {
+        let frontier_solver = MBASolver::new(&cache, &current, width);
+        let frontier = frontier_solver
+            .normalize_bitwise_frontier(&current)
+            .unwrap_or_else(|| current.clone());
+        if frontier != current {
+            steps.push(BaselineProofStep {
+                pass,
+                stage: BaselineProofStage::BitwiseFrontier,
+                before: current.clone(),
+                after: frontier.clone(),
+            });
+        }
+        let next = simplify_mba_inner(&cache, frontier.clone(), width)?;
+        if next != frontier {
+            steps.push(BaselineProofStep {
+                pass,
+                stage: BaselineProofStage::OrdinarySolve,
+                before: frontier,
+                after: next.clone(),
+            });
+        }
+        if next.size() < best.size() {
+            best = next.clone();
+        }
+        if next == current {
+            return Ok((next, steps));
+        }
+        if !seen.insert(next.clone()) {
+            if next != best {
+                steps.push(BaselineProofStep {
+                    pass,
+                    stage: BaselineProofStage::BestRetention,
+                    before: next,
+                    after: best.clone(),
+                });
+            }
+            return Ok((best, steps));
+        }
+        current = next;
+    }
+    if current != best {
+        steps.push(BaselineProofStep {
+            pass: MAX_SIMPLIFICATION_PASSES,
+            stage: BaselineProofStage::BestRetention,
+            before: current,
+            after: best.clone(),
+        });
+    }
+    Ok((best, steps))
+}
+
 fn simplify_mba_baseline_with_trace<C: LinearCache>(
     cache: &C,
     e: Expr,

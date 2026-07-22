@@ -30,6 +30,12 @@ bitwise-frontier-baseline:
 hidden-atom-diagnostics *ARGS:
     cargo run -p rumba-core --release --all-features --example hidden_atom_diagnostics -- {{ARGS}}
 
+# Export the 101 historical rewrites and validate them with external Z3
+m2-z3 z3_bin='z3':
+    nice -n 15 cargo run --release -q -p rumba-core --features parse --example m2_z3_export
+    nice -n 15 cargo run --release -q -p rumba-core --features parse --example m2_structured_probe
+    nice -n 15 bash scripts/validate_m2_z3.sh {{z3_bin}}
+
 bench:
     cargo bench --all-features
 

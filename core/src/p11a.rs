@@ -111,6 +111,16 @@ pub enum FrozenZeroProof {
     Unknown,
 }
 
+/// Stages retained by the prover frozen below P11. This is diagnostic data for
+/// external validation and is not used to accept production candidates.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct FrozenZeroTrace {
+    pub residual: Expr,
+    pub ordinary: Expr,
+    pub after_p7e: Expr,
+    pub proof: FrozenZeroProof,
+}
+
 #[derive(Default)]
 struct Metrics {
     candidates_generated: usize,
@@ -1235,26 +1245,51 @@ pub fn prove_zero_without_p11(
     width: u8,
     p9_limits: P9Limits,
 ) -> FrozenZeroProof {
-    let Ok((base, trace)) = diagnose_hidden_atoms(residual, width) else {
-        return FrozenZeroProof::Unknown;
+    trace_zero_without_p11(residual, width, p9_limits).proof
+}
+
+pub fn trace_zero_without_p11(
+    residual: Expr,
+    width: u8,
+    p9_limits: P9Limits,
+) -> FrozenZeroTrace {
+    let Ok((ordinary, trace)) = diagnose_hidden_atoms(residual.clone(), width) else {
+        return FrozenZeroTrace {
+            residual: residual.clone(),
+            ordinary: residual.clone(),
+            after_p7e: residual,
+            proof: FrozenZeroProof::Unknown,
+        };
     };
-    if base == Expr::zero() {
-        return FrozenZeroProof::Proved(FrozenProofStage::OrdinaryRumba);
+    if ordinary == Expr::zero() {
+        return FrozenZeroTrace {
+            residual,
+            ordinary: ordinary.clone(),
+            after_p7e: ordinary,
+            proof: FrozenZeroProof::Proved(FrozenProofStage::OrdinaryRumba),
+        };
     }
     let after_p7e = trace
         .iter()
-        .find(|scope| scope.input == base)
+        .find(|scope| scope.input == ordinary)
         .and_then(|scope| experiment_bitwise_dependency_closure(scope).ok().flatten())
-        .map_or(base, |proof| proof.simplified_after_substitution);
-    if after_p7e == Expr::zero() {
-        return FrozenZeroProof::Proved(FrozenProofStage::P7e);
-    }
-    match certify_equivalent(&after_p7e, &Expr::zero(), width, p9_limits) {
+        .map_or_else(|| ordinary.clone(), |proof| proof.simplified_after_substitution);
+    let proof = if after_p7e == Expr::zero() {
+        FrozenZeroProof::Proved(FrozenProofStage::P7e)
+    } else {
+        match certify_equivalent(&after_p7e, &Expr::zero(), width, p9_limits) {
         Certification::ProvedEquivalent(_) => FrozenZeroProof::Proved(FrozenProofStage::P9),
         Certification::NotEquivalent(counterexample) => {
             FrozenZeroProof::Counterexample(counterexample)
         }
         Certification::Unknown(_) | Certification::Unsupported => FrozenZeroProof::Unknown,
+        }
+    };
+    FrozenZeroTrace {
+        residual,
+        ordinary,
+        after_p7e,
+        proof,
     }
 }
 

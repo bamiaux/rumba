@@ -69,3 +69,11 @@ required-features = ["parse"]
 [[example]]
 name = "p11b_corpus"
 required-features = ["parse"]
+
+[[example]]
+name = "m2_z3_export"
+required-features = ["parse"]
+
+[[example]]
+name = "m2_structured_probe"
+required-features = ["parse"]

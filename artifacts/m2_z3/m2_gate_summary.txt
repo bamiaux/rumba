@@ -1,0 +1,11 @@
+roadmap=M2
+required_total=101
+validated=87
+direct_unsat=84
+complete_local_chains=52
+complete_structured_chains=3
+sat=0
+incomplete_chains=14
+required_unknown_unique_pairs=17
+required_unknown_unique_residuals=17
+gate=FAIL

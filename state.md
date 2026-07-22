@@ -1,6 +1,6 @@
-# État de travail — P11a/P11b
+# État de travail — M2
 
-Date : 2026-07-21
+Date : 2026-07-22
 Branche : `bax`
 
 ## État architectural
@@ -36,11 +36,44 @@ l'invoquer que par ses exemples expérimentaux.
 
 ## Point exact de reprise suivant
 
-L'implémentation et les rapports P11b sont présents dans l'arbre de travail.
-Le pipeline de production n'a pas changé. La prochaine décision est soit de
-conserver P11 comme expérience, soit de chercher une compression supplémentaire
-des six cas `Mul` encore au-dessus de leur cible, en priorité 53 et 481 sans
-augmenter leur coût déjà dominant.
+M2 est en cours et ne contient aucune obligation Cut, réservée à la roadmap K.
+Le gate porte uniquement sur les 101 sorties réellement retenues. Le dump des
+101 meilleurs candidats est diagnostique et non bloquant.
+
+État du gate obligatoire après requête directe, fallback exact 4 x 16 bits et
+premières chaînes de congruence structurées :
+
+```text
+required_total=101
+validated=87
+direct_unsat=84
+complete_local_chains=52
+complete_structured_chains=3
+sat=0
+incomplete_chains=14
+gate=FAIL
+```
+
+Les 17 requêtes directes encore `UNKNOWN` sont 17 couples, 17 résidus et 17
+chaînes uniques. Ils sont tous dans QSynth : 12 P11a, 3 P11b et 2 P7e ; aucun
+P9-L obligatoire ne reste inconnu. Les 303 arêtes locales donnent 220 `UNSAT`,
+83 `UNKNOWN`, 0 `SAT` au direct court et 52 chaînes complètes après fallback.
+
+M2d a ensuite exporté une preuve de congruence bottom-up pour ces 17 cas : 357
+lemmes locaux et 17 ponts finaux. Z3 valide 334 lemmes et 4 ponts ; les chaînes
+des lignes 25, 77 et 125 sont complètes, ce qui porte le gate à 87/101. Il reste
+23 lemmes et 13 ponts `UNKNOWN`, répartis sur 14 sorties obligatoires. Deux
+sondes directes représentatives avec un budget de 120 secondes sont aussi
+restées `UNKNOWN` : la prochaine reprise doit exporter les états de
+carry/retenue P9 plutôt qu'allonger globalement les timeouts.
+
+Suite diagnostique séparée : `81 UNSAT`, `20 UNKNOWN`, `0 SAT`. Ses timeouts ne
+bloquent pas M2.
+
+Les temps observés ne servent pas au gate. Le runner utilise quatre workers par
+défaut, soit environ douze activités pour le portfolio Z3, et accepte une borne
+explicite via `M2_Z3_JOBS`. Aucun retry long n'est lancé automatiquement. Le
+pipeline de production n'a pas changé et M3 n'a pas commencé.
 
 Commandes utiles :
 
@@ -48,6 +81,7 @@ Commandes utiles :
 cargo run --release -q -p rumba-core --features parse --example p11a_micro_gate -- 53
 cargo run --release -q -p rumba-core --features parse --example p11a_mul_corpus
 cargo run --release -q -p rumba-core --features parse --example p11b_corpus
+just m2-z3 /chemin/vers/z3
 ```
 
 ## Fichiers de résultats importants
@@ -56,3 +90,4 @@ cargo run --release -q -p rumba-core --features parse --example p11b_corpus
 - `p10_results.md` : P10a/P10b/P10c.
 - `p11a_results.md` : P11a-2 après la correction 486 et benchmark des 12.
 - `p11b_results.md` : P11b et bilan expérimental des 16.
+- `m2_z3_results.md` : protocole, artefacts et gate courant de M2.

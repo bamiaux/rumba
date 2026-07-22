@@ -1,0 +1,5 @@
+diagnostic_total=101
+diagnostic_unsat=81
+diagnostic_sat=0
+diagnostic_unknown=20
+blocks_m2_gate=false
