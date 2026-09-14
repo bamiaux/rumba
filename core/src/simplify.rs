@@ -12,6 +12,7 @@ use log::debug;
 
 pub use crate::utils::error::SolveError;
 
+mod hidden_cut;
 mod lambda;
 mod merge_hidden;
 
@@ -141,7 +142,13 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             self.degree = first_degree;
             merged.expr
         };
-        let p = self.solve_polynomial(p)?;
+        let mut p = self.solve_polynomial(p)?;
+
+        // Hidden Cut runs before hidden coordinates are restored, while their exact
+        // definitions are still resident in MBASolver.
+        if self.non_linear_components.len() != 0 {
+            p = hidden_cut::close(self, p);
+        }
 
         // This was a non linear MBA
         let e = if self.non_linear_components.len() != 0 {
