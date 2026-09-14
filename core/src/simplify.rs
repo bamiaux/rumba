@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::{cmp::max, collections::BTreeMap};
 
 use crate::{
     expr::{Expr, VarId},
@@ -13,6 +13,7 @@ use log::debug;
 pub use crate::utils::error::SolveError;
 
 mod hidden_cut;
+mod hidden_gauge;
 mod lambda;
 mod merge_hidden;
 
@@ -93,6 +94,11 @@ struct MBASolver<'a, C: LinearCache> {
 
     /// A cache for simplifying linear MBAs
     l_cache: &'a C,
+
+    /// Exact structural identities for resident hidden definitions and their
+    /// complement-orbit representatives. Both indexes belong to this solver.
+    hidden_gauge_keys: BTreeMap<VarId, hidden_gauge::StructuralKey>,
+    hidden_gauge_orbits: BTreeMap<hidden_gauge::StructuralKey, VarId>,
 }
 
 impl<'a, C: LinearCache> MBASolver<'a, C> {
@@ -105,6 +111,8 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             n,
             mask: make_mask(n),
             l_cache,
+            hidden_gauge_keys: BTreeMap::new(),
+            hidden_gauge_orbits: BTreeMap::new(),
         }
     }
 
@@ -131,6 +139,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         let p = self.make_polynomial(e)?;
         let first_degree = self.degree;
         let merged = self.merge_equal_hidden_components(p);
+
         let p = if merged.changed && first_degree > 1 {
             self.degree = 1;
             self.make_polynomial(merged.expr)?
@@ -381,22 +390,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8)?.reduce_masked(mask),
         };
 
-        let note = (-e.clone() - Expr::make_const(1)).reduce_masked(mask);
-        debug!("!e would be {}", note);
-
-        if let Some(v) = self.non_linear_components.get_by_right(&e) {
-            debug!("Found variable v{} for e", v);
-            Ok(Expr::Var(*v))
-        } else if let Some(v) = self.non_linear_components.get_by_right(&note) {
-            debug!("Found variable v{} for !e", v);
-            Ok(!Expr::Var(*v))
-        } else {
-            let v = self.t.into();
-            debug!("Creating variable v{} for e={}", v, e);
-            self.t += 1;
-            self.non_linear_components.insert(v, e);
-            Ok(Expr::Var(v))
-        }
+        Ok(hidden_gauge::intern(self, e, mask))
     }
 
     fn is_signature_bitwise(&self, s: &Vec<u64>, mask: u64) -> bool {

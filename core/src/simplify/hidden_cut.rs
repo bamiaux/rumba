@@ -513,7 +513,7 @@ fn collect_valuation_from_buckets<C: LinearCache>(
             for (var, count) in applicable_by_var {
                 debug_assert!(
                     count <= 1,
-                    "COI complement-orbit uniqueness violated for v{}: {} applicable representatives",
+                    "hidden-gauge complement-orbit uniqueness violated for v{}: {} applicable representatives",
                     var,
                     count
                 );
