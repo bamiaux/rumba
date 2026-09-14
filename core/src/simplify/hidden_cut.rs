@@ -1,10 +1,3 @@
-//! Hidden Cut simplifies the current expression using relations carried by hidden variables.
-//!
-//! It finds a bitwise equality guaranteed by a hidden definition—either because one value
-//! is a non-zero even multiple of another, or because every set bit of one value is also
-//! present in another. The equality is turned into an ordinary linear relation, applied
-//! to the current query, and then normal simplification continues.
-
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::MBASolver;
@@ -22,103 +15,75 @@ struct HiddenLiteral {
     complemented: bool,
 }
 
-impl HiddenLiteral {
-    fn expr(self, mask: u64) -> Expr {
-        if self.complemented {
-            (!Expr::Var(self.var)).reduce_masked(mask)
-        } else {
-            Expr::Var(self.var)
-        }
-    }
-
-    fn definition(self, defs: &BTreeMap<VarId, Expr>, mask: u64) -> Option<Expr> {
-        defs.get(&self.var).map(|d| {
-            if self.complemented {
-                comp(d.clone(), mask)
-            } else {
-                d.clone()
-            }
-        })
-    }
+fn literal(var: VarId, complemented: bool) -> HiddenLiteral {
+    HiddenLiteral { var, complemented }
 }
 
 fn literal_views(var: VarId, hidden: &BTreeSet<VarId>) -> impl Iterator<Item = HiddenLiteral> {
-    let direct = HiddenLiteral {
-        var,
-        complemented: false,
-    };
-    let complemented = HiddenLiteral {
-        var,
-        complemented: true,
-    };
-    std::iter::once(direct).chain(hidden.contains(&var).then_some(complemented))
-}
-
-struct LiteralEntry {
-    literal: HiddenLiteral,
-    definition: Expr,
-}
-
-struct LiteralIndexes {
-    population: Vec<LiteralEntry>,
-    by_definition: BTreeMap<Expr, Vec<usize>>,
-    by_support_key: BTreeMap<Vec<Expr>, Vec<usize>>,
-}
-
-// `Terms` lives in Z/2^n[x]/(x^2=x). The empty monomial maps to ~0 = -1;
-// `term_map` and `build` use opposite signs for that coordinate.
-//
-// Hidden Cut has one semantic primitive:
-//
-//     O & (U xor V) = 0  =>  O & U = O & V.
-//
-// Discovery has two independent certificates for that invariant:
-//
-// - valuation/predecessor:
-//       U = X, V = X-1,
-//       U xor V = C_X = X xor (X-1) = 2*(X & -X)-1;
-//
-// - Boolean order/subset:
-//       A subset B  =>  A&(-B) = A&(-A)&(-B).
-//
-// `emit_cut_relation` is deliberately agnostic to which certificate produced
-// the `MaskStableCongruence`.
-//
-// Hidden Cut is a generic engine for these mask-stable congruences. It currently
-// has two certificate producers: valuation/even-multiple predecessors and
-// Boolean subset order. A future theorem must first prove a
-// `MaskStableCongruence` and can then reuse the same contextual quotient.
-#[derive(Clone, Debug, Eq, PartialEq)]
-struct Rule {
-    pivot: Monomial,
-    terms: Terms,
-}
-
-/// A congruence that remains valid under every WORD mask/context:
-///
-/// ```text
-/// for every context C: C & observer & lhs == C & observer & rhs
-/// ```
-///
-/// Equivalently, `observer & (lhs xor rhs) == 0`. Construction is restricted
-/// to the certified hidden-cut valuation/order producers. In particular, the
-/// empty monomial is safe in contextual substitution because `~0 & C == C`.
-struct MaskStableCongruence {
-    observer: Expr,
-    lhs: Expr,
-    rhs: Expr,
+    std::iter::once(literal(var, false)).chain(hidden.contains(&var).then_some(literal(var, true)))
 }
 
 fn addc(e: Expr, c: u64, mask: u64) -> Expr {
     (e + Expr::make_const(c & mask)).reduce_masked(mask)
 }
 
-fn neg(e: Expr, mask: u64) -> Expr {
-    (-e).reduce_masked(mask)
-}
-
 fn comp(e: Expr, mask: u64) -> Expr {
     (-e - Expr::make_const(1)).reduce_masked(mask)
+}
+
+fn add_term(out: &mut Terms, monomial: Monomial, coefficient: u64, mask: u64) {
+    let value = out
+        .get(&monomial)
+        .copied()
+        .unwrap_or_default()
+        .wrapping_add(coefficient)
+        & mask;
+    if value == 0 {
+        out.remove(&monomial);
+    } else {
+        out.insert(monomial, value);
+    }
+}
+
+fn add_terms(out: &mut Terms, other: &Terms, scale: u64, mask: u64) {
+    for (monomial, coefficient) in other {
+        add_term(out, monomial.clone(), coefficient.wrapping_mul(scale), mask);
+    }
+}
+
+fn sub_terms(mut out: Terms, other: &Terms, mask: u64) -> Terms {
+    add_terms(&mut out, other, mask, mask);
+    out
+}
+
+fn and_literal(terms: &Terms, literal: HiddenLiteral, mask: u64) -> Terms {
+    let mut direct = Terms::new();
+    for (monomial, coefficient) in terms {
+        let mut product = monomial.clone();
+        product.insert(literal.var);
+        add_term(&mut direct, product, *coefficient, mask);
+    }
+    if literal.complemented {
+        let mut out = terms.clone();
+        add_terms(&mut out, &direct, mask, mask);
+        out
+    } else {
+        direct
+    }
+}
+
+fn literal_terms(literal: HiddenLiteral, mask: u64) -> Terms {
+    let mut out = Terms::new();
+    add_term(
+        &mut out,
+        BTreeSet::from([literal.var]),
+        if literal.complemented { mask } else { 1 },
+        mask,
+    );
+    if literal.complemented {
+        add_term(&mut out, BTreeSet::new(), 1, mask);
+    }
+    out
 }
 
 fn even_nonconstant_coefficients(e: &Expr, mask: u64) -> bool {
@@ -135,7 +100,7 @@ fn even_nonconstant_coefficients(e: &Expr, mask: u64) -> bool {
 }
 
 fn coeffs(e: &Expr, mask: u64) -> BTreeMap<Expr, u64> {
-    let mut out = BTreeMap::new();
+    let mut out = BTreeMap::<Expr, u64>::new();
     let ts: &[Expr] = match e {
         Expr::Add(xs) => xs,
         _ => std::slice::from_ref(e),
@@ -146,55 +111,42 @@ fn coeffs(e: &Expr, mask: u64) -> BTreeMap<Expr, u64> {
             Expr::Const(c) => (*c & mask, Expr::make_const(1)),
             _ => (1, t.clone()),
         };
-        let q = out.entry(core).or_insert(0u64);
-        *q = q.wrapping_add(c) & mask;
+        let value = out.entry(core).or_default();
+        *value = value.wrapping_add(c) & mask;
     }
     out.retain(|_, c| *c != 0);
     out
-}
-
-fn arithmetic(e: &Expr, mask: u64) -> Expr {
-    match e {
-        Expr::Not(x) => (-x.as_ref().clone() - Expr::make_const(1)).reduce_masked(mask),
-        _ => e.clone(),
-    }
-}
-
-fn support_key(e: &Expr, mask: u64) -> Vec<Expr> {
-    coeffs(&arithmetic(e, mask), mask).into_keys().collect()
 }
 
 fn odd_inverse(c: u64, mask: u64) -> u64 {
     let c = c & mask;
     debug_assert!(c & 1 == 1);
     let mut inv = c;
-    // For odd c, c*c is already 1 modulo 8. Each Newton step doubles the
-    // number of correct bits, so five steps cover at least 96 bits.
     for _ in 0..5 {
         inv = inv.wrapping_mul(2u64.wrapping_sub(c.wrapping_mul(inv))) & mask;
     }
     inv
 }
 
-/// The candidate coefficient map equals `k*base` modulo 2^n. An odd base
-/// coefficient supplies the pivot.
 fn scale_relation(candidate: &BTreeMap<Expr, u64>, base: &Expr, mask: u64) -> Option<u64> {
-    let a = candidate;
-    let b = coeffs(&arithmetic(base, mask), mask);
-    if a.keys().ne(b.keys()) {
+    let base = match base {
+        Expr::Not(x) => (-x.as_ref().clone() - Expr::make_const(1)).reduce_masked(mask),
+        _ => base.clone(),
+    };
+    let b = coeffs(&base, mask);
+    if candidate.keys().ne(b.keys()) {
         return None;
     }
-    let (pivot, &c) = b.iter().find(|(_, c)| **c & 1 == 1)?;
-    let inv = odd_inverse(c, mask);
-    let k = a[pivot].wrapping_mul(inv) & mask;
+    let (pivot, &coefficient) = b.iter().find(|(_, c)| **c & 1 == 1)?;
+    let k = candidate[pivot].wrapping_mul(odd_inverse(coefficient, mask)) & mask;
     b.iter()
-        .all(|(x, c)| a[x] == c.wrapping_mul(k) & mask)
+        .all(|(x, c)| candidate[x] == c.wrapping_mul(k) & mask)
         .then_some(k)
 }
 
 fn monomial(e: &Expr) -> Option<Monomial> {
     match e {
-        Expr::Const(1) => Some(BTreeSet::new()),
+        Expr::Const(1) => Some(Default::default()),
         Expr::Var(v) => Some(BTreeSet::from([*v])),
         Expr::And(xs) => xs
             .iter()
@@ -208,140 +160,128 @@ fn monomial(e: &Expr) -> Option<Monomial> {
 }
 
 fn term_map(e: &Expr, mask: u64) -> Option<Terms> {
-    let mut out = BTreeMap::new();
-    for (core, c) in coeffs(&e.clone().reduce_masked(mask), mask) {
-        let m = monomial(&core)?;
-        // Terms use the substitution convention in which the empty monomial
-        // is the negated arithmetic constant. `build` applies the inverse
-        // conversion below; both signs are intentional and must stay paired.
-        let c = if m.is_empty() {
-            c.wrapping_neg() & mask
+    let mut out = Terms::new();
+    for (core, coefficient) in coeffs(&e.clone().reduce_masked(mask), mask) {
+        let monomial = monomial(&core)?;
+        let coefficient = if monomial.is_empty() {
+            coefficient.wrapping_neg()
         } else {
-            c & mask
+            coefficient
         };
-        let v = out.get(&m).copied().unwrap_or(0u64).wrapping_add(c) & mask;
-        if v == 0 {
-            out.remove(&m);
-        } else {
-            out.insert(m, v);
-        }
+        add_term(&mut out, monomial, coefficient, mask);
     }
     Some(out)
+}
+
+fn linear_terms<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Terms> {
+    s.solve_linear(e.reduce_masked(s.mask), false)
+        .ok()
+        .and_then(|q| term_map(&q, s.mask))
 }
 
 fn rank<'a>(m: &'a Monomial, hidden: &BTreeSet<VarId>) -> (usize, usize, &'a Monomial) {
     (m.iter().filter(|v| hidden.contains(v)).count(), m.len(), m)
 }
 
-fn normalize_rule(rel: Expr, root: &Terms, hidden: &BTreeSet<VarId>, mask: u64) -> Option<Rule> {
-    let mut ts = term_map(&rel, mask)?;
-    let (pivot, pc) = ts
+fn quotient_once(
+    root: &Terms,
+    mut relation: Terms,
+    hidden: &BTreeSet<VarId>,
+    mask: u64,
+) -> Option<(Monomial, Terms, Terms)> {
+    let (pivot, coefficient) = relation
         .iter()
         .filter(|(candidate, c)| {
             !candidate.is_empty()
                 && **c & 1 == 1
-                && ts
+                && relation
                     .keys()
                     .all(|other| *other == **candidate || !candidate.is_subset(other))
         })
         .max_by_key(|(m, _)| rank(m, hidden))
         .map(|(m, c)| (m.clone(), *c))?;
-    let inv = odd_inverse(pc, mask);
-    for c in ts.values_mut() {
-        *c = c.wrapping_mul(inv) & mask;
+    let inverse = odd_inverse(coefficient, mask);
+    for coefficient in relation.values_mut() {
+        *coefficient = coefficient.wrapping_mul(inverse) & mask;
     }
-    root.keys()
-        .any(|m| pivot.is_subset(m))
-        .then_some(Rule { pivot, terms: ts })
-}
+    if !root.keys().any(|m| pivot.is_subset(m)) {
+        return None;
+    }
 
-fn rule_key<'a>(
-    rule: &'a Rule,
-    hidden: &BTreeSet<VarId>,
-) -> ((usize, usize, &'a Monomial), &'a Terms) {
-    (rank(&rule.pivot, hidden), &rule.terms)
-}
-
-fn consider(rules: &mut Vec<Rule>, rel: Expr, root: &Terms, hidden: &BTreeSet<VarId>, mask: u64) {
-    let Some(rule) = normalize_rule(rel, root, hidden, mask) else {
-        return;
-    };
-    rules.push(rule);
-}
-
-fn build(ts: Terms, mask: u64) -> Expr {
-    let mut out = Vec::new();
-    for (m, c) in ts {
-        if m.is_empty() {
-            // Inverse of the empty-monomial convention used by `term_map`.
-            let c = c.wrapping_neg() & mask;
-            out.push(Expr::make_const(c));
+    let mut candidate = root.clone();
+    for (monomial, coefficient) in root {
+        if !pivot.is_subset(monomial) {
             continue;
         }
-        let xs = m.into_iter().map(Expr::Var).collect();
-        out.push(Expr::scale(c, Expr::And(xs)));
+        candidate.remove(monomial);
+        let context: Monomial = monomial.difference(&pivot).copied().collect();
+        for (replacement, replacement_coefficient) in relation.iter().filter(|(m, _)| **m != pivot)
+        {
+            add_term(
+                &mut candidate,
+                context.union(replacement).copied().collect(),
+                coefficient
+                    .wrapping_mul(*replacement_coefficient)
+                    .wrapping_neg(),
+                mask,
+            );
+        }
+    }
+    Some((pivot, relation, candidate))
+}
+
+struct BestCandidate {
+    pivot: Monomial,
+    relation: Terms,
+    terms: Terms,
+}
+
+fn consider(
+    best: &mut Option<BestCandidate>,
+    relation: Terms,
+    root: &Terms,
+    hidden: &BTreeSet<VarId>,
+    mask: u64,
+) {
+    let Some((pivot, relation, candidate)) = quotient_once(root, relation, hidden, mask) else {
+        return;
+    };
+    let replace = best.as_ref().is_none_or(|old| {
+        candidate.len() < old.terms.len()
+            || (candidate.len() == old.terms.len()
+                && (rank(&pivot, hidden), &relation) > (rank(&old.pivot, hidden), &old.relation))
+    });
+    if replace {
+        *best = Some(BestCandidate {
+            pivot,
+            relation,
+            terms: candidate,
+        });
+    }
+}
+
+fn build(terms: Terms, mask: u64) -> Expr {
+    let mut out = Vec::new();
+    for (monomial, coefficient) in terms {
+        if monomial.is_empty() {
+            out.push(Expr::make_const(coefficient.wrapping_neg() & mask));
+        } else {
+            out.push(Expr::scale(
+                coefficient,
+                Expr::And(monomial.into_iter().map(Expr::Var).collect()),
+            ));
+        }
     }
     Expr::Add(out).reduce_masked(mask)
 }
 
-/// One finite substitution only; there is no hidden-cut reduction loop or work budget.
-fn apply_rule(root_terms: &Terms, rule: &Rule, mask: u64) -> Expr {
-    let mut out = root_terms.clone();
-    for (m, c) in root_terms {
-        if !rule.pivot.is_subset(m) {
-            continue;
-        }
-        out.remove(m);
-        let ctx: Monomial = m.difference(&rule.pivot).copied().collect();
-        for (rm, rc) in &rule.terms {
-            if *rm == rule.pivot {
-                continue;
-            }
-            let nm: Monomial = ctx.union(rm).copied().collect();
-            let v = out
-                .get(&nm)
-                .copied()
-                .unwrap_or(0u64)
-                .wrapping_sub(c.wrapping_mul(*rc))
-                & mask;
-            if v == 0 {
-                out.remove(&nm);
-            } else {
-                out.insert(nm, v);
-            }
-        }
-    }
-    build(out, mask)
-}
-
-fn choose_rule(
-    root_terms: &Terms,
-    rules: Vec<Rule>,
-    hidden: &BTreeSet<VarId>,
-    mask: u64,
-) -> Option<Expr> {
-    let mut best: Option<(usize, Rule, Expr)> = None;
-    for rule in rules {
-        let applied = apply_rule(root_terms, &rule, mask);
-        let size = term_map(&applied, mask).map_or(usize::MAX, |terms| terms.len());
-        let replace = best.as_ref().is_none_or(|(old_size, old_rule, _)| {
-            size < *old_size
-                || size == *old_size && rule_key(&rule, hidden) > rule_key(old_rule, hidden)
-        });
-        if replace {
-            best = Some((size, rule, applied));
-        }
-    }
-    best.map(|(_, _, applied)| applied)
-}
-
 fn known<C: LinearCache>(s: &MBASolver<'_, C>, e: &Expr) -> Option<Expr> {
-    if let Some(v) = s.non_linear_components.get_by_right(e) {
-        return Some(Expr::Var(*v));
+    if let Some(var) = s.non_linear_components.get_by_right(e) {
+        return Some(Expr::Var(*var));
     }
     s.non_linear_components
         .get_by_right(&comp(e.clone(), s.mask))
-        .map(|v| (!Expr::Var(*v)).reduce_masked(s.mask))
+        .map(|var| (!Expr::Var(*var)).reduce_masked(s.mask))
 }
 
 fn fold_known<C: LinearCache>(s: &MBASolver<'_, C>, e: Expr) -> Expr {
@@ -351,195 +291,137 @@ fn fold_known<C: LinearCache>(s: &MBASolver<'_, C>, e: Expr) -> Expr {
 
 fn bitwise_view<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
     let e = e.reduce_masked(s.mask);
-    if let Some(q) = known(s, &e) {
-        return Some(q);
-    }
-    if s.is_linear(&e) {
-        if let Some(q) = s.is_linear_bitwise(e.clone(), s.mask) {
-            return Some(q.reduce_masked(s.mask));
-        }
-    }
-    None
+    known(s, &e).or_else(|| {
+        s.is_linear(&e)
+            .then(|| s.is_linear_bitwise(e.clone(), s.mask))
+            .flatten()
+            .map(|q| q.reduce_masked(s.mask))
+    })
 }
 
 fn bitwise_view_refolded<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
     let e = e.reduce_masked(s.mask);
-    if let Some(q) = bitwise_view(s, e.clone()) {
-        return Some(q);
-    }
-    let e = fold_known(s, e);
-    bitwise_view(s, e)
+    bitwise_view(s, e.clone()).or_else(|| bitwise_view(s, fold_known(s, e)))
 }
 
-/// SOUNDNESS BOUNDARY
-///
-/// Upstream producers may inspect `non_linear_components`. `known`,
-/// `fold_known`, `bitwise_view`, and `is_linear_bitwise` may use resident
-/// hidden definitions to construct valid representatives `O`, `U`, and `V`
-/// on the current hidden variety.
-///
-/// This function is different: it treats every `VarId` as an independent
-/// free WORD variable and must not use `non_linear_components` as equations
-/// when proving the relation. The quotient later contextualizes the identity
-/// under arbitrary AND contexts, so a relation valid only on the hidden
-/// variety is not sufficient.
-fn certify_free_relation<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
-    s.solve_linear(e.reduce_masked(s.mask), false)
-        .ok()
-        .map(|q| q.reduce_masked(s.mask))
+fn definition<C: LinearCache>(s: &MBASolver<'_, C>, var: VarId) -> Expr {
+    s.non_linear_components
+        .get_by_left(&var)
+        .cloned()
+        .unwrap_or(Expr::Var(var))
 }
 
-fn emit_cut_relation<C: LinearCache>(
-    s: &mut MBASolver<'_, C>,
-    cut: MaskStableCongruence,
-    rt: &Terms,
-    hidden: &BTreeSet<VarId>,
-    rules: &mut Vec<Rule>,
-) {
-    // Only a proven hidden-cut MaskStableCongruence may be contextualized by `apply_rule`.
-    // A generic WORD equality returned by `solve_linear` is not sufficient:
-    // AND-contextualization is valid here because Hidden Cut established
-    // O & (U xor V) = 0 and emits O&U = O&V.
-    let MaskStableCongruence { observer, lhs, rhs } = cut;
-    if let Some(r) = certify_free_relation(s, (observer.clone() & lhs) - (observer & rhs)) {
-        consider(rules, r, rt, hidden, s.mask);
-    }
-}
-
-fn definitions<C: LinearCache>(
+fn resident_literals<C: LinearCache>(
     s: &MBASolver<'_, C>,
     root: &Expr,
-) -> (BTreeMap<VarId, Expr>, BTreeSet<VarId>) {
+) -> Vec<(HiddenLiteral, Expr)> {
     let hidden: BTreeSet<_> = s.non_linear_components.iter().map(|(v, _)| *v).collect();
-    let mut defs: BTreeMap<_, _> = s
-        .non_linear_components
-        .iter()
-        .map(|(v, e)| (*v, e.clone().reduce_masked(s.mask)))
-        .collect();
     let mut vars: BTreeSet<_> = root.get_vars().into_iter().collect();
-    for e in defs.values() {
+    for (var, e) in s.non_linear_components.iter() {
+        vars.insert(*var);
         vars.extend(e.get_vars());
     }
-    for v in vars {
-        defs.entry(v).or_insert_with(|| Expr::Var(v));
-    }
-    (defs, hidden)
+    vars.into_iter()
+        .flat_map(|var| literal_views(var, &hidden))
+        .map(|literal| {
+            let d = definition(s, literal.var);
+            let d = if literal.complemented {
+                comp(d, s.mask)
+            } else {
+                d
+            };
+            (literal, d)
+        })
+        .collect()
 }
 
-fn literal_indexes(
-    defs: &BTreeMap<VarId, Expr>,
-    hidden: &BTreeSet<VarId>,
-    mask: u64,
-) -> LiteralIndexes {
-    let mut indexes = LiteralIndexes {
-        population: Vec::new(),
-        by_definition: BTreeMap::new(),
-        by_support_key: BTreeMap::new(),
-    };
-    for (v, _d) in defs {
-        for literal in literal_views(*v, hidden) {
-            let definition = literal
-                .definition(defs, mask)
-                .expect("literal has definition");
-            let id = indexes.population.len();
-            indexes
-                .by_definition
-                .entry(definition.clone())
-                .or_default()
-                .push(id);
-            let key = support_key(&definition, mask);
-            if !key.is_empty() {
-                indexes.by_support_key.entry(key).or_default().push(id);
-            }
-            indexes.population.push(LiteralEntry {
-                literal,
-                definition,
-            });
-        }
-    }
-    indexes
+fn valuation_relation<C: LinearCache>(
+    s: &mut MBASolver<'_, C>,
+    observer: HiddenLiteral,
+    base: HiddenLiteral,
+    predecessor: Expr,
+) -> Option<Terms> {
+    let mask = s.mask;
+    let left = and_literal(&literal_terms(base, mask), observer, mask);
+    let predecessor = linear_terms(s, predecessor)?;
+    let right = and_literal(&predecessor, observer, mask);
+    Some(sub_terms(left, &right, mask))
 }
 
-fn collect_valuation_from_buckets<C: LinearCache>(
+fn subset_premise<C: LinearCache>(
+    s: &mut MBASolver<'_, C>,
+    observer: VarId,
+    upper: Expr,
+) -> Option<bool> {
+    let upper = linear_terms(s, upper)?;
+    let observer = literal(observer, false);
+    let difference = sub_terms(
+        and_literal(&upper, observer, s.mask),
+        &literal_terms(observer, s.mask),
+        s.mask,
+    );
+    Some(difference.is_empty())
+}
+
+fn subset_relation(observer: VarId, z: VarId, partner: HiddenLiteral, mask: u64) -> Terms {
+    let observer = literal(observer, false);
+    let z = literal_terms(literal(z, false), mask);
+    let lhs = and_literal(&and_literal(&z, partner, mask), observer, mask);
+    let rhs = and_literal(&z, observer, mask);
+    sub_terms(lhs, &rhs, mask)
+}
+
+fn collect_valuation<C: LinearCache>(
     s: &mut MBASolver<'_, C>,
     root: &Expr,
     rt: &Terms,
-    defs: &BTreeMap<VarId, Expr>,
     hidden: &BTreeSet<VarId>,
-    indexes: &LiteralIndexes,
-    rules: &mut Vec<Rule>,
+    residents: &[(HiddenLiteral, Expr)],
+    best: &mut Option<BestCandidate>,
 ) {
     let mask = s.mask;
     let mut root_vars: Vec<_> = root.get_vars().into_iter().collect();
     root_vars.sort_unstable();
     for y in root_vars {
-        let Some(dy) = defs.get(&y).cloned() else {
-            continue;
-        };
+        let dy = definition(s, y);
         if !even_nonconstant_coefficients(&dy, mask) {
             continue;
         }
         for (pred, candidate) in [(false, dy.clone()), (true, addc(dy.clone(), 1, mask))] {
-            let candidate_coeffs = coeffs(&arithmetic(&candidate, mask), mask);
-            let candidate_key = candidate_coeffs.keys().cloned().collect::<Vec<_>>();
-            let Some(xs) = indexes.by_support_key.get(&candidate_key) else {
-                continue;
-            };
-            let mut valid_by_var = BTreeMap::<VarId, &LiteralEntry>::new();
-            #[cfg(debug_assertions)]
-            let mut applicable_by_var = BTreeMap::<VarId, usize>::new();
-            for id in xs {
-                let base = &indexes.population[*id];
-                let Some(k) = scale_relation(&candidate_coeffs, &base.definition, mask) else {
+            let candidate_coeffs = coeffs(
+                &match &candidate {
+                    Expr::Not(x) => (-x.as_ref().clone() - Expr::make_const(1)).reduce_masked(mask),
+                    _ => candidate.clone(),
+                },
+                mask,
+            );
+            let mut valid = BTreeMap::<VarId, (HiddenLiteral, Expr)>::new();
+            for (literal, definition) in residents {
+                let Some(k) = scale_relation(&candidate_coeffs, definition, mask) else {
                     continue;
                 };
                 if k & 1 != 0 {
                     continue;
                 }
-                #[cfg(debug_assertions)]
-                {
-                    *applicable_by_var.entry(base.literal.var).or_default() += 1;
-                }
-                valid_by_var
-                    .entry(base.literal.var)
+                valid
+                    .entry(literal.var)
                     .and_modify(|best| {
-                        if base.literal < best.literal {
-                            *best = base;
+                        if *literal < best.0 {
+                            *best = (*literal, definition.clone());
                         }
                     })
-                    .or_insert(base);
+                    .or_insert((*literal, definition.clone()));
             }
-            #[cfg(debug_assertions)]
-            for (var, count) in applicable_by_var {
-                debug_assert!(
-                    count <= 1,
-                    "hidden-gauge complement-orbit uniqueness violated for v{}: {} applicable representatives",
-                    var,
-                    count
-                );
-            }
-            for (_var, base) in valid_by_var {
-                let Some(predecessor) =
-                    bitwise_view_refolded(s, addc(base.definition.clone(), mask, mask))
+            for (_, (base, definition)) in valid {
+                let Some(predecessor) = bitwise_view_refolded(s, addc(definition, mask, mask))
                 else {
                     continue;
                 };
-                let observer = if pred {
-                    (!Expr::Var(y)).reduce_masked(mask)
-                } else {
-                    Expr::Var(y)
+                let Some(relation) = valuation_relation(s, literal(y, pred), base, predecessor)
+                else {
+                    continue;
                 };
-                emit_cut_relation(
-                    s,
-                    MaskStableCongruence {
-                        observer,
-                        lhs: base.literal.expr(mask),
-                        rhs: predecessor,
-                    },
-                    rt,
-                    hidden,
-                    rules,
-                );
+                consider(best, relation, rt, hidden, mask);
             }
         }
     }
@@ -548,108 +430,72 @@ fn collect_valuation_from_buckets<C: LinearCache>(
 fn collect_subset_cuts<C: LinearCache>(
     s: &mut MBASolver<'_, C>,
     rt: &Terms,
-    defs: &BTreeMap<VarId, Expr>,
     hidden: &BTreeSet<VarId>,
-    indexes: &LiteralIndexes,
-    rules: &mut Vec<Rule>,
+    residents: &[(HiddenLiteral, Expr)],
+    best: &mut Option<BestCandidate>,
 ) {
     let mask = s.mask;
     let mut view_cache = BTreeMap::<VarId, Option<Expr>>::new();
     let mut subset_cache = BTreeMap::<(VarId, VarId), bool>::new();
-
     for small in rt.keys() {
         for x in small {
-            let Some(dx) = defs.get(x) else {
-                continue;
-            };
-            let Some(candidates) = indexes.by_definition.get(&neg(dx.clone(), mask)) else {
-                continue;
-            };
-            let Some(n) = candidates
+            let dx = definition(s, *x);
+            let Some((n, _)) = residents
                 .iter()
-                .map(|id| &indexes.population[*id])
-                .filter(|entry| {
+                .filter(|(_, d)| *d == (-dx.clone()).reduce_masked(mask))
+                .filter(|(literal, _)| {
                     let mut big = small.clone();
-                    big.insert(entry.literal.var);
+                    big.insert(literal.var);
                     rt.contains_key(&big)
                 })
-                .min_by_key(|entry| entry.literal)
+                .min_by_key(|(literal, _)| *literal)
             else {
                 continue;
             };
-
             for z in small.intersection(hidden).copied() {
-                let b = if let Some(view) = view_cache.get(&z) {
-                    view.clone()
-                } else {
-                    let view = defs
-                        .get(&z)
-                        .and_then(|dz| bitwise_view_refolded(s, neg(dz.clone(), mask)));
-                    view_cache.insert(z, view.clone());
-                    view
-                };
+                let b = view_cache
+                    .entry(z)
+                    .or_insert_with(|| {
+                        bitwise_view_refolded(s, (-definition(s, z)).reduce_masked(mask))
+                    })
+                    .clone();
                 let Some(b) = b else {
                     continue;
                 };
-                // Boolean support order: A subset B iff A&B=A.
-                let subset = if let Some(subset) = subset_cache.get(&(*x, z)) {
-                    *subset
-                } else {
-                    let observer = Expr::Var(*x);
-                    let subset =
-                        certify_free_relation(s, (observer.clone() & b.clone()) - observer)
-                            .is_some_and(|q| q == Expr::zero());
-                    subset_cache.insert((*x, z), subset);
-                    subset
-                };
-                if !subset {
-                    continue;
+                let subset = *subset_cache
+                    .entry((*x, z))
+                    .or_insert_with(|| subset_premise(s, *x, b).unwrap_or(false));
+                if subset {
+                    consider(best, subset_relation(*x, z, *n, mask), rt, hidden, mask);
                 }
-                // A subset B => A&(-B) = A&(-A)&(-B).
-                let observer = Expr::Var(*x);
-                emit_cut_relation(
-                    s,
-                    MaskStableCongruence {
-                        observer,
-                        lhs: Expr::Var(z) & n.literal.expr(mask),
-                        rhs: Expr::Var(z),
-                    },
-                    rt,
-                    hidden,
-                    rules,
-                );
             }
         }
     }
 }
 
 pub(super) fn close<C: LinearCache>(s: &mut MBASolver<'_, C>, root: Expr) -> Expr {
-    let Some(rt) = term_map(&root, s.mask) else {
+    let Some(root_terms) = term_map(&root, s.mask) else {
         return root;
     };
-    let (defs, hidden) = definitions(s, &root);
-    let indexes = literal_indexes(&defs, &hidden, s.mask);
-    let mut rules = Vec::new();
-    collect_valuation_from_buckets(s, &root, &rt, &defs, &hidden, &indexes, &mut rules);
-    collect_subset_cuts(s, &rt, &defs, &hidden, &indexes, &mut rules);
-    choose_rule(&rt, rules, &hidden, s.mask).unwrap_or(root)
+    let hidden: BTreeSet<_> = s.non_linear_components.iter().map(|(v, _)| *v).collect();
+    let residents = resident_literals(s, &root);
+    let mut best = None;
+    collect_valuation(s, &root, &root_terms, &hidden, &residents, &mut best);
+    collect_subset_cuts(s, &root_terms, &hidden, &residents, &mut best);
+    best.map(|candidate| build(candidate.terms, s.mask))
+        .unwrap_or(root)
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{utils::cache::LocalCache, varint::make_mask};
 
-    #[test]
-    fn term_map_merges_distinct_cores_with_same_monomial() {
-        let mask = make_mask(4);
-        let x = Expr::Var(VarId(0));
-        // De Morgan can leave And([x, x]) beside Var(x) after one reduction.
-        let expr = x.clone() + !(!x.clone() | !x);
-        assert_eq!(
-            term_map(&expr, mask).unwrap(),
-            BTreeMap::from([(BTreeSet::from([VarId(0)]), 2)])
-        );
+    fn literal_expr(literal: HiddenLiteral, mask: u64) -> Expr {
+        if literal.complemented {
+            (!Expr::Var(literal.var)).reduce_masked(mask)
+        } else {
+            Expr::Var(literal.var)
+        }
     }
 
     #[test]
@@ -682,7 +528,7 @@ mod tests {
             (x.clone() - Expr::make_const(1)).reduce_masked(mask),
         );
 
-        let result = certify_free_relation(&mut solver, original.clone()).unwrap();
+        let result = build(linear_terms(&mut solver, original.clone()).unwrap(), mask);
         assert_ne!(result, Expr::zero());
         for xv in 0..16u64 {
             for hv in 0..16u64 {
@@ -701,20 +547,18 @@ mod tests {
         let hidden = BTreeSet::from([VarId(2)]);
         let pivot = BTreeSet::from([VarId(2)]);
         let extra = BTreeSet::from([VarId(0)]);
-        let a = Rule {
-            pivot: pivot.clone(),
-            terms: BTreeMap::from([(BTreeSet::new(), 1), (pivot.clone(), 1)]),
-        };
-        let b = Rule {
-            pivot: pivot.clone(),
-            terms: BTreeMap::from([(BTreeSet::new(), 1), (pivot.clone(), 1), (extra, 1)]),
-        };
+        let a = BTreeMap::from([(BTreeSet::new(), 1), (pivot.clone(), 1)]);
+        let b = BTreeMap::from([(BTreeSet::new(), 1), (pivot.clone(), 1), (extra, 1)]);
 
         let root = BTreeMap::from([(pivot.clone(), 1)]);
-        let ab = choose_rule(&root, vec![a.clone(), b.clone()], &hidden, make_mask(4));
-        let ba = choose_rule(&root, vec![b, a], &hidden, make_mask(4));
+        let mut ab = None;
+        consider(&mut ab, a.clone(), &root, &hidden, make_mask(4));
+        consider(&mut ab, b.clone(), &root, &hidden, make_mask(4));
+        let mut ba = None;
+        consider(&mut ba, b, &root, &hidden, make_mask(4));
+        consider(&mut ba, a, &root, &hidden, make_mask(4));
 
-        assert_eq!(ab, ba);
+        assert_eq!(ab.unwrap().terms, ba.unwrap().terms);
     }
 
     #[test]
@@ -730,19 +574,16 @@ mod tests {
         // only X, Z, and W are independent in the exhaustive check below.
         let root = (context & y.clone() & x.clone()).reduce_masked(mask);
         let root_terms = term_map(&root, mask).unwrap();
-        let cut = MaskStableCongruence {
-            observer: y.clone(),
-            lhs: x.clone(),
-            rhs: xm1,
-        };
         let hidden = BTreeSet::from([VarId(2)]);
         let cache = LocalCache::new();
         let mut solver = MBASolver::new(&cache, &root, 4);
-        let mut rules = Vec::new();
+        let mut best = None;
 
-        emit_cut_relation(&mut solver, cut, &root_terms, &hidden, &mut rules);
-        let applied = choose_rule(&root_terms, rules, &hidden, mask)
-            .expect("valuation cut must normalize through hidden cut");
+        let observer = literal(VarId(2), false);
+        let base = literal(VarId(1), false);
+        let relation = valuation_relation(&mut solver, observer, base, xm1).unwrap();
+        consider(&mut best, relation, &root_terms, &hidden, mask);
+        let applied = build(best.unwrap().terms, mask);
         assert_ne!(applied, root);
 
         for xv in 0..16u64 {
@@ -769,27 +610,19 @@ mod tests {
         let context = x.clone() & z.clone() & w.clone();
         let root = context & y.clone();
         let root_terms = term_map(&root, mask).unwrap();
-        let cut = MaskStableCongruence {
-            // The resident hidden coordinate is the all-ones WORD. The
-            // resulting relation is `y - (-1) = 0`, whose rule has a real
-            // empty-monomial coefficient.
-            observer: Expr::make_const(mask),
-            lhs: y.clone(),
-            rhs: Expr::make_const(mask),
-        };
         let hidden = BTreeSet::from([VarId(1)]);
-        let cache = LocalCache::new();
-        let mut solver = MBASolver::new(&cache, &root, 4);
-        let mut rules = Vec::new();
+        let mut relation = literal_terms(literal(1.into(), false), mask);
+        add_term(&mut relation, BTreeSet::new(), mask, mask);
+        let mut best = None;
 
-        emit_cut_relation(&mut solver, cut, &root_terms, &hidden, &mut rules);
-        assert!(!rules.is_empty(), "rules: {rules:?}");
-        assert!(rules.iter().any(|rule| {
-            rule.terms
+        consider(&mut best, relation, &root_terms, &hidden, mask);
+        let best = best.unwrap();
+        assert!(
+            best.relation
                 .get(&BTreeSet::new())
                 .is_some_and(|coefficient| *coefficient != 0)
-        }));
-        let applied = choose_rule(&root_terms, rules, &hidden, mask).unwrap();
+        );
+        let applied = build(best.terms, mask);
 
         for xv in 0..16u64 {
             for zv in 0..16u64 {
@@ -809,8 +642,6 @@ mod tests {
     #[test]
     fn lower_ranked_admissible_pivot_is_selected() {
         let mask = make_mask(4);
-        let high = BTreeSet::from([VarId(1), VarId(2)]);
-        let high_extension = BTreeSet::from([VarId(1), VarId(2), VarId(3)]);
         let lower = BTreeSet::from([VarId(4)]);
         let relation = (Expr::Var(VarId(1)) & Expr::Var(VarId(2)))
             + (2u64 * (Expr::Var(VarId(1)) & Expr::Var(VarId(2)) & Expr::Var(VarId(3))))
@@ -819,9 +650,8 @@ mod tests {
         let hidden = BTreeSet::from([VarId(1), VarId(2), VarId(4)]);
 
         let terms = term_map(&relation, mask).unwrap();
-        let rule = normalize_rule(build(terms, mask), &root, &hidden, mask).unwrap();
-        assert_eq!(rule.pivot, lower);
-        assert!(high.is_subset(&high_extension));
+        let (pivot, _, _) = quotient_once(&root, terms, &hidden, mask).unwrap();
+        assert_eq!(pivot, lower);
     }
 
     #[test]
@@ -869,24 +699,18 @@ mod tests {
             ]);
             let cache = LocalCache::new();
             let mut solver = MBASolver::new(&cache, &root, 4);
-            for (variable, definition) in &defs {
-                if hidden.contains(variable) {
-                    solver
-                        .non_linear_components
-                        .insert(*variable, definition.clone());
-                }
+            for (variable, definition) in defs
+                .iter()
+                .filter(|(variable, _)| hidden.contains(variable))
+            {
+                solver
+                    .non_linear_components
+                    .insert(*variable, definition.clone());
             }
-            let mut rules = Vec::new();
-            let indexes = literal_indexes(&defs, &hidden, mask);
-            collect_subset_cuts(
-                &mut solver,
-                &root_terms,
-                &defs,
-                &hidden,
-                &indexes,
-                &mut rules,
-            );
-            choose_rule(&root_terms, rules, &hidden, mask)
+            let residents = resident_literals(&solver, &root);
+            let mut best = None;
+            collect_subset_cuts(&mut solver, &root_terms, &hidden, &residents, &mut best);
+            best.map(|candidate| build(candidate.terms, mask))
         };
 
         let pre = run((x.clone() - Expr::make_const(1)).reduce_masked(mask))
@@ -922,30 +746,24 @@ mod tests {
                 VarId(4),
                 (x.clone() - Expr::make_const(1)).reduce_masked(mask),
             ),
-            (VarId(7), neg(x.clone(), mask)),
+            (VarId(7), (-x.clone()).reduce_masked(mask)),
         ]);
-        let hidden = BTreeSet::from([VarId(2), VarId(4), VarId(7)]);
-        let index = literal_indexes(&defs, &hidden, mask);
-        let literals = index
-            .by_definition
-            .get(&neg(defs[&VarId(2)].clone(), mask))
-            .unwrap()
+        let cache = LocalCache::new();
+        let mut solver = MBASolver::new(&cache, &x, 4);
+        for (variable, definition) in &defs {
+            solver
+                .non_linear_components
+                .insert(*variable, definition.clone());
+        }
+        let literals = resident_literals(&solver, &x)
             .iter()
-            .map(|id| index.population[*id].literal)
+            .filter(|(_, definition)| *definition == (-defs[&VarId(2)].clone()).reduce_masked(mask))
+            .map(|(literal, _)| *literal)
             .collect::<Vec<_>>();
 
         assert_eq!(
             literals,
-            vec![
-                HiddenLiteral {
-                    var: VarId(4),
-                    complemented: true,
-                },
-                HiddenLiteral {
-                    var: VarId(7),
-                    complemented: false,
-                },
-            ]
+            vec![literal(VarId(4), true), literal(VarId(7), false)]
         );
     }
 
@@ -977,27 +795,21 @@ mod tests {
                     .non_linear_components
                     .insert(*variable, definition.clone());
             }
-            let mut rules = Vec::new();
-            let indexes = literal_indexes(&defs, &hidden, mask);
-            collect_valuation_from_buckets(
+            let residents = resident_literals(&solver, &root);
+            let mut best = None;
+            collect_valuation(
                 &mut solver,
                 &root,
                 &root_terms,
-                &defs,
                 &hidden,
-                &indexes,
-                &mut rules,
+                &residents,
+                &mut best,
             );
-            choose_rule(&root_terms, rules, &hidden, mask)
+            best.map(|candidate| build(candidate.terms, mask))
         };
 
-        let pre = run(x.clone());
-        let gauge = run(comp(x.clone(), mask));
-
-        assert!(pre.is_some());
-        assert!(gauge.is_some());
-        let pre = pre.unwrap();
-        let gauge = gauge.unwrap();
+        let pre = run(x.clone()).expect("pre-gauge valuation cut must be found");
+        let gauge = run(comp(x.clone(), mask)).expect("gauge valuation cut must be found");
         assert_ne!(pre, root);
         assert_ne!(gauge, root);
 
@@ -1020,6 +832,93 @@ mod tests {
                 root.eval(&gauge_vars, 4),
                 "gauge x={xv}"
             );
+        }
+    }
+
+    #[test]
+    fn and_literal_handles_direct_complement_and_collisions() {
+        let mask = make_mask(8);
+        let empty = BTreeSet::new();
+        let x = BTreeSet::from([VarId(0)]);
+        let y = BTreeSet::from([VarId(1)]);
+        let xy = BTreeSet::from([VarId(0), VarId(1)]);
+        let terms = BTreeMap::from([(empty.clone(), 5), (x.clone(), 7), (y.clone(), 3)]);
+
+        assert_eq!(
+            and_literal(&terms, literal(VarId(0), false), mask),
+            BTreeMap::from([(x.clone(), 12), (xy.clone(), 3)])
+        );
+        assert_eq!(
+            and_literal(&terms, literal(VarId(0), true), mask),
+            BTreeMap::from([(empty, 5), (x, 251), (y, 3), (xy, 253)])
+        );
+    }
+
+    #[test]
+    fn native_valuation_lowering_matches_solver_on_hostile_forms() {
+        let x = Expr::Var(VarId(0));
+        let y = Expr::Var(VarId(1));
+        let z = Expr::Var(VarId(2));
+        let forms = [
+            x.clone(),
+            !x.clone(),
+            x.clone() & y.clone(),
+            !((x.clone() ^ !y.clone()) | (y & z)),
+        ];
+
+        for (mask, bits) in [(15, 4), (u64::MAX, 64)] {
+            for observer_complemented in [false, true] {
+                for base_complemented in [false, true] {
+                    for predecessor in &forms {
+                        let observer = literal(VarId(0), observer_complemented);
+                        let base = literal(VarId(1), base_complemented);
+                        let free_expr = (literal_expr(observer, mask) & literal_expr(base, mask))
+                            - (literal_expr(observer, mask) & predecessor.clone());
+                        let free_cache = LocalCache::new();
+                        let mut free_solver = MBASolver::new(&free_cache, &free_expr, bits);
+                        let free = free_solver
+                            .solve_linear(free_expr, false)
+                            .ok()
+                            .and_then(|e| term_map(&e, mask));
+
+                        let new = valuation_relation(
+                            &mut free_solver,
+                            observer,
+                            base,
+                            predecessor.clone(),
+                        );
+                        assert_eq!(free, new, "mask={mask:#x}, predecessor={predecessor}");
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn native_subset_lowering_handles_polarity_and_collisions() {
+        let cases = [
+            (VarId(0), VarId(0), VarId(1)),
+            (VarId(0), VarId(1), VarId(0)),
+            (VarId(0), VarId(1), VarId(1)),
+        ];
+
+        for (mask, bits) in [(15, 4), (u64::MAX, 64)] {
+            for (observer, z, partner_var) in cases {
+                for complemented in [false, true] {
+                    let partner = literal(partner_var, complemented);
+                    let free_expr = (Expr::Var(observer)
+                        & (Expr::Var(z) & literal_expr(partner, mask)))
+                        - (Expr::Var(observer) & Expr::Var(z));
+                    let free_cache = LocalCache::new();
+                    let mut free_solver = MBASolver::new(&free_cache, &free_expr, bits);
+                    let free = free_solver
+                        .solve_linear(free_expr, false)
+                        .ok()
+                        .and_then(|e| term_map(&e, mask));
+                    let new = subset_relation(observer, z, partner, mask);
+                    assert_eq!(free, Some(new), "mask={mask:#x}, partner={partner:?}");
+                }
+            }
         }
     }
 }
