@@ -101,10 +101,20 @@ fn complement(e: Expr, mask: u64) -> Expr {
 
 /// Intern `e` in its exact structural complement orbit and return the
 /// coordinate expression with the requested orientation.
+#[cfg(test)]
 pub(super) fn intern<C: super::LinearCache>(
     solver: &mut MBASolver<'_, C>,
     e: Expr,
     mask: u64,
+) -> Expr {
+    intern_with_width(solver, e, mask, mask.count_ones() as u8)
+}
+
+pub(super) fn intern_with_width<C: super::LinearCache>(
+    solver: &mut MBASolver<'_, C>,
+    e: Expr,
+    mask: u64,
+    width: u8,
 ) -> Expr {
     let note = complement(e.clone(), mask);
 
@@ -148,6 +158,10 @@ pub(super) fn intern<C: super::LinearCache>(
     solver.t += 1;
     solver.hidden_gauge_keys.insert(variable, orbit.clone());
     solver.hidden_gauge_orbits.insert(orbit, variable);
+    solver.r23_hidden_meta.insert(
+        variable,
+        super::filtered_cut::hidden_meta(&definition, width, mask),
+    );
     solver.non_linear_components.insert(variable, definition);
 
     if complemented {
@@ -155,6 +169,25 @@ pub(super) fn intern<C: super::LinearCache>(
     } else {
         Expr::Var(variable)
     }
+}
+
+/// Allocate a hidden coordinate without complement-orbit interning. This is
+/// used for recursive sub-width solves where a local R_k definition must stay
+/// faithful to its own ring and cannot be promoted into a wider orbit.
+pub(super) fn intern_plain_with_width<C: super::LinearCache>(
+    solver: &mut MBASolver<'_, C>,
+    definition: Expr,
+    mask: u64,
+    width: u8,
+) -> VarId {
+    let variable: VarId = solver.t.into();
+    solver.t += 1;
+    solver.r23_hidden_meta.insert(
+        variable,
+        super::filtered_cut::hidden_meta(&definition, width, mask),
+    );
+    solver.non_linear_components.insert(variable, definition);
+    variable
 }
 
 #[cfg(test)]

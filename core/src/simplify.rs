@@ -12,10 +12,11 @@ use log::debug;
 
 pub use crate::utils::error::SolveError;
 
-mod hidden_cut;
+mod filtered_cut;
 mod hidden_gauge;
 mod lambda;
 mod merge_hidden;
+mod scalar_precision;
 
 use lambda::{find_lambda_int, find_two_lambdas_int};
 
@@ -99,6 +100,8 @@ struct MBASolver<'a, C: LinearCache> {
     /// complement-orbit representatives. Both indexes belong to this solver.
     hidden_gauge_keys: BTreeMap<VarId, hidden_gauge::StructuralKey>,
     hidden_gauge_orbits: BTreeMap<hidden_gauge::StructuralKey, VarId>,
+    /// Width and coefficient provenance for resident hidden definitions.
+    r23_hidden_meta: BTreeMap<VarId, filtered_cut::HiddenMeta>,
 }
 
 impl<'a, C: LinearCache> MBASolver<'a, C> {
@@ -113,6 +116,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             l_cache,
             hidden_gauge_keys: BTreeMap::new(),
             hidden_gauge_orbits: BTreeMap::new(),
+            r23_hidden_meta: BTreeMap::new(),
         }
     }
 
@@ -121,7 +125,12 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         match &e {
             Expr::Var(v) => {
                 if let Some(e) = self.non_linear_components.get_by_left(v) {
-                    e.clone()
+                    // Hidden definitions form a DAG: every newly allocated
+                    // coordinate may refer only to coordinates allocated
+                    // earlier. Expand recursively so a dynamic-width hidden
+                    // expression cannot leak an intermediate coordinate into
+                    // the public result.
+                    self.poly_to_nonpoly(e.clone())
                 } else {
                     e
                 }
@@ -152,7 +161,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         // Hidden Cut runs before hidden coordinates are restored, while their exact
         // definitions are still resident in MBASolver.
         if self.non_linear_components.len() != 0 {
-            p = hidden_cut::close(self, p);
+            p = filtered_cut::close(self, p);
         }
 
         // This was a non linear MBA
@@ -390,7 +399,21 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8)?.reduce_masked(mask),
         };
 
-        Ok(hidden_gauge::intern(self, e, mask))
+        let width = mask.count_ones() as u8;
+        let orbit_allowed = width == self.n;
+        Ok(if orbit_allowed {
+            hidden_gauge::intern_with_width(self, e, mask, width)
+        } else {
+            Expr::Var(hidden_gauge::intern_plain_with_width(self, e, mask, width))
+        })
+    }
+
+    /// Intern a definition that already carries its explicit outer mask.
+    /// Dynamic-width bitwise expressions must not be recursively solved in the
+    /// smaller ring: doing so would erase the mask when the coordinate is
+    /// restored into the surrounding word.
+    fn hide_exact_in_var(&mut self, e: Expr) -> Expr {
+        hidden_gauge::intern_with_width(self, e, self.mask, self.n)
     }
 
     fn is_signature_bitwise(&self, s: &Vec<u64>, mask: u64) -> bool {
@@ -520,7 +543,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         match e {
             // -1 and 0 are bitwise
             Expr::Const(c) => {
-                if (c & mask) == 0 || (c & mask) == self.mask {
+                if (c & mask) == 0 || (c & mask) == mask {
                     Ok(e)
                 } else {
                     self.hide_in_var(e, mask)
@@ -554,12 +577,22 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                     return Ok(Expr::zero());
                 }
 
-                Ok(Expr::And(
+                let reduced = Expr::And(
                     terms
                         .into_iter()
                         .map(|e| self.make_bitwise(e, mask))
                         .collect::<Result<Vec<_>, _>>()?,
-                ))
+                )
+                .reduce_masked(self.mask);
+
+                // A prefix mask smaller than the solver width is semantic
+                // context, not a narrower solver instance. Keep it behind a
+                // resident coordinate so polynomialization cannot interpret it
+                // as a full-width Boolean factor and drop the mask.
+                if mask != self.mask {
+                    return Ok(self.hide_exact_in_var(reduced));
+                }
+                Ok(reduced)
             }
 
             // A Linear MBA might "hide" a bitwise expression
@@ -725,6 +758,7 @@ fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<
     let mask = make_mask(n);
     let e = e.reduce_masked(mask);
     let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
+    let e = scalar_precision::normalize(e, n).reduce_masked(mask);
 
     // The only place prettify may run: on the way out, after the fixed point has
     // settled. See the module docs for why it must stay out of the loop.
@@ -746,6 +780,41 @@ mod tests {
 
         assert_eq!(encoded, Expr::Var(5.into()));
         assert_eq!(solver.linear_to_poly(encoded), Ok(u64::MAX * original));
+    }
+
+    #[test]
+    fn dynamic_prefix_masks_survive_simplification() {
+        let x = Expr::Var(0.into());
+        let y = Expr::Var(1.into());
+        let cases = [
+            (
+                x.clone() & Expr::make_const(1),
+                x.clone() & Expr::make_const(1),
+            ),
+            (
+                (x.clone() & Expr::make_const(1)) * (x.clone() & Expr::make_const(1)),
+                x.clone() & Expr::make_const(1),
+            ),
+            (
+                ((x.clone() & Expr::make_const(5)) * (x.clone() & Expr::make_const(5)))
+                    & Expr::make_const(1),
+                x.clone() & Expr::make_const(1),
+            ),
+            (
+                ((x.clone() & Expr::make_const(3)) * (y & Expr::make_const(3)))
+                    & Expr::make_const(3),
+                ((x & Expr::make_const(3)) * (Expr::Var(1.into()) & Expr::make_const(3)))
+                    & Expr::make_const(3),
+            ),
+        ];
+
+        for (input, expected) in cases {
+            let solved = simplify_mba(input.clone(), 64).expect("dynamic mask should solve");
+            assert!(
+                solved.sem_equal(&expected, 64, 2_000).is_ok(),
+                "input={input}, solved={solved}, expected={expected}"
+            );
+        }
     }
 
     /// The loop stops at the first pass that fails to shrink the expression,

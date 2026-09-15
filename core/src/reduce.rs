@@ -2,6 +2,8 @@ use rustc_hash::FxHashMap as HashMap;
 
 use crate::{expr::Expr, varint::make_mask};
 
+mod low_prefix;
+
 /// Distributes an expression
 fn distribute<F>(
     v: &mut [Expr],
@@ -79,6 +81,24 @@ fn dedupe(mut v: Vec<Expr>) -> Vec<Expr> {
 
 struct Reducer {
     mask: u64,
+    allow_low_prefix: bool,
+}
+
+fn is_low_mask(mask: u64) -> bool {
+    mask != 0 && mask & mask.wrapping_add(1) == 0
+}
+
+fn is_bit_valued(e: &Expr) -> bool {
+    match e {
+        Expr::Const(c) => *c <= 1,
+        Expr::Not(child) => is_bit_valued(child),
+        Expr::And(children) => {
+            children.iter().any(|child| matches!(child, Expr::Const(1)))
+                || children.iter().all(is_bit_valued)
+        }
+        Expr::Or(children) | Expr::Xor(children) => children.iter().all(is_bit_valued),
+        _ => false,
+    }
 }
 
 /// The result enum for a flattening handler
@@ -205,7 +225,44 @@ impl Reducer {
     }
 
     /// Reduces a and node
-    fn reduce_and(&self, exprs: Vec<Expr>) -> Expr {
+    fn reduce_and(&self, mut exprs: Vec<Expr>) -> Expr {
+        if self.allow_low_prefix {
+            let mut prefix = self.mask;
+            let mut seen = false;
+            for expr in &exprs {
+                if let Expr::Const(c) = expr {
+                    prefix &= *c & self.mask;
+                    seen = true;
+                }
+            }
+
+            if seen && prefix != self.mask && is_low_mask(prefix) {
+                let payloads = exprs
+                    .iter()
+                    .filter(|expr| !matches!(expr, Expr::Const(_)))
+                    .cloned()
+                    .collect::<Vec<_>>();
+                if !payloads.is_empty() {
+                    let payload = if payloads.len() == 1 {
+                        payloads[0].clone()
+                    } else {
+                        Expr::And(payloads)
+                    };
+                    let projected =
+                        low_prefix::project_low(&payload, prefix.count_ones() as u8, self.mask);
+                    if matches!(
+                        low_prefix::upper_bound(&projected, self.mask),
+                        Some(bound) if bound <= prefix
+                    ) {
+                        return self.reduce_masked_plain(projected);
+                    }
+                    if projected != payload {
+                        exprs = vec![projected, Expr::Const(prefix)];
+                    }
+                }
+            }
+        }
+
         let mut c: u64 = self.mask;
 
         let mut flat = self.flatten(exprs, |e| match e {
@@ -221,6 +278,19 @@ impl Reducer {
 
         if c == 0 {
             return Expr::zero();
+        }
+
+        // The result of `payload & (2^k - 1)` only depends on the low k bits
+        // of payload. Reduce those operands in the smaller ring before the
+        // historical flattening/distribution logic. This preserves the
+        // explicit mask while allowing identities such as
+        // `(x & 5) * (x & 5) & 1 = x & 1` to become visible.
+        if c != self.mask && is_low_mask(c) {
+            let local = Self {
+                mask: c,
+                allow_low_prefix: false,
+            };
+            flat = flat.into_iter().map(|e| local.reduce_masked(e)).collect();
         }
 
         if c != self.mask {
@@ -359,6 +429,15 @@ impl Reducer {
             return self.reduce_masked(Expr::scale(c, distributed));
         }
 
+        // A bit-valued factor is idempotent under multiplication. This is a
+        // local Boolean law and is valid at every surrounding word width.
+        if flat.len() >= 2
+            && flat.windows(2).all(|pair| pair[0] == pair[1])
+            && is_bit_valued(&flat[0])
+        {
+            return flat.remove(0);
+        }
+
         flat.sort();
 
         match flat.len() {
@@ -390,6 +469,14 @@ impl Reducer {
         }
     }
 
+    fn reduce_masked_plain(&self, expr: Expr) -> Expr {
+        Self {
+            mask: self.mask,
+            allow_low_prefix: false,
+        }
+        .reduce_masked(expr)
+    }
+
     // fn reduce_(&self, expr: Expr) -> Expr {
     //     let old = expr.clone();
     //     let res = self.reduce_(expr);
@@ -405,7 +492,11 @@ impl Reducer {
 
 impl Expr {
     pub(crate) fn reduce_masked(self, mask: u64) -> Self {
-        Reducer { mask }.reduce_masked(self)
+        Reducer {
+            mask,
+            allow_low_prefix: true,
+        }
+        .reduce_masked(self)
     }
 
     /// Canonicalizes the expression on `n` bits (constant folding, flattening
@@ -413,4 +504,12 @@ impl Expr {
     pub fn reduce(self, n: u8) -> Self {
         self.reduce_masked(make_mask(n))
     }
+}
+
+pub(super) fn reduce_masked_plain(expr: Expr, mask: u64) -> Expr {
+    Reducer {
+        mask,
+        allow_low_prefix: false,
+    }
+    .reduce_masked(expr)
 }
