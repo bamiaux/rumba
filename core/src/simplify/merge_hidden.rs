@@ -111,26 +111,19 @@ fn synthesize_unary_bitwise(parent: Expr, truth_table: u8, mask: u64) -> Expr {
     }
 }
 
-fn synthesize_binary_bitwise(left: Expr, right: Expr, truth_table: u8, mask: u64) -> Expr {
-    match truth_table {
-        0b0000 => Expr::zero(),
-        0b0001 => !(left | right),
-        0b0010 => left & !right,
-        0b0011 => !right,
-        0b0100 => !left & right,
-        0b0101 => !left,
-        0b0110 => left ^ right,
-        0b0111 => !(left & right),
-        0b1000 => left & right,
-        0b1001 => !(left ^ right),
-        0b1010 => left,
-        0b1011 => left | !right,
-        0b1100 => right,
-        0b1101 => !left | right,
-        0b1110 => left | right,
-        0b1111 => Expr::make_const(mask),
-        _ => unreachable!("a binary truth table has four bits"),
-    }
+fn natural_binary_relations(left: Expr, right: Expr) -> [(u8, Expr); 10] {
+    [
+        (0b1000, left.clone() & right.clone()),
+        (0b0010, left.clone() & !right.clone()),
+        (0b0100, !left.clone() & right.clone()),
+        (0b1110, left.clone() | right.clone()),
+        (0b0110, left.clone() ^ right.clone()),
+        (0b0111, !(left.clone() & right.clone())),
+        (0b1101, !left.clone() | right.clone()),
+        (0b1011, left.clone() | !right.clone()),
+        (0b0001, !(left.clone() | right.clone())),
+        (0b1001, !(left ^ right)),
+    ]
 }
 
 fn make_signature_samples(expressions: &[Expr], mask: u64) -> Option<Vec<Vec<u64>>> {
@@ -320,17 +313,16 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             for left_position in 0..usable_atoms.len() {
                 let (left_index, (left, _)) = usable_atoms[left_position];
                 for (right_index, (right, _)) in &usable_atoms[left_position + 1..] {
-                    for table in infer_bitwise_truth_tables(
+                    let tables = infer_bitwise_truth_tables(
                         target_samples,
                         &[&atom_samples[left_index], &atom_samples[*right_index]],
                         self.n,
-                    ) {
-                        candidates.push(synthesize_binary_bitwise(
-                            left.clone(),
-                            right.clone(),
-                            table,
-                            self.mask,
-                        ));
+                    );
+                    for (table, candidate) in natural_binary_relations(left.clone(), right.clone())
+                    {
+                        if tables.contains(&table) {
+                            candidates.push(candidate);
+                        }
                     }
                 }
             }
@@ -382,11 +374,20 @@ mod tests {
     use crate::varint::make_mask;
 
     #[test]
-    fn synthesizes_every_binary_bitwise_truth_table() {
+    fn produces_natural_binary_bitwise_relations() {
         let mask = make_mask(8);
-        for table in 0..16u8 {
-            let expression =
-                synthesize_binary_bitwise(Expr::Var(0.into()), Expr::Var(1.into()), table, mask);
+        let relations = natural_binary_relations(Expr::Var(0.into()), Expr::Var(1.into()));
+        let tables = relations
+            .iter()
+            .map(|(table, _)| *table)
+            .collect::<Vec<_>>();
+        assert_eq!(
+            tables,
+            vec![
+                0b1000, 0b0010, 0b0100, 0b1110, 0b0110, 0b0111, 0b1101, 0b1011, 0b0001, 0b1001,
+            ]
+        );
+        for (table, expression) in relations {
             for assignment in 0..4usize {
                 let variables = [
                     if assignment & 1 == 0 { 0 } else { mask },
