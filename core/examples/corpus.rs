@@ -111,8 +111,6 @@ struct Options {
     baseline: Option<PathBuf>,
     save: Option<PathBuf>,
     quality_only: bool,
-    failures: bool,
-    census_only: bool,
     maskspark: Option<PathBuf>,
     maskspark_width: Option<u8>,
 }
@@ -135,8 +133,6 @@ fn parse_options() -> Options {
                 ));
             }
             Some("--quality-only") => options.quality_only = true,
-            Some("--failures") => options.failures = true,
-            Some("--census-only") => options.census_only = true,
             Some("--maskspark") => {
                 options.maskspark = Some(PathBuf::from(
                     arguments.next().expect("--maskspark requires a CSV path"),
@@ -438,16 +434,7 @@ fn classify(source: &str, mba: Expr, ground_truth: Expr, simplified: &Expr) -> S
     }
 }
 
-fn status_name(status: Status) -> &'static str {
-    match status {
-        Status::Ok => "direct",
-        Status::OkZ => "OKZ",
-        Status::Ng => "NG",
-        Status::Err => "ERR",
-    }
-}
-
-fn run_quality(rows: &[corpus::CorpusRow<'_>], print_failures: bool) -> Counts {
+fn run_quality(rows: &[corpus::CorpusRow<'_>]) -> Counts {
     let mut counts = Counts::default();
     for row in rows {
         let mba = parse_expr(row.mba)
@@ -466,9 +453,6 @@ fn run_quality(rows: &[corpus::CorpusRow<'_>], print_failures: bool) -> Counts {
             }
             Err(_) => (Status::Err, mba.size()),
         };
-        if print_failures && !matches!(status, Status::Ok) {
-            eprintln!("RUMBA_FAIL\t{}\t{}", row.source, status_name(status));
-        }
         counts.record(&status, actual_cost, raw_cost);
     }
     counts
@@ -756,16 +740,6 @@ fn main() {
         run_maskspark(path, options.maskspark_width);
         return;
     }
-    if options.census_only {
-        for dataset in DATASETS {
-            for row in corpus::rows(dataset.name, dataset.contents) {
-                let expression = parse_expr(row.mba)
-                    .unwrap_or_else(|error| panic!("failed to parse {}: {error}", row.source));
-                let _ = black_box(simplify_mba(expression, BIT_COUNT));
-            }
-        }
-        return;
-    }
     let baseline = options.baseline.as_ref().map(|path| {
         deserialize(
             &fs::read_to_string(path)
@@ -778,7 +752,7 @@ fn main() {
     let mut global_counts = Counts::default();
     for dataset in DATASETS {
         let rows = corpus::rows(dataset.name, dataset.contents);
-        let counts = run_quality(&rows, options.failures);
+        let counts = run_quality(&rows);
         global_counts.merge(counts);
         print_quality_row(dataset.name, counts, &quality_widths);
     }

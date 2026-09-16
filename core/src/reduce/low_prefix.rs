@@ -14,8 +14,6 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::expr::{Expr, VarId};
 
-use super::reduce_masked_plain;
-
 const WORD_BITS: u8 = 64;
 const RUMBA_TD_LIMIT: usize = 20;
 
@@ -872,7 +870,7 @@ impl ShadowKla {
             return Ok(Some(Expr::zero()));
         }
         if terms.len() == 1 {
-            return Ok(terms.pop());
+            return Ok(Some(terms.pop().unwrap_or_else(Expr::zero)));
         }
         Ok(Some(Expr::Add(terms)))
     }
@@ -1620,100 +1618,11 @@ fn project_additive(e: &Expr, w: u8) -> Result<Option<Expr>> {
     }))
 }
 
-fn flatten_add<'a>(e: &'a Expr, out: &mut Vec<&'a Expr>) {
-    if let Expr::Add(children) = e {
-        for child in children {
-            flatten_add(child, out);
-        }
-        return;
-    }
-    out.push(e);
-}
-
-fn split_coefficient(e: &Expr) -> (u64, Expr) {
-    match e {
-        Expr::Scale(c, child) => {
-            let (d, core) = split_coefficient(child);
-            (c.wrapping_mul(d), core)
-        }
-        Expr::Mul(children) => {
-            let mut coefficient = 1u64;
-            let mut factors = Vec::new();
-            for child in children {
-                let (c, core) = split_coefficient(child);
-                coefficient = coefficient.wrapping_mul(c);
-                factors.push(core);
-            }
-            (coefficient, Expr::Mul(factors))
-        }
-        _ => (1, e.clone()),
-    }
-}
-
-fn render_terms(items: &[(u64, Expr)], mask: u64) -> Expr {
-    let mut terms = Vec::new();
-    for (coefficient, expr) in items {
-        if *coefficient == 0 {
-            continue;
-        }
-        terms.push(if *coefficient == 1 {
-            expr.clone()
-        } else {
-            Expr::scale(*coefficient, expr.clone())
-        });
-    }
-    let expr = match terms.len() {
-        0 => Expr::zero(),
-        1 => terms.pop().unwrap_or_else(Expr::zero),
-        _ => Expr::Add(terms),
-    };
-    reduce_masked_plain(expr, mask)
-}
-
-fn project_dyadic(e: &Expr, k: u8, full_mask: u64) -> Result<Expr> {
-    let mask = low_mask(k);
-    let mut flattened = Vec::new();
-    flatten_add(e, &mut flattened);
-    let mut odd = Vec::new();
-    let mut filtered = Vec::new();
-    for term in flattened {
-        let (coefficient, core) = split_coefficient(term);
-        let coefficient = coefficient & mask;
-        if coefficient == 0 {
-            continue;
-        }
-        if v2(coefficient) == 0 {
-            odd.push((coefficient, core));
-        } else {
-            filtered.push((coefficient, core));
-        }
-    }
-
-    let mut out = odd;
-    if !filtered.is_empty() {
-        let Some(shift) = filtered.iter().map(|(c, _)| v2(*c)).min() else {
-            return Ok(render_terms(&out, full_mask));
-        };
-        let divided = filtered
-            .iter()
-            .map(|(c, e)| (*c >> shift, e.clone()))
-            .collect::<Vec<_>>();
-        let rendered = render_terms(&divided, full_mask);
-        match project_additive(&rendered, k - shift)? {
-            Some(projected) => out.push((1u64 << shift, projected)),
-            None => out.extend(filtered),
-        }
-    }
-    Ok(render_terms(&out, full_mask))
-}
-
-fn cell_project(e: &Expr, k: u8, full_mask: u64) -> Option<Expr> {
+fn cell_project(e: &Expr, k: u8) -> Option<Expr> {
     match project_additive(e, k) {
-        Ok(Some(expr)) => return Some(expr),
-        Ok(None) => {}
-        Err(_) => return None,
+        Ok(Some(expr)) => Some(expr),
+        Ok(None) | Err(_) => None,
     }
-    project_dyadic(e, k, full_mask).ok()
 }
 
 // -----------------------------------------------------------------------------
@@ -1830,8 +1739,8 @@ fn rebuild(e: &Expr, children: Vec<Expr>) -> Expr {
     }
 }
 
-pub(super) fn project_low(e: &Expr, k: u8, full_mask: u64) -> Expr {
-    fn go(e: &Expr, width: u8, full_mask: u64, bitwise: &mut BTreeMap<Expr, bool>) -> Expr {
+pub(super) fn project_low(e: &Expr, k: u8) -> Expr {
+    fn go(e: &Expr, width: u8, bitwise: &mut BTreeMap<Expr, bool>) -> Expr {
         let active = width > 0 && width < WORD_BITS && has_bitwise(e, bitwise);
         if active {
             if let Some(projected) = shadow_project(e, width) {
@@ -1846,7 +1755,7 @@ pub(super) fn project_low(e: &Expr, k: u8, full_mask: u64) -> Expr {
         }
         let contracted = widths.iter().any(|child_width| *child_width < width);
         if active && !contracted {
-            if let Some(projected) = cell_project(e, width, full_mask) {
+            if let Some(projected) = cell_project(e, width) {
                 if better(&projected, e) {
                     return projected;
                 }
@@ -1865,7 +1774,7 @@ pub(super) fn project_low(e: &Expr, k: u8, full_mask: u64) -> Expr {
         let mut changed = false;
         let mut children = Vec::with_capacity(source_children.len());
         for (child, child_width) in source_children.into_iter().zip(widths) {
-            let projected = go(child, child_width, full_mask, bitwise);
+            let projected = go(child, child_width, bitwise);
             changed |= projected != *child;
             children.push(projected);
         }
@@ -1877,7 +1786,7 @@ pub(super) fn project_low(e: &Expr, k: u8, full_mask: u64) -> Expr {
         if !active || !contracted {
             return rebuilt;
         }
-        if let Some(projected) = cell_project(&rebuilt, width, full_mask) {
+        if let Some(projected) = cell_project(&rebuilt, width) {
             if better(&projected, &rebuilt) {
                 return projected;
             }
@@ -1885,7 +1794,7 @@ pub(super) fn project_low(e: &Expr, k: u8, full_mask: u64) -> Expr {
         rebuilt
     }
 
-    go(e, k, full_mask, &mut BTreeMap::new())
+    go(e, k, &mut BTreeMap::new())
 }
 
 pub(super) fn upper_bound(e: &Expr, full: u64) -> Option<u64> {

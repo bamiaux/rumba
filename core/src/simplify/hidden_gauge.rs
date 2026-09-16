@@ -116,68 +116,26 @@ pub(super) fn intern_with_width<C: super::LinearCache>(
     mask: u64,
     width: u8,
 ) -> Expr {
-    *solver.stats.hidden_gauge.widths.entry(width).or_insert(0) += 1;
     let note = complement(e.clone(), mask);
 
     if let Some(variable) = solver.non_linear_components.get_by_right(&e) {
-        solver.stats.hidden_gauge.exact_definition_reuse += 1;
         debug_assert!(solver.hidden_gauge_keys.contains_key(variable));
         return Expr::Var(*variable);
     }
     if let Some(variable) = solver.non_linear_components.get_by_right(&note) {
-        solver.stats.hidden_gauge.exact_complement_reuse += 1;
         debug_assert!(solver.hidden_gauge_keys.contains_key(variable));
         return !Expr::Var(*variable);
     }
 
-    if solver.settings.complement_orbit {
-        let key = key_of(solver, &e, mask);
-        let note_key = key_of(solver, &note, mask);
-        let (orbit, complemented) = if note_key < key {
-            (note_key, true)
-        } else {
-            (key, false)
-        };
+    let key = key_of(solver, &e, mask);
+    let note_key = key_of(solver, &note, mask);
+    let (orbit, complemented) = if note_key < key {
+        (note_key, true)
+    } else {
+        (key, false)
+    };
 
-        if let Some(variable) = solver.hidden_gauge_orbits.get(&orbit).copied() {
-            solver.stats.hidden_gauge.structural_orbit_reuse += 1;
-            return if complemented {
-                !Expr::Var(variable)
-            } else {
-                Expr::Var(variable)
-            };
-        }
-
-        let variable: VarId = solver.t.into();
-        let definition = if complemented { note } else { e };
-        debug_assert!(definition.get_vars().into_iter().all(|referenced| {
-            solver
-                .non_linear_components
-                .get_by_left(&referenced)
-                .is_none_or(|_| referenced.0 < variable.0)
-        }));
-        debug!(
-            "Creating hidden-gauge variable v{} for e={}",
-            variable, definition
-        );
-        solver.t += 1;
-        solver.hidden_gauge_keys.insert(variable, orbit.clone());
-        solver.hidden_gauge_orbits.insert(orbit, variable);
-        solver.r23_hidden_meta.insert(
-            variable,
-            super::filtered_cut::hidden_meta(&definition, width, mask),
-        );
-        solver.non_linear_components.insert(variable, definition);
-        *solver
-            .stats
-            .hidden_gauge
-            .allocated_widths
-            .entry(width)
-            .or_insert(0) += 1;
-        if width == solver.n {
-            solver.stats.hidden_gauge.new_full_width_hidden += 1;
-        }
-
+    if let Some(variable) = solver.hidden_gauge_orbits.get(&orbit).copied() {
         return if complemented {
             !Expr::Var(variable)
         } else {
@@ -186,8 +144,7 @@ pub(super) fn intern_with_width<C: super::LinearCache>(
     }
 
     let variable: VarId = solver.t.into();
-    let definition = e;
-    let key = key_of(solver, &definition, mask);
+    let definition = if complemented { note } else { e };
     debug_assert!(definition.get_vars().into_iter().all(|referenced| {
         solver
             .non_linear_components
@@ -199,23 +156,19 @@ pub(super) fn intern_with_width<C: super::LinearCache>(
         variable, definition
     );
     solver.t += 1;
-    solver.hidden_gauge_keys.insert(variable, key);
+    solver.hidden_gauge_keys.insert(variable, orbit.clone());
+    solver.hidden_gauge_orbits.insert(orbit, variable);
     solver.r23_hidden_meta.insert(
         variable,
         super::filtered_cut::hidden_meta(&definition, width, mask),
     );
     solver.non_linear_components.insert(variable, definition);
-    *solver
-        .stats
-        .hidden_gauge
-        .allocated_widths
-        .entry(width)
-        .or_insert(0) += 1;
-    if width == solver.n {
-        solver.stats.hidden_gauge.new_full_width_hidden += 1;
-    }
 
-    Expr::Var(variable)
+    if complemented {
+        !Expr::Var(variable)
+    } else {
+        Expr::Var(variable)
+    }
 }
 
 /// Allocate a hidden coordinate without complement-orbit interning. Exact
@@ -229,9 +182,7 @@ pub(super) fn intern_plain_with_width<C: super::LinearCache>(
     mask: u64,
     width: u8,
 ) -> VarId {
-    *solver.stats.hidden_gauge.widths.entry(width).or_insert(0) += 1;
     if let Some(variable) = solver.non_linear_components.get_by_right(&definition) {
-        solver.stats.hidden_gauge.exact_definition_reuse += 1;
         return *variable;
     }
     let variable: VarId = solver.t.into();
@@ -241,13 +192,6 @@ pub(super) fn intern_plain_with_width<C: super::LinearCache>(
         super::filtered_cut::hidden_meta(&definition, width, mask),
     );
     solver.non_linear_components.insert(variable, definition);
-    *solver
-        .stats
-        .hidden_gauge
-        .allocated_widths
-        .entry(width)
-        .or_insert(0) += 1;
-    solver.stats.hidden_gauge.new_plain_sub_width_hidden += 1;
     variable
 }
 
@@ -271,14 +215,7 @@ mod tests {
         let mask = make_mask(4);
         let cache = LocalCache::new();
         let root = Expr::Var(VarId(0));
-        let mut stats = super::super::SolverStats::default();
-        let solver = MBASolver::new(
-            &cache,
-            &root,
-            4,
-            super::super::SolverSettings::from_env(),
-            &mut stats,
-        );
+        let solver = MBASolver::new(&cache, &root, 4);
         let x = Expr::Var(VarId(0));
         let y = Expr::Var(VarId(1));
         let shapes = [
@@ -306,14 +243,7 @@ mod tests {
         let mask = make_mask(4);
         let cache = LocalCache::new();
         let root = Expr::Var(VarId(0));
-        let mut stats = super::super::SolverStats::default();
-        let solver = MBASolver::new(
-            &cache,
-            &root,
-            4,
-            super::super::SolverSettings::from_env(),
-            &mut stats,
-        );
+        let solver = MBASolver::new(&cache, &root, 4);
         let shallow = Expr::Mul(vec![Expr::Var(VarId(0)), Expr::Var(VarId(1))]);
         let deep = Expr::Not(Box::new(Expr::Not(Box::new(Expr::Var(VarId(0))))));
 
@@ -339,14 +269,7 @@ mod tests {
         let definition = x.clone() & y.clone();
         let complement_definition = complement(definition.clone(), mask);
         let cache = LocalCache::new();
-        let mut stats = super::super::SolverStats::default();
-        let mut solver = MBASolver::new(
-            &cache,
-            &definition,
-            mask_bits,
-            super::super::SolverSettings::from_env(),
-            &mut stats,
-        );
+        let mut solver = MBASolver::new(&cache, &definition, mask_bits);
 
         let direct = intern(&mut solver, definition.clone(), mask);
         let complemented = intern(&mut solver, complement_definition.clone(), mask);
@@ -376,14 +299,7 @@ mod tests {
     fn exact_sub_width_definition_reuses_one_hidden_coordinate() {
         let definition = Expr::Var(VarId(0)) & Expr::make_const(7);
         let cache = LocalCache::new();
-        let mut stats = super::super::SolverStats::default();
-        let mut solver = MBASolver::new(
-            &cache,
-            &definition,
-            64,
-            super::super::SolverSettings::from_env(),
-            &mut stats,
-        );
+        let mut solver = MBASolver::new(&cache, &definition, 64);
 
         let first = intern_plain_with_width(&mut solver, definition.clone(), make_mask(8), 8);
         let second = intern_plain_with_width(&mut solver, definition.clone(), make_mask(8), 8);

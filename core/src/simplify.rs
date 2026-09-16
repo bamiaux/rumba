@@ -26,254 +26,6 @@ pub(crate) const MAX_VARS: usize = 20;
 
 const MAX_SIMPLIFICATION_PASSES: usize = 8;
 
-#[derive(Default)]
-pub(crate) struct SolverStats {
-    fixed_point: FixedPointStats,
-    hidden_gauge: HiddenGaugeStats,
-    merge_hidden: MergeHiddenStats,
-    lambda: LambdaStats,
-    filtered_cut: FilteredCutStats,
-    scalar_precision: ScalarPrecisionStats,
-    reduce: crate::reduce::ReduceStats,
-}
-
-#[derive(Default)]
-struct FixedPointStats {
-    expressions: u64,
-    passes: Vec<usize>,
-    max_passes: usize,
-    stopped_equal: u64,
-    stopped_size: u64,
-    reached_max: u64,
-}
-
-#[derive(Default)]
-pub(crate) struct HiddenGaugeStats {
-    hide_in_var_calls: u64,
-    full_width_hidden: u64,
-    sub_width_hidden: u64,
-    exact_definition_reuse: u64,
-    exact_complement_reuse: u64,
-    structural_orbit_reuse: u64,
-    new_full_width_hidden: u64,
-    new_plain_sub_width_hidden: u64,
-    widths: BTreeMap<u8, u64>,
-    allocated_widths: BTreeMap<u8, u64>,
-}
-
-#[derive(Default)]
-pub(crate) struct MergeHiddenStats {
-    calls: u64,
-    calls_changed_false: u64,
-    calls_changed_true: u64,
-    targets_examined: u64,
-    constant_candidate_successes: u64,
-    unary_candidate_successes: u64,
-    binary_candidate_successes: u64,
-    candidate_proofs_attempted: u64,
-    candidate_proofs_successful: u64,
-    aliases_emitted: u64,
-    proof_nanos: u64,
-    synthesis_nanos: u64,
-}
-
-#[derive(Default)]
-pub(crate) struct LambdaStats {
-    calls: u64,
-    zero_hidden_candidates: u64,
-    one_hidden_attempts: u64,
-    one_hidden_successes: u64,
-    two_hidden_attempts: u64,
-    two_hidden_successes: u64,
-    find_lambda_int_successes: u64,
-    find_two_lambdas_int_successes: u64,
-    lambda_01_successes: u64,
-    lambda_neg12_successes: u64,
-    two_lambda_01_successes: u64,
-    two_lambda_neg12_successes: u64,
-}
-
-#[derive(Default)]
-pub(crate) struct FilteredCutStats {
-    predecessor_candidates: u64,
-    predecessor_containment_successes: u64,
-    predecessor_certified_relations: u64,
-    predecessor_improving_quotients: u64,
-    predecessor_winning_candidates: u64,
-    order_candidate_comparisons: u64,
-    order_subset_successes: u64,
-    order_certified_relations: u64,
-    order_improving_quotients: u64,
-    order_winning_candidates: u64,
-    relation_proof_nanos: u64,
-    close_calls: u64,
-    close_no_improvement: u64,
-    close_changed: u64,
-    no_root_term_map: u64,
-    term_before: u64,
-    term_after: u64,
-    hidden_before: u64,
-    hidden_after: u64,
-}
-
-#[derive(Default)]
-pub(crate) struct ScalarPrecisionStats {
-    calls: u64,
-    expressions_changed: u64,
-    full_width_changes: u64,
-    sub_width_changes: u64,
-}
-
-#[derive(Clone, Copy)]
-struct SolverSettings {
-    merge_hidden: bool,
-    merge_binary: bool,
-    variable_substitution: bool,
-    cut: bool,
-    cut_predecessor: bool,
-    cut_order: bool,
-    complement_orbit: bool,
-    scalar_precision: bool,
-    reduce: crate::reduce::ReduceConfig,
-    diagnostics: bool,
-}
-
-impl SolverSettings {
-    fn from_env() -> Self {
-        let mut settings = Self {
-            merge_hidden: true,
-            merge_binary: true,
-            variable_substitution: true,
-            cut: true,
-            cut_predecessor: true,
-            cut_order: true,
-            complement_orbit: true,
-            scalar_precision: true,
-            reduce: crate::reduce::ReduceConfig::default(),
-            diagnostics: std::env::var_os("RUMBA_DIAGNOSTICS").is_some(),
-        };
-        match std::env::var("RUMBA_ABLATION").ok().as_deref() {
-            Some("project_low_off") => settings.reduce.project_low = false,
-            Some("all_low_off") => {
-                settings.reduce.project_low = false;
-                settings.reduce.simple_low = false;
-            }
-            Some("merge_hidden_off") => settings.merge_hidden = false,
-            Some("merge_hidden_unary_only") => settings.merge_binary = false,
-            Some("variable_substitution_off") => settings.variable_substitution = false,
-            Some("filtered_cut_predecessor_off") => settings.cut_predecessor = false,
-            Some("filtered_cut_order_off") => settings.cut_order = false,
-            Some("filtered_cut_off") => settings.cut = false,
-            Some("scalar_precision_off") => settings.scalar_precision = false,
-            Some("complement_orbit_off") => settings.complement_orbit = false,
-            Some("" | "baseline") | None => {}
-            Some(_) => {}
-        }
-        settings
-    }
-}
-
-impl SolverStats {
-    fn emit(&self) {
-        let histogram = |values: &BTreeMap<u8, u64>| {
-            values
-                .iter()
-                .map(|(width, count)| format!("{width}:{count}"))
-                .collect::<Vec<_>>()
-                .join(",")
-        };
-        let passes = self
-            .fixed_point
-            .passes
-            .iter()
-            .map(usize::to_string)
-            .collect::<Vec<_>>()
-            .join(",");
-        let f = &self.fixed_point;
-        let g = &self.hidden_gauge;
-        let m = &self.merge_hidden;
-        let l = &self.lambda;
-        let c = &self.filtered_cut;
-        let s = &self.scalar_precision;
-        let r = &self.reduce;
-        eprintln!(
-            "RUMBA_STATS fixed_expressions={} fixed_passes={} fixed_max={} fixed_equal={} fixed_size={} fixed_max_reached={} low_opportunities={} project_low_calls={} project_low_unchanged={} project_low_changed={} project_low_bounded={} project_low_fallback={} project_low_ns={} simple_rk_rereductions={} simple_rk_changed_operands={} hide_in_var_calls={} full_width_hidden={} sub_width_hidden={} exact_definition_reuse={} exact_complement_reuse={} structural_orbit_reuse={} new_full_width_hidden={} new_plain_sub_width_hidden={} hidden_widths={} hidden_alloc_widths={} merge_calls={} merge_false={} merge_true={} merge_targets={} merge_constant_successes={} merge_unary_successes={} merge_binary_successes={} merge_candidate_proofs={} merge_candidate_proof_successes={} merge_aliases={} merge_proof_ns={} merge_synthesis_ns={} lambda_calls={} lambda_zero_candidates={} one_hidden_attempts={} one_hidden_successes={} two_hidden_attempts={} two_hidden_successes={} find_lambda_int_successes={} find_two_lambdas_int_successes={} lambda_01_successes={} lambda_neg12_successes={} two_lambda_01_successes={} two_lambda_neg12_successes={} cut_predecessor_candidates={} cut_predecessor_containment={} cut_predecessor_certified={} cut_predecessor_improving={} cut_predecessor_winning={} cut_order_comparisons={} cut_order_subset={} cut_order_certified={} cut_order_improving={} cut_order_winning={} cut_relation_ns={} cut_close_calls={} cut_no_improvement={} cut_changed={} cut_no_root_map={} cut_term_before={} cut_term_after={} cut_hidden_before={} cut_hidden_after={} scalar_calls={} scalar_changed={} scalar_full_changed={} scalar_sub_changed={}",
-            f.expressions,
-            passes,
-            f.max_passes,
-            f.stopped_equal,
-            f.stopped_size,
-            f.reached_max,
-            r.low_prefix_and_opportunities,
-            r.project_low_calls,
-            r.project_low_unchanged,
-            r.project_low_changed,
-            r.project_low_bounded,
-            r.project_low_fallback,
-            r.project_low_nanos,
-            r.simple_rk_rereductions,
-            r.simple_rk_changed_operands,
-            g.hide_in_var_calls,
-            g.full_width_hidden,
-            g.sub_width_hidden,
-            g.exact_definition_reuse,
-            g.exact_complement_reuse,
-            g.structural_orbit_reuse,
-            g.new_full_width_hidden,
-            g.new_plain_sub_width_hidden,
-            histogram(&g.widths),
-            histogram(&g.allocated_widths),
-            m.calls,
-            m.calls_changed_false,
-            m.calls_changed_true,
-            m.targets_examined,
-            m.constant_candidate_successes,
-            m.unary_candidate_successes,
-            m.binary_candidate_successes,
-            m.candidate_proofs_attempted,
-            m.candidate_proofs_successful,
-            m.aliases_emitted,
-            m.proof_nanos,
-            m.synthesis_nanos,
-            l.calls,
-            l.zero_hidden_candidates,
-            l.one_hidden_attempts,
-            l.one_hidden_successes,
-            l.two_hidden_attempts,
-            l.two_hidden_successes,
-            l.find_lambda_int_successes,
-            l.find_two_lambdas_int_successes,
-            l.lambda_01_successes,
-            l.lambda_neg12_successes,
-            l.two_lambda_01_successes,
-            l.two_lambda_neg12_successes,
-            c.predecessor_candidates,
-            c.predecessor_containment_successes,
-            c.predecessor_certified_relations,
-            c.predecessor_improving_quotients,
-            c.predecessor_winning_candidates,
-            c.order_candidate_comparisons,
-            c.order_subset_successes,
-            c.order_certified_relations,
-            c.order_improving_quotients,
-            c.order_winning_candidates,
-            c.relation_proof_nanos,
-            c.close_calls,
-            c.close_no_improvement,
-            c.close_changed,
-            c.no_root_term_map,
-            c.term_before,
-            c.term_after,
-            c.hidden_before,
-            c.hidden_after,
-            s.calls,
-            s.expressions_changed,
-            s.full_width_changes,
-            s.sub_width_changes,
-        );
-    }
-}
-
 fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize, sublist: &[usize]) {
     let are_vars_true = |i: usize| sublist[1..].iter().copied().all(|v| ((i >> v) & 1) == 1);
 
@@ -350,20 +102,11 @@ struct MBASolver<'a, C: LinearCache> {
     hidden_gauge_orbits: BTreeMap<hidden_gauge::StructuralKey, VarId>,
     /// Width and coefficient provenance for resident hidden definitions.
     r23_hidden_meta: BTreeMap<VarId, filtered_cut::HiddenMeta>,
-
-    settings: SolverSettings,
-    stats: &'a mut SolverStats,
 }
 
 impl<'a, C: LinearCache> MBASolver<'a, C> {
     /// Create a new Solver
-    fn new(
-        l_cache: &'a C,
-        e: &Expr,
-        n: u8,
-        settings: SolverSettings,
-        stats: &'a mut SolverStats,
-    ) -> Self {
+    fn new(l_cache: &'a C, e: &Expr, n: u8) -> Self {
         Self {
             non_linear_components: BiMap::new(),
             t: e.get_vars().iter().copied().map(|v| v.0).max().unwrap_or(0) + 1,
@@ -374,19 +117,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             hidden_gauge_keys: BTreeMap::new(),
             hidden_gauge_orbits: BTreeMap::new(),
             r23_hidden_meta: BTreeMap::new(),
-            settings,
-            stats,
         }
-    }
-
-    fn reduce(&mut self, e: Expr, mask: u64) -> Expr {
-        crate::reduce::reduce_masked_with_config(
-            e,
-            mask,
-            self.settings.reduce,
-            &mut self.stats.reduce,
-            true,
-        )
     }
 
     /// Replaces non polynomial variables by their hidden expressions
@@ -412,7 +143,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     /// Solves a non polynomial MBA
     fn solve(&mut self, e: Expr) -> Result<Expr, SolveError> {
         // TODO: Remove this only needs to be done once
-        let e = self.reduce(e, self.mask);
+        let e = e.reduce_masked(self.mask);
 
         let p = self.make_polynomial(e)?;
         let first_degree = self.degree;
@@ -429,7 +160,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
 
         // Hidden Cut runs before hidden coordinates are restored, while their exact
         // definitions are still resident in MBASolver.
-        if self.settings.cut && self.non_linear_components.len() != 0 {
+        if self.non_linear_components.len() != 0 {
             p = filtered_cut::close(self, p);
         }
 
@@ -437,7 +168,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         let e = if self.non_linear_components.len() != 0 {
             let e = self.poly_to_nonpoly(p);
             debug!("After adding non linear components, found: {}", e);
-            self.reduce(e, self.mask)
+            e.reduce_masked(self.mask)
         } else {
             p
         };
@@ -652,7 +383,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
 
         let e = self.poly_to_linear(e, 0);
         let e: Expr = self.solve_linear(e, true)?;
-        let e = self.reduce(self.linear_to_poly(e)?, self.mask);
+        let e = self.linear_to_poly(e)?.reduce_masked(self.mask);
 
         debug!("Found polynomial solution: {}", e);
 
@@ -661,29 +392,14 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
 
     /// Hides a non linear element behind a variable
     fn hide_in_var(&mut self, e: Expr, mask: u64) -> Result<Expr, SolveError> {
-        self.stats.hidden_gauge.hide_in_var_calls += 1;
-        let width = mask.count_ones() as u8;
-        if width == self.n {
-            self.stats.hidden_gauge.full_width_hidden += 1;
-        } else {
-            self.stats.hidden_gauge.sub_width_hidden += 1;
-        }
         debug!("e={} is not linear and will be replaced by a variable", e);
 
         let e = match e {
             Expr::Const(_) => e,
-            _ => {
-                let solved = simplify_mba_inner(
-                    self.l_cache,
-                    e,
-                    mask.count_ones() as u8,
-                    self.settings,
-                    self.stats,
-                )?;
-                self.reduce(solved, mask)
-            }
+            _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8)?.reduce_masked(mask),
         };
 
+        let width = mask.count_ones() as u8;
         let orbit_allowed = width == self.n;
         Ok(if orbit_allowed {
             hidden_gauge::intern_with_width(self, e, mask, width)
@@ -724,8 +440,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 
     // Read paper
-    fn variable_substitution(&mut self, e: Expr) -> Option<Expr> {
-        self.stats.lambda.calls += 1;
+    fn variable_substitution(&self, e: Expr) -> Option<Expr> {
         let mut sub_vars = vec![];
 
         for v in e.get_vars() {
@@ -738,7 +453,6 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         sub_vars.sort_unstable_by_key(|(variable, _)| variable.0);
 
         if sub_vars.is_empty() || sub_vars.len() > 2 {
-            self.stats.lambda.zero_hidden_candidates += 1;
             return None;
         }
 
@@ -773,20 +487,13 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             .collect();
 
         if zero_expressions.len() == 1 {
-            self.stats.lambda.one_hidden_attempts += 1;
             let see = &zero_signatures[0];
             debug!("Using zero signature {:?}", see);
             if let Some(lambda) = find_lambda_int(&se, see, 0, 1, self.n) {
-                self.stats.lambda.find_lambda_int_successes += 1;
-                self.stats.lambda.lambda_01_successes += 1;
-                self.stats.lambda.one_hidden_successes += 1;
                 debug!("Found lambda that creates a [0, 1] signature: {:?}", lambda);
                 return Some(e - lambda * zero_expressions.remove(0));
             }
             if let Some(lambda) = find_lambda_int(&se, see, -1, -2, self.n) {
-                self.stats.lambda.find_lambda_int_successes += 1;
-                self.stats.lambda.lambda_neg12_successes += 1;
-                self.stats.lambda.one_hidden_successes += 1;
                 debug!(
                     "Found lambda that creates a [-1, -2] signature: {:?}",
                     lambda
@@ -796,18 +503,10 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             return None;
         }
 
-        self.stats.lambda.two_hidden_attempts += 1;
         for (a, b) in [(0, 1), (-1, -2)] {
             if let Some((left, right)) =
                 find_two_lambdas_int(&se, &zero_signatures[0], &zero_signatures[1], a, b, self.n)
             {
-                self.stats.lambda.find_two_lambdas_int_successes += 1;
-                self.stats.lambda.two_hidden_successes += 1;
-                if (a, b) == (0, 1) {
-                    self.stats.lambda.two_lambda_01_successes += 1;
-                } else {
-                    self.stats.lambda.two_lambda_neg12_successes += 1;
-                }
                 debug!("Found two substitution lambdas: {}, {}", left, right);
                 return Some(
                     e - left * zero_expressions[0].clone() - right * zero_expressions[1].clone(),
@@ -818,7 +517,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 
     // A Linear MBA might "hide" a bitwise expression
-    fn is_linear_bitwise(&mut self, l: Expr, mask: u64) -> Option<Expr> {
+    fn is_linear_bitwise(&self, l: Expr, mask: u64) -> Option<Expr> {
         let mut t = 0;
         let mut var_map = BiMap::new();
         let e = reduce_vars(l.clone(), &mut var_map, &mut t);
@@ -833,8 +532,6 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         if self.is_signature_bitwise(&s, mask) {
             debug!("Will treat {} as a bitwise expression", e);
             Some(l)
-        } else if !self.settings.variable_substitution {
-            None
         } else {
             // Attempt to "fix" the signature with a variable substitution
             self.variable_substitution(l)
@@ -880,11 +577,13 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                     return Ok(Expr::zero());
                 }
 
-                let children = terms
-                    .into_iter()
-                    .map(|e| self.make_bitwise(e, mask))
-                    .collect::<Result<Vec<_>, _>>()?;
-                let reduced = self.reduce(Expr::And(children), self.mask);
+                let reduced = Expr::And(
+                    terms
+                        .into_iter()
+                        .map(|e| self.make_bitwise(e, mask))
+                        .collect::<Result<Vec<_>, _>>()?,
+                )
+                .reduce_masked(self.mask);
 
                 // A prefix mask smaller than the solver width is semantic
                 // context, not a narrower solver instance. Keep it behind a
@@ -993,40 +692,19 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 }
 
-fn simplify_mba_inner<C: LinearCache>(
-    l_cache: &C,
-    e: Expr,
-    n: u8,
-    settings: SolverSettings,
-    stats: &mut SolverStats,
-) -> Result<Expr, SolveError> {
-    let mut solver = MBASolver::new(l_cache, &e, n, settings, stats);
+fn simplify_mba_inner<C: LinearCache>(l_cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
+    let mut solver = MBASolver::new(l_cache, &e, n);
     solver.solve(e)
 }
 
-#[cfg(test)]
-fn simplify_to_fixed_point<F>(e: Expr, simplify: F) -> Result<Expr, SolveError>
-where
-    F: FnMut(Expr) -> Result<Expr, SolveError>,
-{
-    let mut stats = FixedPointStats::default();
-    simplify_to_fixed_point_with_stats(e, simplify, &mut stats)
-}
-
-fn simplify_to_fixed_point_with_stats<F>(
-    mut e: Expr,
-    mut simplify: F,
-    stats: &mut FixedPointStats,
-) -> Result<Expr, SolveError>
+fn simplify_to_fixed_point<F>(mut e: Expr, mut simplify: F) -> Result<Expr, SolveError>
 where
     F: FnMut(Expr) -> Result<Expr, SolveError>,
 {
     let mut size = usize::MAX;
-    let mut passes = 0;
 
     for _ in 0..MAX_SIMPLIFICATION_PASSES {
         let next = simplify(e.clone())?;
-        passes += 1;
         debug!("e: {}", next);
 
         let next_size = next.size();
@@ -1036,28 +714,15 @@ where
         // rate (loki_tiny 24997 -> 13522). The trade is that a cycle is
         // indistinguishable from such a pass, so the result may be larger than
         // an intermediate; the corpus shows no case where that costs anything.
-        let stopped_equal = next == e;
-        let stopped_size = next_size >= size;
-        let settled = stopped_equal || stopped_size;
+        let settled = next == e || next_size >= size;
         e = next;
         if settled {
-            stats.passes.push(passes);
-            stats.max_passes = stats.max_passes.max(passes);
-            if stopped_equal {
-                stats.stopped_equal += 1;
-            }
-            if stopped_size {
-                stats.stopped_size += 1;
-            }
             return Ok(e);
         }
         size = next_size;
     }
 
     debug!("simplification pass limit reached");
-    stats.passes.push(passes);
-    stats.max_passes = stats.max_passes.max(passes);
-    stats.reached_max += 1;
     Ok(e)
 }
 
@@ -1090,50 +755,14 @@ pub fn simplify_mba_cached(e: Expr, n: u8, cache: &SimplifyCache) -> Result<Expr
 }
 
 fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
-    let settings = SolverSettings::from_env();
-    let mut stats = SolverStats::default();
-    stats.fixed_point.expressions = 1;
-    let result = (|| {
-        let mask = make_mask(n);
-        let e = crate::reduce::reduce_masked_with_config(
-            e,
-            mask,
-            settings.reduce,
-            &mut stats.reduce,
-            true,
-        );
-        let mut fixed_point = FixedPointStats::default();
-        let e = simplify_to_fixed_point_with_stats(
-            e,
-            |e| simplify_mba_inner(cache, e, n, settings, &mut stats),
-            &mut fixed_point,
-        )?;
-        stats.fixed_point.passes = fixed_point.passes;
-        stats.fixed_point.max_passes = fixed_point.max_passes;
-        stats.fixed_point.stopped_equal = fixed_point.stopped_equal;
-        stats.fixed_point.stopped_size = fixed_point.stopped_size;
-        stats.fixed_point.reached_max = fixed_point.reached_max;
-        let e = if settings.scalar_precision {
-            scalar_precision::normalize(e, n, &mut stats.scalar_precision)
-        } else {
-            e
-        };
-        let e = crate::reduce::reduce_masked_with_config(
-            e,
-            mask,
-            settings.reduce,
-            &mut stats.reduce,
-            true,
-        );
+    let mask = make_mask(n);
+    let e = e.reduce_masked(mask);
+    let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
+    let e = scalar_precision::normalize(e, n).reduce_masked(mask);
 
-        // The only place prettify may run: on the way out, after the fixed point has
-        // settled. See the module docs for why it must stay out of the loop.
-        Ok(prettify(e, n))
-    })();
-    if settings.diagnostics {
-        stats.emit();
-    }
-    result
+    // The only place prettify may run: on the way out, after the fixed point has
+    // settled. See the module docs for why it must stay out of the loop.
+    Ok(prettify(e, n))
 }
 
 #[cfg(test)]
@@ -1144,14 +773,7 @@ mod tests {
     #[test]
     fn inverse_pct_round_trip_preserves_variable_index() {
         let cache = LocalCache::new();
-        let mut stats = SolverStats::default();
-        let mut solver = MBASolver::new(
-            &cache,
-            &Expr::Var(2.into()),
-            8,
-            SolverSettings::from_env(),
-            &mut stats,
-        );
+        let mut solver = MBASolver::new(&cache, &Expr::Var(2.into()), 8);
         solver.degree = 2;
         let original = Expr::Var(2.into());
         let encoded = solver.poly_to_linear(original.clone(), 2);
@@ -1179,37 +801,19 @@ mod tests {
                 x.clone() & Expr::make_const(1),
             ),
             (
-                ((x.clone() & Expr::make_const(3)) * (y.clone() & Expr::make_const(3)))
+                ((x.clone() & Expr::make_const(3)) * (y & Expr::make_const(3)))
                     & Expr::make_const(3),
-                ((x.clone() & Expr::make_const(3)) * (Expr::Var(1.into()) & Expr::make_const(3)))
+                ((x & Expr::make_const(3)) * (Expr::Var(1.into()) & Expr::make_const(3)))
                     & Expr::make_const(3),
-            ),
-            (
-                (32u64
-                    * ((x.clone() & Expr::make_const(7))
-                        + (Expr::Var(1.into()) & Expr::make_const(7))))
-                    & Expr::make_const(255),
-                32u64 * ((x.clone() + Expr::Var(1.into())) & Expr::make_const(7)),
-            ),
-            (
-                (32u64
-                    * ((x.clone() & !y.clone())
-                        * (!x.clone() & y.clone())
-                        * ((x.clone() & !y.clone()) + (!x & y) - Expr::make_const(1))))
-                    & Expr::make_const(127),
-                Expr::zero(),
             ),
         ];
 
-        for width in [1, 2, 3, 4, 5, 64] {
-            for (input, expected) in &cases {
-                let solved = simplify_mba(input.clone(), width)
-                    .expect("dynamic mask should solve at narrow widths");
-                assert!(
-                    solved.sem_equal(expected, width, 2_000).is_ok(),
-                    "width={width}, input={input}, solved={solved}, expected={expected}"
-                );
-            }
+        for (input, expected) in cases {
+            let solved = simplify_mba(input.clone(), 64).expect("dynamic mask should solve");
+            assert!(
+                solved.sem_equal(&expected, 64, 2_000).is_ok(),
+                "input={input}, solved={solved}, expected={expected}"
+            );
         }
     }
 

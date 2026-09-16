@@ -1,38 +1,8 @@
-use std::time::Instant;
-
 use rustc_hash::FxHashMap as HashMap;
 
 use crate::{expr::Expr, varint::make_mask};
 
 mod low_prefix;
-
-#[derive(Clone, Copy)]
-pub(crate) struct ReduceConfig {
-    pub(crate) project_low: bool,
-    pub(crate) simple_low: bool,
-}
-
-impl Default for ReduceConfig {
-    fn default() -> Self {
-        Self {
-            project_low: true,
-            simple_low: true,
-        }
-    }
-}
-
-#[derive(Default)]
-pub(crate) struct ReduceStats {
-    pub(crate) low_prefix_and_opportunities: u64,
-    pub(crate) project_low_calls: u64,
-    pub(crate) project_low_unchanged: u64,
-    pub(crate) project_low_changed: u64,
-    pub(crate) project_low_bounded: u64,
-    pub(crate) project_low_fallback: u64,
-    pub(crate) project_low_nanos: u64,
-    pub(crate) simple_rk_rereductions: u64,
-    pub(crate) simple_rk_changed_operands: u64,
-}
 
 /// Distributes an expression
 fn distribute<F>(
@@ -109,11 +79,9 @@ fn dedupe(mut v: Vec<Expr>) -> Vec<Expr> {
     v
 }
 
-struct Reducer<'a> {
+struct Reducer {
     mask: u64,
     allow_low_prefix: bool,
-    config: ReduceConfig,
-    stats: &'a mut ReduceStats,
 }
 
 fn is_low_mask(mask: u64) -> bool {
@@ -141,9 +109,9 @@ enum FlattenResult {
     None,
 }
 
-impl<'a> Reducer<'a> {
+impl Reducer {
     /// Flattens an expression by concatenating any same typed child expression into it
-    fn flatten<F>(&mut self, v: Vec<Expr>, mut handler: F) -> Vec<Expr>
+    fn flatten<F>(&self, v: Vec<Expr>, mut handler: F) -> Vec<Expr>
     where
         F: FnMut(Expr) -> FlattenResult,
     {
@@ -166,7 +134,7 @@ impl<'a> Reducer<'a> {
         flat
     }
 
-    pub fn group_terms(&mut self, exprs: Vec<Expr>) -> Expr {
+    pub fn group_terms(&self, exprs: Vec<Expr>) -> Expr {
         let initial_len = exprs.len();
 
         let mut map =
@@ -204,7 +172,7 @@ impl<'a> Reducer<'a> {
     }
 
     /// Reduces a not node
-    fn reduce_not(&mut self, expr: Expr) -> Expr {
+    fn reduce_not(&self, expr: Expr) -> Expr {
         match expr {
             // !!x = x
             Expr::Not(x) => self.reduce_masked(*x),
@@ -226,7 +194,7 @@ impl<'a> Reducer<'a> {
     }
 
     /// Reduces a scale node
-    fn reduce_scale(&mut self, scale: u64, expr: Expr) -> Expr {
+    fn reduce_scale(&self, scale: u64, expr: Expr) -> Expr {
         let scale = scale & self.mask;
 
         match scale {
@@ -257,7 +225,7 @@ impl<'a> Reducer<'a> {
     }
 
     /// Reduces a and node
-    fn reduce_and(&mut self, mut exprs: Vec<Expr>) -> Expr {
+    fn reduce_and(&self, mut exprs: Vec<Expr>) -> Expr {
         if self.allow_low_prefix {
             let mut prefix = self.mask;
             let mut seen = false;
@@ -269,7 +237,6 @@ impl<'a> Reducer<'a> {
             }
 
             if seen && prefix != self.mask && is_low_mask(prefix) {
-                self.stats.low_prefix_and_opportunities += 1;
                 let payloads = exprs
                     .iter()
                     .filter(|expr| !matches!(expr, Expr::Const(_)))
@@ -281,34 +248,15 @@ impl<'a> Reducer<'a> {
                     } else {
                         Expr::And(payloads)
                     };
-                    let projected = if self.config.project_low {
-                        self.stats.project_low_calls += 1;
-                        let started = Instant::now();
-                        let projected =
-                            low_prefix::project_low(&payload, prefix.count_ones() as u8, self.mask);
-                        self.stats.project_low_nanos +=
-                            started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
-                        if projected == payload {
-                            self.stats.project_low_unchanged += 1;
-                        } else {
-                            self.stats.project_low_changed += 1;
-                        }
-                        projected
-                    } else {
-                        payload.clone()
-                    };
-                    if self.config.project_low {
-                        if matches!(
-                            low_prefix::upper_bound(&projected, self.mask),
-                            Some(bound) if bound <= prefix
-                        ) {
-                            self.stats.project_low_bounded += 1;
-                            return self.reduce_masked_plain(projected);
-                        }
-                        self.stats.project_low_fallback += 1;
-                        if projected != payload {
-                            exprs = vec![projected.clone(), Expr::Const(prefix)];
-                        }
+                    let projected = low_prefix::project_low(&payload, prefix.count_ones() as u8);
+                    if matches!(
+                        low_prefix::upper_bound(&projected, self.mask),
+                        Some(bound) if bound <= prefix
+                    ) {
+                        return self.reduce_masked_plain(projected);
+                    }
+                    if projected != payload {
+                        exprs = vec![projected, Expr::Const(prefix)];
                     }
                 }
             }
@@ -336,18 +284,12 @@ impl<'a> Reducer<'a> {
         // historical flattening/distribution logic. This preserves the
         // explicit mask while allowing identities such as
         // `(x & 5) * (x & 5) & 1 = x & 1` to become visible.
-        if self.config.simple_low && c != self.mask && is_low_mask(c) {
-            let mut reduced = Vec::with_capacity(flat.len());
-            for e in flat {
-                self.stats.simple_rk_rereductions += 1;
-                let reduced_e =
-                    reduce_masked_with_config(e.clone(), c, self.config, self.stats, false);
-                if reduced_e != e {
-                    self.stats.simple_rk_changed_operands += 1;
-                }
-                reduced.push(reduced_e);
-            }
-            flat = reduced;
+        if c != self.mask && is_low_mask(c) {
+            let local = Self {
+                mask: c,
+                allow_low_prefix: false,
+            };
+            flat = flat.into_iter().map(|e| local.reduce_masked(e)).collect();
         }
 
         if c != self.mask {
@@ -367,7 +309,7 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_or(&mut self, exprs: Vec<Expr>) -> Expr {
+    fn reduce_or(&self, exprs: Vec<Expr>) -> Expr {
         let mut c: u64 = 0;
 
         let mut flat = self.flatten(exprs, |e| match e {
@@ -398,7 +340,7 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_xor(&mut self, exprs: Vec<Expr>) -> Expr {
+    fn reduce_xor(&self, exprs: Vec<Expr>) -> Expr {
         let mut c: u64 = 0;
 
         let mut flat = self.flatten(exprs, |e| match e {
@@ -425,7 +367,7 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_add(&mut self, exprs: Vec<Expr>) -> Expr {
+    fn reduce_add(&self, exprs: Vec<Expr>) -> Expr {
         // Used with dynamic masking
         if self.mask == 1 {
             return self.reduce_xor(exprs);
@@ -455,7 +397,7 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_mul(&mut self, exprs: Vec<Expr>) -> Expr {
+    fn reduce_mul(&self, exprs: Vec<Expr>) -> Expr {
         // Used with dynamic masking
         if self.mask == 1 {
             return self.reduce_and(exprs);
@@ -504,7 +446,7 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_masked(&mut self, expr: Expr) -> Expr {
+    fn reduce_masked(&self, expr: Expr) -> Expr {
         match expr {
             Expr::Var(_) => expr,
 
@@ -526,8 +468,12 @@ impl<'a> Reducer<'a> {
         }
     }
 
-    fn reduce_masked_plain(&mut self, expr: Expr) -> Expr {
-        reduce_masked_with_config(expr, self.mask, self.config, self.stats, false)
+    fn reduce_masked_plain(&self, expr: Expr) -> Expr {
+        Self {
+            mask: self.mask,
+            allow_low_prefix: false,
+        }
+        .reduce_masked(expr)
     }
 
     // fn reduce_(&self, expr: Expr) -> Expr {
@@ -543,26 +489,13 @@ impl<'a> Reducer<'a> {
     // }
 }
 
-pub(crate) fn reduce_masked_with_config(
-    expr: Expr,
-    mask: u64,
-    config: ReduceConfig,
-    stats: &mut ReduceStats,
-    allow_low_prefix: bool,
-) -> Expr {
-    Reducer {
-        mask,
-        allow_low_prefix,
-        config,
-        stats,
-    }
-    .reduce_masked(expr)
-}
-
 impl Expr {
     pub(crate) fn reduce_masked(self, mask: u64) -> Self {
-        let mut stats = ReduceStats::default();
-        reduce_masked_with_config(self, mask, ReduceConfig::default(), &mut stats, true)
+        Reducer {
+            mask,
+            allow_low_prefix: true,
+        }
+        .reduce_masked(self)
     }
 
     /// Canonicalizes the expression on `n` bits (constant folding, flattening
@@ -570,9 +503,4 @@ impl Expr {
     pub fn reduce(self, n: u8) -> Self {
         self.reduce_masked(make_mask(n))
     }
-}
-
-pub(super) fn reduce_masked_plain(expr: Expr, mask: u64) -> Expr {
-    let mut stats = ReduceStats::default();
-    reduce_masked_with_config(expr, mask, ReduceConfig::default(), &mut stats, false)
 }
