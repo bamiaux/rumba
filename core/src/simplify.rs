@@ -756,7 +756,6 @@ pub fn simplify_mba_cached(e: Expr, n: u8, cache: &SimplifyCache) -> Result<Expr
 
 fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
     let mask = make_mask(n);
-    let e = e.reduce_masked(mask);
     let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
     let e = scalar_precision::normalize(e, n).reduce_masked(mask);
 
