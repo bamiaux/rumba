@@ -10,6 +10,7 @@
 //! global state.  Further progress belongs to RUMBA's ordinary outer passes.
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::time::Instant;
 
 use super::MBASolver;
 use crate::{
@@ -245,24 +246,29 @@ fn known<C: LinearCache>(s: &MBASolver<'_, C>, e: &Expr) -> Option<Expr> {
         .map(|var| (!Expr::Var(*var)).reduce_masked(s.mask))
 }
 
-fn fold_known<C: LinearCache>(s: &MBASolver<'_, C>, e: Expr) -> Expr {
-    let e = e.map(|x| fold_known(s, x)).reduce_masked(s.mask);
+fn fold_known<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Expr {
+    let mapped = e.map(|x| fold_known(s, x));
+    let e = s.reduce(mapped, s.mask);
     known(s, &e).unwrap_or(e)
 }
 
 fn bitwise_view<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
-    let e = e.reduce_masked(s.mask);
+    let e = s.reduce(e, s.mask);
     known(s, &e).or_else(|| {
         s.is_linear(&e)
             .then(|| s.is_linear_bitwise(e.clone(), s.mask))
             .flatten()
-            .map(|q| q.reduce_masked(s.mask))
+            .map(|q| s.reduce(q, s.mask))
     })
 }
 
 fn refold<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
-    let e = e.reduce_masked(s.mask);
-    bitwise_view(s, e.clone()).or_else(|| bitwise_view(s, fold_known(s, e)))
+    let e = s.reduce(e, s.mask);
+    if let Some(view) = bitwise_view(s, e.clone()) {
+        return Some(view);
+    }
+    let folded = fold_known(s, e);
+    bitwise_view(s, folded)
 }
 
 fn monomial(e: &Expr) -> Option<Monomial> {
@@ -309,9 +315,15 @@ fn term_map(e: &Expr, mask: u64) -> Option<Terms> {
 }
 
 fn linear_terms<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Terms> {
-    s.solve_linear(e.reduce_masked(s.mask), false)
+    let started = Instant::now();
+    let reduced = s.reduce(e, s.mask);
+    let result = s
+        .solve_linear(reduced, false)
         .ok()
-        .and_then(|q| term_map(&q, s.mask))
+        .and_then(|q| term_map(&q, s.mask));
+    s.stats.filtered_cut.relation_proof_nanos +=
+        started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+    result
 }
 
 fn rank<'a>(m: &'a Monomial, hidden: &BTreeSet<VarId>) -> (usize, usize, &'a Monomial) {
@@ -390,8 +402,16 @@ fn build(terms: Terms, mask: u64) -> Expr {
 struct Best {
     key: ((usize, usize, usize), usize, Expr),
     terms: Terms,
+    producer: Producer,
 }
 
+#[derive(Clone, Copy)]
+enum Producer {
+    Predecessor,
+    Order,
+}
+
+#[allow(clippy::too_many_arguments)]
 fn consider<C: LinearCache>(
     best: &mut Option<Best>,
     s: &mut MBASolver<'_, C>,
@@ -400,15 +420,18 @@ fn consider<C: LinearCache>(
     observer: Expr,
     lhs: Expr,
     rhs: Expr,
+    producer: Producer,
 ) {
     // The relation is certified as a free-WORD equality before contextual
     // quotienting. Hidden definitions are used only to construct representatives.
-    let Some(relation) = linear_terms(
-        s,
-        ((observer.clone() & lhs) - (observer & rhs)).reduce_masked(s.mask),
-    ) else {
+    let relation_expr = s.reduce((observer.clone() & lhs) - (observer & rhs), s.mask);
+    let Some(relation) = linear_terms(s, relation_expr) else {
         return;
     };
+    match producer {
+        Producer::Predecessor => s.stats.filtered_cut.predecessor_certified_relations += 1,
+        Producer::Order => s.stats.filtered_cut.order_certified_relations += 1,
+    }
     let Some(candidate) = quotient_once(root, relation, hidden, s.mask) else {
         return;
     };
@@ -416,12 +439,17 @@ fn consider<C: LinearCache>(
     if candidate_measure >= measure(root, hidden) {
         return;
     }
+    match producer {
+        Producer::Predecessor => s.stats.filtered_cut.predecessor_improving_quotients += 1,
+        Producer::Order => s.stats.filtered_cut.order_improving_quotients += 1,
+    }
     let expression = build(candidate.clone(), s.mask);
     let key = (candidate_measure, expression.size(), expression.clone());
     if best.as_ref().is_none_or(|old| key < old.key.clone()) {
         *best = Some(Best {
             key,
             terms: candidate,
+            producer,
         });
     }
 }
@@ -441,10 +469,8 @@ fn predecessor<C: LinearCache>(
         let Some(base_ray) = ray(s, *base_literal) else {
             continue;
         };
-        let Some(pred) = refold(
-            s,
-            (base_definition.clone() - Expr::make_const(1)).reduce_masked(s.mask),
-        ) else {
+        let predecessor = s.reduce(base_definition.clone() - Expr::make_const(1), s.mask);
+        let Some(pred) = refold(s, predecessor) else {
             continue;
         };
         let lhs = literal_expr(*base_literal, s.mask);
@@ -455,6 +481,8 @@ fn predecessor<C: LinearCache>(
             if !principal_contains(&observer_ray, &base_ray) {
                 continue;
             }
+            s.stats.filtered_cut.predecessor_containment_successes += 1;
+            s.stats.filtered_cut.predecessor_candidates += 1;
             consider(
                 best,
                 s,
@@ -463,14 +491,20 @@ fn predecessor<C: LinearCache>(
                 literal_expr(*observer_literal, s.mask),
                 lhs.clone(),
                 pred.clone(),
+                Producer::Predecessor,
             );
         }
     }
 }
 
 fn subset<C: LinearCache>(s: &mut MBASolver<'_, C>, a: Expr, b: Expr) -> bool {
-    linear_terms(s, ((a.clone() & b) - a).reduce_masked(s.mask))
-        .is_some_and(|terms| terms.is_empty())
+    let relation = s.reduce((a.clone() & b) - a, s.mask);
+    let result = linear_terms(s, relation);
+    let success = result.as_ref().is_some_and(|terms| terms.is_empty());
+    if success {
+        s.stats.filtered_cut.order_subset_successes += 1;
+    }
+    success
 }
 
 fn order<C: LinearCache>(
@@ -491,10 +525,15 @@ fn order<C: LinearCache>(
             words.insert(Expr::Var(var));
         }
     }
-    for (_, d) in s.non_linear_components.iter() {
-        let d = d.clone().reduce_masked(s.mask);
+    let definitions = s
+        .non_linear_components
+        .iter()
+        .map(|(_, d)| d.clone())
+        .collect::<Vec<_>>();
+    for d in definitions {
+        let d = s.reduce(d.clone(), s.mask);
         words.insert(d.clone());
-        words.insert((-d).reduce_masked(s.mask));
+        words.insert(s.reduce(-d, s.mask));
     }
     let words = words.into_iter().collect::<Vec<_>>();
     let mut views = BTreeMap::<Expr, Option<Expr>>::new();
@@ -504,7 +543,7 @@ fn order<C: LinearCache>(
             .entry(a_word.clone())
             .or_insert_with(|| refold(s, a_word.clone()))
             .clone();
-        let neg_a_word = (-a_word.clone()).reduce_masked(s.mask);
+        let neg_a_word = s.reduce(-a_word.clone(), s.mask);
         let neg_a = views
             .entry(neg_a_word.clone())
             .or_insert_with(|| refold(s, neg_a_word))
@@ -512,15 +551,15 @@ fn order<C: LinearCache>(
         let (Some(a), Some(neg_a)) = (a, neg_a) else {
             continue;
         };
-        let p0a = ((!a.clone()) & (!neg_a.clone())).reduce_masked(s.mask);
-        let la = (a.clone() & neg_a.clone()).reduce_masked(s.mask);
+        let p0a = s.reduce((!a.clone()) & (!neg_a.clone()), s.mask);
+        let la = s.reduce(a.clone() & neg_a.clone(), s.mask);
 
         for b_word in &words {
             let b = views
                 .entry(b_word.clone())
                 .or_insert_with(|| refold(s, b_word.clone()))
                 .clone();
-            let neg_b_word = (-b_word.clone()).reduce_masked(s.mask);
+            let neg_b_word = s.reduce(-b_word.clone(), s.mask);
             let neg_b = views
                 .entry(neg_b_word.clone())
                 .or_insert_with(|| refold(s, neg_b_word))
@@ -528,10 +567,11 @@ fn order<C: LinearCache>(
             let (Some(b), Some(neg_b)) = (b, neg_b) else {
                 continue;
             };
+            s.stats.filtered_cut.order_candidate_comparisons += 1;
             if !subset(s, b.clone(), a.clone()) {
                 continue;
             }
-            let p0b = ((!neg_b.clone()) & (!b.clone())).reduce_masked(s.mask);
+            let p0b = s.reduce((!neg_b.clone()) & (!b.clone()), s.mask);
             let one = Expr::make_const(s.mask);
             let zero = Expr::zero();
             for (observer, lhs, rhs) in [
@@ -539,19 +579,30 @@ fn order<C: LinearCache>(
                 (p0a.clone(), p0b, one.clone()),
                 (la.clone(), neg_b.clone(), b.clone()),
                 (
-                    (b.clone() & neg_a.clone()).reduce_masked(s.mask),
+                    s.reduce(b.clone() & neg_a.clone(), s.mask),
                     neg_b.clone(),
                     one.clone(),
                 ),
             ] {
-                consider(best, s, root_terms, hidden, observer, lhs, rhs);
+                consider(
+                    best,
+                    s,
+                    root_terms,
+                    hidden,
+                    observer,
+                    lhs,
+                    rhs,
+                    Producer::Order,
+                );
             }
         }
     }
 }
 
 pub(super) fn close<C: LinearCache>(s: &mut MBASolver<'_, C>, root: Expr) -> Expr {
+    s.stats.filtered_cut.close_calls += 1;
     let Some(root_terms) = term_map(&root, s.mask) else {
+        s.stats.filtered_cut.no_root_term_map += 1;
         return root;
     };
     let hidden = s
@@ -560,8 +611,29 @@ pub(super) fn close<C: LinearCache>(s: &mut MBASolver<'_, C>, root: Expr) -> Exp
         .map(|(v, _)| *v)
         .collect::<BTreeSet<_>>();
     let mut best = None;
-    predecessor(s, &root, &root_terms, &hidden, &mut best);
-    order(s, &root, &root_terms, &hidden, &mut best);
-    best.map(|candidate| build(candidate.terms, s.mask))
-        .unwrap_or(root)
+    if s.settings.cut_predecessor {
+        predecessor(s, &root, &root_terms, &hidden, &mut best);
+    }
+    if s.settings.cut_order {
+        order(s, &root, &root_terms, &hidden, &mut best);
+    }
+    let Some(candidate) = best else {
+        s.stats.filtered_cut.close_no_improvement += 1;
+        s.stats.filtered_cut.term_before += root_terms.len() as u64;
+        s.stats.filtered_cut.term_after += root_terms.len() as u64;
+        s.stats.filtered_cut.hidden_before += hidden.len() as u64;
+        s.stats.filtered_cut.hidden_after += hidden.len() as u64;
+        return root;
+    };
+    match candidate.producer {
+        Producer::Predecessor => s.stats.filtered_cut.predecessor_winning_candidates += 1,
+        Producer::Order => s.stats.filtered_cut.order_winning_candidates += 1,
+    }
+    let terms_after = candidate.terms.len() as u64;
+    s.stats.filtered_cut.term_before += root_terms.len() as u64;
+    s.stats.filtered_cut.term_after += terms_after;
+    s.stats.filtered_cut.hidden_before += hidden.len() as u64;
+    s.stats.filtered_cut.hidden_after += hidden.len() as u64;
+    s.stats.filtered_cut.close_changed += 1;
+    build(candidate.terms, s.mask)
 }

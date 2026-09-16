@@ -7,6 +7,8 @@
 
 use crate::expr::Expr;
 
+use super::ScalarPrecisionStats;
+
 fn mask(k: u8) -> u64 {
     match k {
         0 => 0,
@@ -36,12 +38,23 @@ fn canonical(c: u64, k: u8) -> u64 {
     r
 }
 
-pub(super) fn normalize(e: Expr, k: u8) -> Expr {
+pub(super) fn normalize(e: Expr, k: u8, stats: &mut ScalarPrecisionStats) -> Expr {
+    stats.calls += 1;
+    let result = normalize_inner(e.clone(), k, k, stats);
+    if result != e {
+        stats.expressions_changed += 1;
+        stats.full_width_changes += 1;
+    }
+    result
+}
+
+fn normalize_inner(e: Expr, k: u8, root_width: u8, stats: &mut ScalarPrecisionStats) -> Expr {
     if k == 0 {
         return Expr::zero();
     }
 
-    match e {
+    let original = e.clone();
+    let result = match e {
         Expr::Const(c) => Expr::make_const(canonical(c, k)),
         Expr::Scale(c, x) => {
             let r = c & mask(k);
@@ -49,7 +62,7 @@ pub(super) fn normalize(e: Expr, k: u8) -> Expr {
                 return Expr::zero();
             }
             let grade = v2(r, k);
-            let x = normalize(*x, k - grade);
+            let x = normalize_inner(*x, k - grade, root_width, stats);
             if r == 1 {
                 x
             } else {
@@ -69,7 +82,11 @@ pub(super) fn normalize(e: Expr, k: u8) -> Expr {
                 }
             }
             if !had_constant {
-                return Expr::Mul(rest.into_iter().map(|x| normalize(x, k)).collect());
+                return Expr::Mul(
+                    rest.into_iter()
+                        .map(|x| normalize_inner(x, k, root_width, stats))
+                        .collect(),
+                );
             }
             if coefficient == 0 {
                 return Expr::zero();
@@ -77,7 +94,7 @@ pub(super) fn normalize(e: Expr, k: u8) -> Expr {
             let grade = v2(coefficient, k);
             let mut rest = rest
                 .into_iter()
-                .map(|x| normalize(x, k - grade))
+                .map(|x| normalize_inner(x, k - grade, root_width, stats))
                 .collect::<Vec<_>>();
             let core = match rest.len() {
                 0 => Expr::make_const(1),
@@ -90,6 +107,10 @@ pub(super) fn normalize(e: Expr, k: u8) -> Expr {
                 Expr::scale(canonical(coefficient, k), core)
             }
         }
-        other => other.map(|x| normalize(x, k)),
+        other => other.map(|x| normalize_inner(x, k, root_width, stats)),
+    };
+    if k != root_width && result != original {
+        stats.sub_width_changes += 1;
     }
+    result
 }

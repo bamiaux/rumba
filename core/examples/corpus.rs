@@ -19,14 +19,17 @@ use corpus::DATASETS;
 use table::Alignment::{Left, Right};
 
 const BIT_COUNT: u8 = 64;
+const MASKSPARK_WIDTHS: [u8; 2] = [64, 8];
 const MEASURED_RUNS: usize = 5;
 const SEMANTIC_TEST_COUNT: usize = 200;
 const SNAPSHOT_VERSION: &str = "rumba-corpus-v1";
 
+#[derive(Clone, Copy)]
 enum Status {
     Ok,
     OkZ,
     Ng,
+    Err,
 }
 
 #[derive(Clone, Copy, Default)]
@@ -35,6 +38,7 @@ struct Counts {
     ok: usize,
     okz: usize,
     ng: usize,
+    err: usize,
     wins: usize,
     ties: usize,
     losses: usize,
@@ -56,6 +60,7 @@ impl Counts {
             Status::Ok => self.ok += 1,
             Status::OkZ => self.okz += 1,
             Status::Ng => self.ng += 1,
+            Status::Err => self.err += 1,
         }
     }
 
@@ -64,6 +69,7 @@ impl Counts {
         self.ok += other.ok;
         self.okz += other.okz;
         self.ng += other.ng;
+        self.err += other.err;
         self.wins += other.wins;
         self.ties += other.ties;
         self.losses += other.losses;
@@ -104,6 +110,11 @@ struct BenchmarkRun {
 struct Options {
     baseline: Option<PathBuf>,
     save: Option<PathBuf>,
+    quality_only: bool,
+    failures: bool,
+    census_only: bool,
+    maskspark: Option<PathBuf>,
+    maskspark_width: Option<u8>,
 }
 
 fn parse_options() -> Options {
@@ -123,10 +134,181 @@ fn parse_options() -> Options {
                     arguments.next().expect("--save requires a snapshot path"),
                 ));
             }
+            Some("--quality-only") => options.quality_only = true,
+            Some("--failures") => options.failures = true,
+            Some("--census-only") => options.census_only = true,
+            Some("--maskspark") => {
+                options.maskspark = Some(PathBuf::from(
+                    arguments.next().expect("--maskspark requires a CSV path"),
+                ));
+            }
+            Some("--maskspark-width") => {
+                options.maskspark_width = Some(
+                    arguments
+                        .next()
+                        .expect("--maskspark-width requires a bit width")
+                        .to_str()
+                        .expect("MaskSpark bit width must be UTF-8")
+                        .parse()
+                        .expect("invalid MaskSpark bit width"),
+                );
+            }
             _ => panic!("unknown argument: {}", argument.to_string_lossy()),
         }
     }
     options
+}
+
+#[derive(Clone, Copy)]
+enum MaskSparkStatus {
+    Direct,
+    SemanticOnly,
+    Ng,
+    Error,
+}
+
+impl MaskSparkStatus {
+    fn name(self) -> &'static str {
+        match self {
+            Self::Direct => "direct",
+            Self::SemanticOnly => "semantic-only",
+            Self::Ng => "NG",
+            Self::Error => "ERR",
+        }
+    }
+}
+
+struct MaskSparkRow {
+    index: String,
+    theme: String,
+    source: String,
+    expected: String,
+}
+
+fn read_maskspark(path: &std::path::Path) -> Vec<MaskSparkRow> {
+    let contents = fs::read_to_string(path)
+        .unwrap_or_else(|error| panic!("failed to read {}: {error}", path.display()));
+    contents
+        .lines()
+        .skip(1)
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| {
+            let fields = line.splitn(4, ',').collect::<Vec<_>>();
+            assert_eq!(fields.len(), 4, "invalid MaskSpark CSV row: {line}");
+            MaskSparkRow {
+                index: fields[0].trim().to_owned(),
+                theme: fields[1].trim().to_owned(),
+                source: fields[2].trim().to_owned(),
+                expected: fields[3].trim().to_owned(),
+            }
+        })
+        .collect()
+}
+
+fn run_maskspark(path: &std::path::Path, requested_width: Option<u8>) {
+    let rows = read_maskspark(path);
+    println!("## MaskSpark v8");
+    println!("\nSource: {}", path.display());
+    println!("Rows: {}", rows.len());
+    let widths = requested_width.map_or_else(|| MASKSPARK_WIDTHS.to_vec(), |width| vec![width]);
+    for width in widths {
+        let mut direct = 0;
+        let mut semantic_only = 0;
+        let mut ng = 0;
+        let mut errors = 0;
+        let mut structural_collisions = 0;
+        let mut semantic_collisions = 0;
+        let mut negative_errors = 0;
+
+        println!("\n### Width {width}");
+        println!("| Index | Theme | Result | target+1 | Details |");
+        println!("|---:|---|---|---|---|");
+
+        for row in &rows {
+            let source = parse_expr(&row.source)
+                .unwrap_or_else(|error| panic!("failed to parse MaskSpark {}: {error}", row.index));
+            let expected = parse_expr(&row.expected)
+                .unwrap_or_else(|error| panic!("failed to parse MaskSpark {}: {error}", row.index));
+
+            let source_result = simplify_mba(source, width);
+            let expected_result = simplify_mba(expected.clone(), width);
+            let source_for_negative = source_result.clone();
+            let (status, details) = match (source_result, expected_result) {
+                (Ok(actual), Ok(simplified_expected)) => {
+                    let semantic = actual.sem_equal(&expected, width, SEMANTIC_TEST_COUNT);
+                    let status = match semantic {
+                        Ok(()) if actual == simplified_expected => MaskSparkStatus::Direct,
+                        Ok(()) => MaskSparkStatus::SemanticOnly,
+                        Err(_) => MaskSparkStatus::Ng,
+                    };
+                    let details = match semantic {
+                        Ok(()) => format!(
+                            "actual_size={}, expected_size={}",
+                            actual.size(),
+                            simplified_expected.size()
+                        ),
+                        Err((variables, actual_value, expected_value)) => format!(
+                            "semantic mismatch vars={} actual={actual_value} expected={expected_value}",
+                            variables.len()
+                        ),
+                    };
+                    (status, details)
+                }
+                (source, expected) => (
+                    MaskSparkStatus::Error,
+                    format!("source={:?}, expected={:?}", source.err(), expected.err()),
+                ),
+            };
+
+            match status {
+                MaskSparkStatus::Direct => direct += 1,
+                MaskSparkStatus::SemanticOnly => semantic_only += 1,
+                MaskSparkStatus::Ng => ng += 1,
+                MaskSparkStatus::Error => errors += 1,
+            }
+
+            let target_plus_one = parse_expr(&row.expected)
+                .expect("MaskSpark expected expression was already parsed")
+                + Expr::make_const(1);
+            let negative_status = match (source_for_negative, simplify_mba(target_plus_one, width))
+            {
+                (Ok(actual), Ok(negative)) if actual == negative => {
+                    structural_collisions += 1;
+                    semantic_collisions += 1;
+                    "COLLISION"
+                }
+                (Ok(actual), Ok(negative)) => {
+                    if actual
+                        .sem_equal(&negative, width, SEMANTIC_TEST_COUNT)
+                        .is_ok()
+                    {
+                        semantic_collisions += 1;
+                        "semantic collision"
+                    } else {
+                        "rejected"
+                    }
+                }
+                _ => {
+                    negative_errors += 1;
+                    "ERR"
+                }
+            };
+
+            println!(
+                "| {} | {} | {} | {} | {} |",
+                row.index,
+                row.theme,
+                status.name(),
+                negative_status,
+                details.replace('|', "\\|")
+            );
+        }
+
+        println!(
+            "\nSummary: direct={direct}/{total}, semantic-only={semantic_only}/{total}, NG={ng}/{total}, ERR={errors}/{total}; target+1 structural collisions={structural_collisions}/{total}, semantic collisions={semantic_collisions}/{total}, negative errors={negative_errors}/{total}",
+            total = rows.len()
+        );
+    }
 }
 
 fn percentile(sorted: &[(Duration, String)], percentile: usize) -> Duration {
@@ -242,7 +424,7 @@ fn classify(source: &str, mba: Expr, ground_truth: Expr, simplified: &Expr) -> S
 
     let simplified_ground_truth = match simplify_mba(ground_truth.clone(), BIT_COUNT) {
         Ok(simplified) => simplified,
-        Err(_) => return Status::Ng,
+        Err(_) => return Status::Err,
     };
 
     if *simplified == simplified_ground_truth {
@@ -250,12 +432,22 @@ fn classify(source: &str, mba: Expr, ground_truth: Expr, simplified: &Expr) -> S
     } else {
         match simplify_mba((mba - ground_truth).reduce(BIT_COUNT), BIT_COUNT) {
             Ok(residual) if residual == Expr::zero() => Status::OkZ,
-            Ok(_) | Err(_) => Status::Ng,
+            Ok(_) => Status::Ng,
+            Err(_) => Status::Err,
         }
     }
 }
 
-fn run_quality(rows: &[corpus::CorpusRow<'_>]) -> Counts {
+fn status_name(status: Status) -> &'static str {
+    match status {
+        Status::Ok => "direct",
+        Status::OkZ => "OKZ",
+        Status::Ng => "NG",
+        Status::Err => "ERR",
+    }
+}
+
+fn run_quality(rows: &[corpus::CorpusRow<'_>], print_failures: bool) -> Counts {
     let mut counts = Counts::default();
     for row in rows {
         let mba = parse_expr(row.mba)
@@ -272,27 +464,31 @@ fn run_quality(rows: &[corpus::CorpusRow<'_>]) -> Counts {
                     actual_cost,
                 )
             }
-            Err(_) => (Status::Ng, mba.size()),
+            Err(_) => (Status::Err, mba.size()),
         };
+        if print_failures && !matches!(status, Status::Ok) {
+            eprintln!("RUMBA_FAIL\t{}\t{}", row.source, status_name(status));
+        }
         counts.record(&status, actual_cost, raw_cost);
     }
     counts
 }
 
-const QUALITY_HEADERS: [&str; 10] = [
+const QUALITY_HEADERS: [&str; 11] = [
     "Dataset",
     "Total",
     "OK",
     "OKZ",
     "NG",
+    "ERR",
     "Win",
     "Tied",
     "Loss",
     "Actual AST",
     "Raw AST",
 ];
-const QUALITY_ALIGNMENTS: [table::Alignment; 10] = [
-    Left, Right, Right, Right, Right, Right, Right, Right, Right, Right,
+const QUALITY_ALIGNMENTS: [table::Alignment; 11] = [
+    Left, Right, Right, Right, Right, Right, Right, Right, Right, Right, Right,
 ];
 const PERFORMANCE_HEADERS: [&str; 7] = ["Dataset", "Time", "Expr/s", "p50", "p95", "p99", "Max"];
 const PERFORMANCE_ALIGNMENTS: [table::Alignment; 7] =
@@ -307,7 +503,7 @@ fn dataset_width() -> usize {
         .expect("corpus list is not empty")
 }
 
-fn quality_widths() -> [usize; 10] {
+fn quality_widths() -> [usize; 11] {
     let expression_count = DATASETS
         .iter()
         .map(|dataset| {
@@ -328,6 +524,7 @@ fn quality_widths() -> [usize; 10] {
         count_width,
         count_width,
         count_width,
+        count_width,
         "Actual AST".len(),
         "Raw AST".len(),
     ]
@@ -337,7 +534,7 @@ fn performance_widths() -> [usize; 7] {
     [dataset_width(), 8, 6, 8, 8, 8, 8]
 }
 
-fn print_quality_header(widths: &[usize; 10]) {
+fn print_quality_header(widths: &[usize; 11]) {
     println!("## Quality\n");
     print!(
         "{}",
@@ -345,13 +542,14 @@ fn print_quality_header(widths: &[usize; 10]) {
     );
 }
 
-fn print_quality_row(name: &str, counts: Counts, widths: &[usize; 10]) {
+fn print_quality_row(name: &str, counts: Counts, widths: &[usize; 11]) {
     let cells = vec![
         name.to_owned(),
         counts.total.to_string(),
         counts.ok.to_string(),
         counts.okz.to_string(),
         counts.ng.to_string(),
+        counts.err.to_string(),
         counts.wins.to_string(),
         counts.ties.to_string(),
         counts.losses.to_string(),
@@ -554,6 +752,20 @@ fn print_comparison(baseline: &BenchmarkResult, candidate: &BenchmarkResult) {
 
 fn main() {
     let options = parse_options();
+    if let Some(path) = options.maskspark.as_ref() {
+        run_maskspark(path, options.maskspark_width);
+        return;
+    }
+    if options.census_only {
+        for dataset in DATASETS {
+            for row in corpus::rows(dataset.name, dataset.contents) {
+                let expression = parse_expr(row.mba)
+                    .unwrap_or_else(|error| panic!("failed to parse {}: {error}", row.source));
+                let _ = black_box(simplify_mba(expression, BIT_COUNT));
+            }
+        }
+        return;
+    }
     let baseline = options.baseline.as_ref().map(|path| {
         deserialize(
             &fs::read_to_string(path)
@@ -566,11 +778,15 @@ fn main() {
     let mut global_counts = Counts::default();
     for dataset in DATASETS {
         let rows = corpus::rows(dataset.name, dataset.contents);
-        let counts = run_quality(&rows);
+        let counts = run_quality(&rows, options.failures);
         global_counts.merge(counts);
         print_quality_row(dataset.name, counts, &quality_widths);
     }
     print_quality_row("**Total**", global_counts, &quality_widths);
+
+    if options.quality_only {
+        return;
+    }
 
     let performance_widths = performance_widths();
     print_performance_header(&performance_widths);

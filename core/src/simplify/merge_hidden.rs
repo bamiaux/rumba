@@ -6,7 +6,7 @@
 //! promising ones exactly, and rewrites the aliased variables so the linear
 //! engine sees a single shared component.
 
-use std::cell::Cell;
+use std::{cell::Cell, time::Instant};
 
 use crate::{
     expr::{Expr, VarId},
@@ -165,6 +165,14 @@ fn make_signature_samples(expressions: &[Expr], mask: u64) -> Option<Vec<Vec<u64
 }
 
 impl<'a, C: LinearCache> MBASolver<'a, C> {
+    fn merge_unchanged(&mut self, e: Expr) -> HiddenMergeResult {
+        self.stats.merge_hidden.calls_changed_false += 1;
+        HiddenMergeResult {
+            expr: e,
+            changed: false,
+        }
+    }
+
     /// Rewrites hidden variables back to the fixed-width expressions they stand
     /// for, so a proof concerns the original expressions and not independent
     /// placeholder variables.
@@ -184,6 +192,8 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     /// expressions. Signatures are only a search heuristic here; this proof is
     /// the correctness boundary.
     fn prove_hidden_relation(&mut self, left: Expr, right: Expr) -> bool {
+        self.stats.merge_hidden.candidate_proofs_attempted += 1;
+        let started = Instant::now();
         let difference = match right {
             // Use the canonical additive form for a complement relation. It is
             // algebraically identical to `left - !right`, but exposes the
@@ -191,20 +201,32 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             Expr::Not(inner) => left + *inner + Expr::make_const(1),
             right => left - right,
         };
-        let difference = self
-            .expand_hidden_components(difference)
-            .reduce_masked(self.mask);
+        let difference = self.expand_hidden_components(difference);
+        let difference = self.reduce(difference, self.mask);
         if !passes_quick_zero_check(&difference, self.mask) {
+            self.stats.merge_hidden.proof_nanos +=
+                started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
             return false;
         }
 
-        HIDDEN_EQUALITY_DEPTH.with(|depth| {
+        let result = HIDDEN_EQUALITY_DEPTH.with(|depth| {
             depth.set(depth.get() + 1);
-            let mut solver = MBASolver::new(self.l_cache, &difference, self.n);
+            let mut solver =
+                MBASolver::new(self.l_cache, &difference, self.n, self.settings, self.stats);
             let is_zero = solver.solve(difference).is_ok_and(|e| e == Expr::zero());
             depth.set(depth.get() - 1);
             is_zero
-        })
+        });
+        if result {
+            self.stats.merge_hidden.candidate_proofs_successful += 1;
+        }
+        self.stats.merge_hidden.proof_nanos +=
+            started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
+        result
+    }
+
+    fn alias_arity(e: &Expr) -> usize {
+        e.get_vars().len().min(2)
     }
 
     /// Interns semantically equal nonlinear components under the same hidden
@@ -212,13 +234,16 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     /// this catches independently written expressions whose difference has a
     /// zero signature.
     pub(super) fn merge_equal_hidden_components(&mut self, e: Expr) -> HiddenMergeResult {
-        if HIDDEN_EQUALITY_DEPTH.with(|depth| depth.get() != 0)
-            || self.non_linear_components.len() == 0
-        {
-            return HiddenMergeResult {
-                expr: e,
-                changed: false,
-            };
+        self.stats.merge_hidden.calls += 1;
+        let has_components = self
+            .non_linear_components
+            .iter()
+            .any(|(_, expression)| !matches!(expression, Expr::Const(_)));
+        if !has_components {
+            return self.merge_unchanged(e);
+        }
+        if HIDDEN_EQUALITY_DEPTH.with(|depth| depth.get() != 0) || !self.settings.merge_hidden {
+            return self.merge_unchanged(e);
         }
 
         let mut components: Vec<_> = self
@@ -229,10 +254,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             .collect();
         components.sort_unstable_by_key(|(variable, _)| variable.0);
         if components.is_empty() {
-            return HiddenMergeResult {
-                expr: e,
-                changed: false,
-            };
+            return self.merge_unchanged(e);
         }
 
         let mut aliases = HashMap::<VarId, Expr>::default();
@@ -273,16 +295,14 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             )
             .collect();
         let Some(samples) = make_signature_samples(&sampled_expressions, self.mask) else {
-            return HiddenMergeResult {
-                expr: e,
-                changed: false,
-            };
+            return self.merge_unchanged(e);
         };
         let (definition_samples, atom_samples) = samples.split_at(observed_expressions.len());
 
         'targets: for (target_index, (target_variable, _)) in
             observed_expressions.iter().enumerate()
         {
+            self.stats.merge_hidden.targets_examined += 1;
             let usable_atoms: Vec<_> = observed_atoms
                 .iter()
                 .enumerate()
@@ -300,6 +320,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                 .collect();
             let target_samples = &definition_samples[target_index];
             let mut candidates = Vec::new();
+            let synthesis_started = Instant::now();
 
             for table in infer_bitwise_truth_tables(target_samples, &[], self.n) {
                 candidates.push(synthesize_unary_bitwise(
@@ -317,23 +338,27 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                     candidates.push(synthesize_unary_bitwise(atom.clone(), table, self.mask));
                 }
             }
-            for left_position in 0..usable_atoms.len() {
-                let (left_index, (left, _)) = usable_atoms[left_position];
-                for (right_index, (right, _)) in &usable_atoms[left_position + 1..] {
-                    for table in infer_bitwise_truth_tables(
-                        target_samples,
-                        &[&atom_samples[left_index], &atom_samples[*right_index]],
-                        self.n,
-                    ) {
-                        candidates.push(synthesize_binary_bitwise(
-                            left.clone(),
-                            right.clone(),
-                            table,
-                            self.mask,
-                        ));
+            if self.settings.merge_binary {
+                for left_position in 0..usable_atoms.len() {
+                    let (left_index, (left, _)) = usable_atoms[left_position];
+                    for (right_index, (right, _)) in &usable_atoms[left_position + 1..] {
+                        for table in infer_bitwise_truth_tables(
+                            target_samples,
+                            &[&atom_samples[left_index], &atom_samples[*right_index]],
+                            self.n,
+                        ) {
+                            candidates.push(synthesize_binary_bitwise(
+                                left.clone(),
+                                right.clone(),
+                                table,
+                                self.mask,
+                            ));
+                        }
                     }
                 }
             }
+            self.stats.merge_hidden.synthesis_nanos +=
+                synthesis_started.elapsed().as_nanos().min(u64::MAX as u128) as u64;
 
             candidates.sort_unstable_by_key(Expr::size);
             candidates.dedup();
@@ -343,6 +368,11 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                     target_variable, candidate
                 );
                 if self.prove_hidden_relation(Expr::Var(*target_variable), candidate.clone()) {
+                    match Self::alias_arity(&candidate) {
+                        0 => self.stats.merge_hidden.constant_candidate_successes += 1,
+                        1 => self.stats.merge_hidden.unary_candidate_successes += 1,
+                        _ => self.stats.merge_hidden.binary_candidate_successes += 1,
+                    }
                     aliases.insert(*target_variable, candidate);
                     continue 'targets;
                 }
@@ -350,10 +380,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         }
 
         if aliases.is_empty() {
-            return HiddenMergeResult {
-                expr: e,
-                changed: false,
-            };
+            return self.merge_unchanged(e);
         }
 
         fn replace_aliases(e: Expr, aliases: &HashMap<VarId, Expr>) -> Expr {
@@ -369,8 +396,10 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             }
         }
 
+        self.stats.merge_hidden.calls_changed_true += 1;
+        self.stats.merge_hidden.aliases_emitted += aliases.len() as u64;
         HiddenMergeResult {
-            expr: replace_aliases(e, &aliases).reduce_masked(self.mask),
+            expr: self.reduce(replace_aliases(e, &aliases), self.mask),
             changed: true,
         }
     }
