@@ -499,48 +499,50 @@ fn order<C: LinearCache>(
     let words = words.into_iter().collect::<Vec<_>>();
     let mut views = BTreeMap::<Expr, Option<Expr>>::new();
 
-    for a_word in &words {
-        let a = views
-            .entry(a_word.clone())
-            .or_insert_with(|| refold(s, a_word.clone()))
-            .clone();
-        let neg_a_word = (-a_word.clone()).reduce_masked(s.mask);
-        let neg_a = views
-            .entry(neg_a_word.clone())
-            .or_insert_with(|| refold(s, neg_a_word))
-            .clone();
-        let (Some(a), Some(neg_a)) = (a, neg_a) else {
-            continue;
-        };
-        let p0a = ((!a.clone()) & (!neg_a.clone())).reduce_masked(s.mask);
-        let la = (a.clone() & neg_a.clone()).reduce_masked(s.mask);
+    struct OrderWord {
+        view: Expr,
+        neg_view: Expr,
+        p0: Expr,
+        low: Expr,
+    }
 
-        for b_word in &words {
-            let b = views
-                .entry(b_word.clone())
-                .or_insert_with(|| refold(s, b_word.clone()))
-                .clone();
-            let neg_b_word = (-b_word.clone()).reduce_masked(s.mask);
-            let neg_b = views
-                .entry(neg_b_word.clone())
-                .or_insert_with(|| refold(s, neg_b_word))
-                .clone();
-            let (Some(b), Some(neg_b)) = (b, neg_b) else {
-                continue;
-            };
-            if !subset(s, b.clone(), a.clone()) {
+    let order_words = words
+        .iter()
+        .filter_map(|word| {
+            let view = views
+                .entry(word.clone())
+                .or_insert_with(|| refold(s, word.clone()))
+                .clone()?;
+            let neg_word = (-word.clone()).reduce_masked(s.mask);
+            let neg_view = views
+                .entry(neg_word.clone())
+                .or_insert_with(|| refold(s, neg_word))
+                .clone()?;
+            let p0 = ((!view.clone()) & (!neg_view.clone())).reduce_masked(s.mask);
+            let low = (view.clone() & neg_view.clone()).reduce_masked(s.mask);
+            Some(OrderWord {
+                view,
+                neg_view,
+                p0,
+                low,
+            })
+        })
+        .collect::<Vec<_>>();
+    let one = Expr::make_const(s.mask);
+    let zero = Expr::zero();
+
+    for a in &order_words {
+        for b in &order_words {
+            if !subset(s, b.view.clone(), a.view.clone()) {
                 continue;
             }
-            let p0b = ((!neg_b.clone()) & (!b.clone())).reduce_masked(s.mask);
-            let one = Expr::make_const(s.mask);
-            let zero = Expr::zero();
             for (observer, lhs, rhs) in [
-                (p0a.clone(), neg_b.clone(), zero.clone()),
-                (p0a.clone(), p0b, one.clone()),
-                (la.clone(), neg_b.clone(), b.clone()),
+                (a.p0.clone(), b.neg_view.clone(), zero.clone()),
+                (a.p0.clone(), b.p0.clone(), one.clone()),
+                (a.low.clone(), b.neg_view.clone(), b.view.clone()),
                 (
-                    (b.clone() & neg_a.clone()).reduce_masked(s.mask),
-                    neg_b.clone(),
+                    (b.view.clone() & a.neg_view.clone()).reduce_masked(s.mask),
+                    b.neg_view.clone(),
                     one.clone(),
                 ),
             ] {
