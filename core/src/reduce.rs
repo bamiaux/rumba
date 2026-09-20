@@ -160,14 +160,14 @@ impl Reducer {
             Expr::Const(v) => Expr::Const(!v),
 
             // De Morgan's laws
-            Expr::And(exprs) => {
-                Expr::Or(exprs.into_iter().map(|e| self.reduce_masked(!e)).collect())
-            }
+            Expr::And(exprs) => self.reduce_masked(Expr::Or(
+                exprs.into_iter().map(|e| self.reduce_masked(!e)).collect(),
+            )),
 
             // De Morgan's laws
-            Expr::Or(exprs) => {
-                Expr::And(exprs.into_iter().map(|e| self.reduce_masked(!e)).collect())
-            }
+            Expr::Or(exprs) => self.reduce_masked(Expr::And(
+                exprs.into_iter().map(|e| self.reduce_masked(!e)).collect(),
+            )),
 
             _ => !self.reduce_masked(expr),
         }
@@ -289,6 +289,7 @@ impl Reducer {
             flat.push(Expr::Const(c));
         }
 
+        flat.sort();
         flat = remove_pairs(flat);
 
         match flat.len() {
