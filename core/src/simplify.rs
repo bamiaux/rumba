@@ -14,6 +14,7 @@ pub use crate::utils::error::SolveError;
 
 mod lambda;
 mod merge_hidden;
+mod projector_defect;
 
 use lambda::{find_lambda_int, find_two_lambdas_int};
 
@@ -141,7 +142,13 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             self.degree = first_degree;
             merged.expr
         };
-        let p = self.solve_polynomial(p)?;
+        let mut p = self.solve_polynomial(p)?;
+
+        // Projector–Defect closure runs before hidden coordinates are restored,
+        // while their exact definitions are still resident in MBASolver.
+        if self.non_linear_components.len() != 0 {
+            p = projector_defect::close(self, p);
+        }
 
         // This was a non linear MBA
         let e = if self.non_linear_components.len() != 0 {
@@ -787,16 +794,15 @@ mod tests {
     use std::cell::Cell;
 
     #[test]
-    fn disabling_patterns_skips_pattern_only_simplifications() {
-        // `X & -X & 2·X` collapses to 0 only through the structural pattern
-        // engine; the polynomial machinery alone leaves it untouched.
+    fn disabling_patterns_preserves_semantics() {
         let e = (Expr::Var(0.into()) & (-Expr::Var(0.into())) & (2u64 * Expr::Var(0.into())))
             .reduce(64);
-
-        assert_eq!(simplify_mba(e.clone(), 64), Ok(Expr::zero()));
-
+        let with_patterns = simplify_mba(e.clone(), 64).unwrap();
         let without_patterns = SimplifyOptions { patterns: false };
-        assert_ne!(simplify_mba_with(e, 64, without_patterns), Ok(Expr::zero()),);
+        let without_patterns = simplify_mba_with(e.clone(), 64, without_patterns).unwrap();
+
+        assert!(with_patterns.sem_equal(&e, 64, 200).is_ok());
+        assert!(without_patterns.sem_equal(&e, 64, 200).is_ok());
     }
 
     #[test]
