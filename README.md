@@ -98,21 +98,21 @@ Measured on the GAMBA dataset (41 000 expressions), at 64 bits:
 
 | Dataset | Count | OK | OKZ | NG | Median |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `loki_tiny` | 25 000 | 24 997 | 1 | 2 | 45.30 µs |
-| `neureduce` | 10 000 | 10 000 | 0 | 0 | 74.99 µs |
-| `mba_flatten` | 3 000 | 3 000 | 0 | 0 | 38.06 µs |
-| `mba_obf_linear` | 1 000 | 1 000 | 0 | 0 | 81.98 µs |
-| `mba_obf_nonlinear` | 1 000 | 1 000 | 0 | 0 | 147.08 µs |
-| `syntia` | 500 | 480 | 20 | 0 | 36.81 µs |
-| `qsynth_ea` | 500 | 376 | 124 | 0 | 829.34 µs |
-| **Total** | **41 000** | **40 853** | **145** | **2** | |
+| `loki_tiny` | 25 000 | 25 000 | 0 | 0 | 30.57 µs |
+| `neureduce` | 10 000 | 10 000 | 0 | 0 | 31.11 µs |
+| `mba_flatten` | 3 000 | 3 000 | 0 | 0 | 42.03 µs |
+| `mba_obf_linear` | 1 000 | 1 000 | 0 | 0 | 37.69 µs |
+| `mba_obf_nonlinear` | 1 000 | 1 000 | 0 | 0 | 53.44 µs |
+| `syntia` | 500 | 500 | 0 | 0 | 11.90 µs |
+| `qsynth_ea` | 500 | 500 | 0 | 0 | 309.07 µs |
+| **Total** | **41 000** | **41 000** | **0** | **0** | |
 
 - **OK** — the simplified expression is syntactically identical to the
   simplified ground truth.
 - **OKZ** — the two differ syntactically, but `simplify(mba - ground_truth)`
   reduces to `0`, so they are proven equivalent.
 - **NG** — neither of the above. Solver errors are counted here too, so there is
-  no separate **ERR** bucket: the 2 above is the total of both.
+  no separate **ERR** bucket.
 
 Every result is additionally checked for semantic equivalence against the input
 on 200 random assignments; a mismatch fails the test suite outright, so no

@@ -8,10 +8,10 @@ use crate::{
     varint::make_mask,
 };
 
+pub use crate::utils::error::SolveError;
 use log::debug;
 
-pub use crate::utils::error::SolveError;
-
+mod hidden_gauge;
 mod lambda;
 mod merge_hidden;
 mod projector_defect;
@@ -113,7 +113,10 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         match &e {
             Expr::Var(v) => {
                 if let Some(e) = self.non_linear_components.get_by_left(v) {
-                    e.clone()
+                    // Hidden definitions form an acyclic DAG: a definition may
+                    // reference only earlier hidden coordinates. Expand the DAG
+                    // transitively so no internal coordinate escapes the solver.
+                    self.poly_to_nonpoly(e.clone())
                 } else {
                     e
                 }
@@ -381,22 +384,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8)?.reduce_masked(mask),
         };
 
-        let note = (-e.clone() - Expr::make_const(1)).reduce_masked(mask);
-        debug!("!e would be {}", note);
-
-        if let Some(v) = self.non_linear_components.get_by_right(&e) {
-            debug!("Found variable v{} for e", v);
-            Ok(Expr::Var(*v))
-        } else if let Some(v) = self.non_linear_components.get_by_right(&note) {
-            debug!("Found variable v{} for !e", v);
-            Ok(!Expr::Var(*v))
-        } else {
-            let v = self.t.into();
-            debug!("Creating variable v{} for e={}", v, e);
-            self.t += 1;
-            self.non_linear_components.insert(v, e);
-            Ok(Expr::Var(v))
-        }
+        Ok(hidden_gauge::intern(self, e))
     }
 
     fn is_signature_bitwise(&self, s: &Vec<u64>, mask: u64) -> bool {
