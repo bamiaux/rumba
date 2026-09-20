@@ -58,7 +58,6 @@ Simplify (v0 ^ v1) + 2 * (v0 & v1)
 | `--n <uint>` | Bit width of the expression (default: `32`) |
 | `--hex` | Print constants in hexadecimal |
 | `--test` | Check the result against the input on 1000 random inputs |
-| `--no-patterns` | Disable the structural pattern-rewrite engine |
 
 Variables are written `v0`, `v1`, `v2`, … Use `--test` to gain confidence on a
 result you intend to act on:

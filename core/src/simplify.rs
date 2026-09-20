@@ -93,14 +93,11 @@ struct MBASolver<'a, C: LinearCache> {
 
     /// A cache for simplifying linear MBAs
     l_cache: &'a C,
-
-    /// The options controlling this run.
-    options: SimplifyOptions,
 }
 
 impl<'a, C: LinearCache> MBASolver<'a, C> {
     /// Create a new Solver
-    fn new(l_cache: &'a C, e: &Expr, n: u8, options: SimplifyOptions) -> Self {
+    fn new(l_cache: &'a C, e: &Expr, n: u8) -> Self {
         Self {
             non_linear_components: BiMap::new(),
             t: e.get_vars().iter().copied().map(|v| v.0).max().unwrap_or(0) + 1,
@@ -108,7 +105,6 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             n,
             mask: make_mask(n),
             l_cache,
-            options,
         }
     }
 
@@ -159,20 +155,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             p
         };
 
-        // Structural pattern rewrites, applied to the *solved* expression
-        // rather than the raw input. The residues these patterns target are
-        // what the solver leaves behind, and by this point the expression is
-        // a fraction of the size it arrived as — the matchers walk every node
-        // of it, so running them on the obfuscated input is both slower and
-        // less likely to match. A hit changes the expression, so
-        // `simplify_to_fixed_point` runs another pass and the downstream
-        // stages still get to exploit the collapse. Skipped when the caller
-        // disables the pattern engine via [`SimplifyOptions`].
-        Ok(if self.options.patterns {
-            crate::patterns::apply_patterns(e, self.mask)
-        } else {
-            e
-        })
+        Ok(e)
     }
 
     /// Calcluates the signature of a linear MBA
@@ -395,8 +378,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
 
         let e = match e {
             Expr::Const(_) => e,
-            _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8, self.options)?
-                .reduce_masked(mask),
+            _ => simplify_mba_inner(self.l_cache, e, mask.count_ones() as u8)?.reduce_masked(mask),
         };
 
         let note = (-e.clone() - Expr::make_const(1)).reduce_masked(mask);
@@ -683,13 +665,8 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 }
 
-fn simplify_mba_inner<C: LinearCache>(
-    l_cache: &C,
-    e: Expr,
-    n: u8,
-    options: SimplifyOptions,
-) -> Result<Expr, SolveError> {
-    let mut solver = MBASolver::new(l_cache, &e, n, options);
+fn simplify_mba_inner<C: LinearCache>(l_cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
+    let mut solver = MBASolver::new(l_cache, &e, n);
     solver.solve(e)
 }
 
@@ -739,49 +716,21 @@ impl SimplifyCache {
     }
 }
 
-/// Options controlling how an expression is simplified.
-///
-/// Use [`SimplifyOptions::default`] for the standard behaviour and pass a
-/// customised value to [`simplify_mba_with`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct SimplifyOptions {
-    /// Whether to run the structural pattern-rewrite engine before lifting the
-    /// expression to a polynomial. Enabled by default; disabling it is mainly
-    /// useful for measuring the engine's contribution.
-    pub patterns: bool,
-}
-
-impl Default for SimplifyOptions {
-    fn default() -> Self {
-        Self { patterns: true }
-    }
-}
-
 /// Simplifies a Mixed Boolean-Arithmetic expression on `n` bits.
 pub fn simplify_mba(e: Expr, n: u8) -> Result<Expr, SolveError> {
-    simplify_mba_with(e, n, SimplifyOptions::default())
-}
-
-/// [`simplify_mba`] with explicit [`SimplifyOptions`].
-pub fn simplify_mba_with(e: Expr, n: u8, options: SimplifyOptions) -> Result<Expr, SolveError> {
-    simplify_mba_with_cache(&LocalCache::new(), e, n, options)
+    simplify_mba_with_cache(&LocalCache::new(), e, n)
 }
 
 /// [`simplify_mba`] against a caller-owned [`SimplifyCache`], so linear solves
 /// are reused across calls.
 pub fn simplify_mba_cached(e: Expr, n: u8, cache: &SimplifyCache) -> Result<Expr, SolveError> {
-    simplify_mba_with_cache(&cache.0, e, n, SimplifyOptions::default())
+    simplify_mba_with_cache(&cache.0, e, n)
 }
 
-fn simplify_mba_with_cache<C: LinearCache>(
-    cache: &C,
-    e: Expr,
-    n: u8,
-    options: SimplifyOptions,
-) -> Result<Expr, SolveError> {
+fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
     let mask = make_mask(n);
     let e = e.reduce_masked(mask);
-    let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n, options))?;
+    let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
 
     // The only place prettify may run: on the way out, after the fixed point has
     // settled. See the module docs for why it must stay out of the loop.
@@ -794,22 +743,9 @@ mod tests {
     use std::cell::Cell;
 
     #[test]
-    fn disabling_patterns_preserves_semantics() {
-        let e = (Expr::Var(0.into()) & (-Expr::Var(0.into())) & (2u64 * Expr::Var(0.into())))
-            .reduce(64);
-        let with_patterns = simplify_mba(e.clone(), 64).unwrap();
-        let without_patterns = SimplifyOptions { patterns: false };
-        let without_patterns = simplify_mba_with(e.clone(), 64, without_patterns).unwrap();
-
-        assert!(with_patterns.sem_equal(&e, 64, 200).is_ok());
-        assert!(without_patterns.sem_equal(&e, 64, 200).is_ok());
-    }
-
-    #[test]
     fn inverse_pct_round_trip_preserves_variable_index() {
         let cache = LocalCache::new();
-        let mut solver =
-            MBASolver::new(&cache, &Expr::Var(2.into()), 8, SimplifyOptions::default());
+        let mut solver = MBASolver::new(&cache, &Expr::Var(2.into()), 8);
         solver.degree = 2;
         let original = Expr::Var(2.into());
         let encoded = solver.poly_to_linear(original.clone(), 2);
