@@ -1,0 +1,103 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -168,6 +168,16 @@
+ 
+     /// Creates a conjuction sum for the given signature
+     fn make_conjunction_sum(&self, mut signature: Vec<u64>, t: usize) -> Expr {
++        let dense = (3..=6).contains(&t);
++        if dense {
++            for bit in 0..t {
++                for i in 0..signature.len() {
++                    if i & (1 << bit) != 0 {
++                        signature[i] = signature[i].wrapping_sub(signature[i ^ (1 << bit)]);
++                    }
++                }
++            }
++        }
+         let mut terms: Vec<Expr> = vec![];
+ 
+         // The constant term
+@@ -176,8 +186,10 @@
+         if constant != 0 {
+             terms.push(Expr::Const(constant));
+ 
+-            for v in &mut signature {
+-                *v = v.wrapping_sub(constant);
++            if !dense {
++                for v in &mut signature {
++                    *v = v.wrapping_sub(constant);
++                }
+             }
+         }
+ 
+@@ -208,7 +220,9 @@
+                 c => c * conjunction,
+             });
+ 
+-            sub_coeff(&mut signature, coeff, index, &sublist);
++            if !dense {
++                sub_coeff(&mut signature, coeff, index, &sublist);
++            }
+         }
+ 
+         match terms.len() {
+@@ -220,7 +234,8 @@
+ 
+     /// Solves a linear MBA
+     fn solve_linear_inner(&self, e: Expr, t: usize, from_poly: bool) -> Expr {
+-        let signature = self.calc_signature(&e, t);
++        let signature = if (3..=6).contains(&t) { self.packed_signature(&e, t) } else { None }
++            .unwrap_or_else(|| self.calc_signature(&e, t));
+ 
+         if from_poly {
+             // We necessarily want a sum of conjunctions
+@@ -229,6 +244,49 @@
+ 
+         // TODO: add a refined solution to identify xor etc
+         self.make_conjunction_sum(signature, t)
++    }
++
++    fn packed_signature(&self, e: &Expr, t: usize) -> Option<Vec<u64>> {
++        fn cube(e: &Expr, mask: u64) -> Option<u64> {
++            const LANES: [u64; 6] = [
++                0xaaaaaaaaaaaaaaaa, 0xcccccccccccccccc, 0xf0f0f0f0f0f0f0f0,
++                0xff00ff00ff00ff00, 0xffff0000ffff0000, 0xffffffff00000000,
++            ];
++            match e {
++                Expr::Const(c) if c & mask == 0 => Some(0),
++                Expr::Const(c) if c & mask == mask => Some(u64::MAX),
++                Expr::Var(v) => Some(LANES[v.0]),
++                Expr::Not(e) => Some(!cube(e, mask)?),
++                Expr::And(es) => es.iter().try_fold(u64::MAX, |a, e| Some(a & cube(e, mask)?)),
++                Expr::Or(es) => es.iter().try_fold(0, |a, e| Some(a | cube(e, mask)?)),
++                Expr::Xor(es) => es.iter().try_fold(0, |a, e| Some(a ^ cube(e, mask)?)),
++                _ => None,
++            }
++        }
++        fn add(e: &Expr, coeff: u64, mask: u64, signature: &mut [u64]) -> Option<()> {
++            match e {
++                Expr::Const(c) => {
++                    for value in signature { *value = value.wrapping_add(coeff.wrapping_mul(*c)); }
++                }
++                Expr::Scale(c, e) => return add(e, coeff.wrapping_mul(*c), mask, signature),
++                Expr::Add(es) => {
++                    for e in es { add(e, coeff, mask, signature)?; }
++                }
++                Expr::Mul(es) if es.len() == 1 => return add(&es[0], coeff, mask, signature),
++                _ => {
++                    let bits = cube(e, mask)?;
++                    let high = if bits & 1 != 0 { mask & !1 } else { 0 };
++                    for (i, value) in signature.iter_mut().enumerate() {
++                        *value = value.wrapping_add(coeff.wrapping_mul(high | ((bits >> i) & 1)));
++                    }
++                }
++            }
++            Some(())
++        }
++        let mut signature = vec![0; 1usize << t];
++        add(e, 1, self.mask, &mut signature)?;
++        for value in &mut signature { *value &= self.mask; }
++        Some(signature)
+     }
+ 
+     /// Simplifies a linear MBA

@@ -1,0 +1,550 @@
+=== base-profile-full.txt ===
+allocations=39561465 reallocations=863281 allocated_bytes=2472672290
+total calls=41000 inclusive_ms=3791.434 exclusive_ms=255.517
+reduce calls=18041509 inclusive_ms=8599.346 exclusive_ms=1587.567
+make_polynomial calls=176250 inclusive_ms=2321.864 exclusive_ms=40.907
+solve_linear calls=178623 inclusive_ms=542.776 exclusive_ms=306.527
+truth_table_masked calls=408067 inclusive_ms=285.611 exclusive_ms=285.611
+make_conjunction_sum calls=105976 inclusive_ms=27.322 exclusive_ms=27.322
+make_bitwise calls=2614565 inclusive_ms=8939.912 exclusive_ms=234.819
+is_linear_bitwise calls=148155 inclusive_ms=200.352 exclusive_ms=140.376
+group_terms calls=1321924 inclusive_ms=308.524 exclusive_ms=281.638
+prettify calls=41000 inclusive_ms=63.747 exclusive_ms=63.747
+projector_defect calls=26218 inclusive_ms=288.520 exclusive_ms=159.935
+hide_in_var calls=94512 inclusive_ms=1847.210 exclusive_ms=191.044
+merge_hidden calls=176222 inclusive_ms=190.442 exclusive_ms=147.977
+restore_hidden calls=301542 inclusive_ms=68.059 exclusive_ms=20.984
+solve calls=176222 inclusive_ms=3842.424 exclusive_ms=47.464
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+
+=== base-profile-final.txt ===
+allocations=39561465 reallocations=863281 allocated_bytes=2472672290
+total calls=41000 inclusive_ms=4043.316 exclusive_ms=263.208
+reduce calls=18041509 inclusive_ms=9489.763 exclusive_ms=1588.692
+make_polynomial calls=176250 inclusive_ms=2509.234 exclusive_ms=41.406
+solve_linear calls=178623 inclusive_ms=541.681 exclusive_ms=315.222
+truth_table_masked calls=408067 inclusive_ms=272.965 exclusive_ms=272.965
+make_conjunction_sum calls=105976 inclusive_ms=28.314 exclusive_ms=28.314
+make_bitwise calls=2614565 inclusive_ms=9734.221 exclusive_ms=238.022
+is_linear_bitwise calls=148155 inclusive_ms=202.655 exclusive_ms=144.211
+group_terms calls=1321924 inclusive_ms=315.688 exclusive_ms=285.611
+prettify calls=41000 inclusive_ms=65.871 exclusive_ms=65.871
+projector_defect calls=26218 inclusive_ms=319.117 exclusive_ms=165.689
+hide_in_var calls=94512 inclusive_ms=2028.616 exclusive_ms=195.822
+merge_hidden calls=176222 inclusive_ms=196.197 exclusive_ms=151.833
+restore_hidden calls=301542 inclusive_ms=70.616 exclusive_ms=21.925
+solve calls=176222 inclusive_ms=4109.236 exclusive_ms=49.746
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1351.931 exclusive_ms=214.779
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== best-profile.txt ===
+allocations=39561465 reallocations=863281 allocated_bytes=2472672290
+total calls=41000 inclusive_ms=4081.065 exclusive_ms=262.167
+reduce calls=18041509 inclusive_ms=9508.836 exclusive_ms=1593.050
+make_polynomial calls=176250 inclusive_ms=2555.023 exclusive_ms=41.633
+solve_linear calls=178623 inclusive_ms=545.780 exclusive_ms=317.814
+truth_table_masked calls=408067 inclusive_ms=275.812 exclusive_ms=275.812
+make_conjunction_sum calls=105976 inclusive_ms=28.916 exclusive_ms=28.916
+make_bitwise calls=2614565 inclusive_ms=9973.442 exclusive_ms=241.982
+is_linear_bitwise calls=148155 inclusive_ms=208.755 exclusive_ms=148.823
+group_terms calls=1321924 inclusive_ms=322.189 exclusive_ms=292.122
+prettify calls=41000 inclusive_ms=64.634 exclusive_ms=64.634
+projector_defect calls=26218 inclusive_ms=326.836 exclusive_ms=170.795
+hide_in_var calls=94512 inclusive_ms=2064.144 exclusive_ms=200.718
+merge_hidden calls=176222 inclusive_ms=198.952 exclusive_ms=155.118
+restore_hidden calls=301542 inclusive_ms=69.835 exclusive_ms=21.533
+solve calls=176222 inclusive_ms=4169.616 exclusive_ms=49.626
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1359.080 exclusive_ms=216.324
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== base-profile-cohort.txt ===
+allocations=7909945 reallocations=104908 allocated_bytes=456100240
+total calls=18654 inclusive_ms=767.696 exclusive_ms=112.881
+reduce calls=2955931 inclusive_ms=1414.697 exclusive_ms=298.740
+make_polynomial calls=37175 inclusive_ms=78.745 exclusive_ms=17.021
+solve_linear calls=37175 inclusive_ms=189.909 exclusive_ms=108.903
+truth_table_masked calls=36716 inclusive_ms=68.513 exclusive_ms=68.513
+make_conjunction_sum calls=36716 inclusive_ms=12.493 exclusive_ms=12.493
+make_bitwise calls=908649 inclusive_ms=132.336 exclusive_ms=61.723
+is_linear_bitwise calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+group_terms calls=53293 inclusive_ms=40.863 exclusive_ms=38.686
+prettify calls=18654 inclusive_ms=41.193 exclusive_ms=41.193
+projector_defect calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hide_in_var calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+merge_hidden calls=37175 inclusive_ms=0.897 exclusive_ms=0.897
+restore_hidden calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+solve calls=37175 inclusive_ms=407.032 exclusive_ms=6.645
+reduce_vars calls=1309746 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=11737435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[71, 1164, 23148, 9839, 1182, 1771, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 71, 76, 300, 2142, 1922, 1399, 648, 523, 922, 4480, 849, 1424, 2212, 246, 239, 268, 271, 248, 178, 254, 197, 252, 254, 287, 197, 720, 296, 2393, 707, 296, 562, 624, 378, 352, 270, 293, 285, 385, 319, 212, 201, 152, 149, 160, 120, 108, 105, 89, 82, 100, 83, 107, 96, 121, 92, 105, 105, 105, 152, 148, 187, 177, 203, 6277]
+hist2=[0, 0, 12479, 8170, 3173, 1458, 4578, 3524, 3740, 4545, 5510, 3177, 1554, 318, 118, 16, 17, 14, 10, 16, 12, 14, 8, 8, 12, 16, 6, 16, 10, 12, 16, 8, 16, 4, 10, 6, 12, 12, 10, 10, 8, 8, 10, 12, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 12, 12, 6, 10, 400]
+hist3=[49299, 3994, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 5866, 5676, 5611, 2721, 867, 3721, 2318, 2223, 2333, 2833, 1552, 760, 157, 60, 8, 11, 7, 5, 8, 6, 7, 4, 4, 6, 8, 3, 8, 5, 6, 8, 4, 8, 2, 5, 3, 6, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[18654, 18521, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[7718, 10803, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 934, 1408, 180, 35, 5, 11, 24, 51, 82, 82, 43, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+=== a2-profile-cohort.txt ===
+allocations=7184216 reallocations=104908 allocated_bytes=432876912
+total calls=18654 inclusive_ms=691.313 exclusive_ms=116.801
+reduce calls=2955931 inclusive_ms=1457.967 exclusive_ms=311.485
+make_polynomial calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+solve_linear calls=37175 inclusive_ms=169.390 exclusive_ms=98.461
+truth_table_masked calls=36716 inclusive_ms=57.775 exclusive_ms=57.775
+make_conjunction_sum calls=36716 inclusive_ms=13.154 exclusive_ms=13.154
+make_bitwise calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear_bitwise calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+group_terms calls=53293 inclusive_ms=43.492 exclusive_ms=41.286
+prettify calls=18654 inclusive_ms=42.374 exclusive_ms=42.374
+projector_defect calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hide_in_var calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+merge_hidden calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+restore_hidden calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+solve calls=37175 inclusive_ms=316.805 exclusive_ms=9.977
+reduce_vars calls=1110037 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=37175 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=908649 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=9975393 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=37175 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[71, 1164, 23148, 9839, 1182, 1771, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 147, 300, 3356, 1954, 278, 825, 3965, 1584, 1714, 2453, 378, 298, 293, 303, 271, 332, 294, 293, 310, 765, 415, 2442, 775, 590, 615, 494, 425, 379, 485, 384, 274, 252, 245, 236, 176, 187, 155, 139, 112, 125, 100, 118, 109, 128, 107, 101, 103, 129, 139, 151, 155, 177, 199, 216, 217, 240, 253, 292, 340, 348, 363, 397, 372, 3403]
+hist2=[0, 0, 12479, 8170, 3173, 1458, 4578, 3524, 3740, 4545, 5510, 3177, 1554, 318, 118, 16, 17, 14, 10, 16, 12, 14, 8, 8, 12, 16, 6, 16, 10, 12, 16, 8, 16, 4, 10, 6, 12, 12, 10, 10, 8, 8, 10, 12, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 12, 12, 6, 10, 400]
+hist3=[49299, 3994, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 5866, 5676, 5611, 2721, 867, 3721, 2318, 2223, 2333, 2833, 1552, 760, 157, 60, 8, 11, 7, 5, 8, 6, 7, 4, 4, 6, 8, 3, 8, 5, 6, 8, 4, 8, 2, 5, 3, 6, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[18654, 18521, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[7718, 10803, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 934, 1408, 180, 35, 5, 11, 24, 51, 82, 82, 43, 6, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+=== a0-profile.txt ===
+allocations=38313983 reallocations=857955 allocated_bytes=2400988822
+total calls=41000 inclusive_ms=3640.763 exclusive_ms=289.128
+reduce calls=16796578 inclusive_ms=8569.736 exclusive_ms=1424.473
+make_polynomial calls=139075 inclusive_ms=2349.701 exclusive_ms=23.551
+solve_linear calls=160102 inclusive_ms=456.770 exclusive_ms=262.676
+truth_table_masked calls=390005 inclusive_ms=244.478 exclusive_ms=244.478
+make_conjunction_sum calls=87914 inclusive_ms=21.433 exclusive_ms=21.433
+make_bitwise calls=1705916 inclusive_ms=9269.953 exclusive_ms=170.036
+is_linear_bitwise calls=148155 inclusive_ms=192.947 exclusive_ms=136.866
+group_terms calls=1290610 inclusive_ms=287.254 exclusive_ms=258.041
+prettify calls=41000 inclusive_ms=63.768 exclusive_ms=63.768
+projector_defect calls=26218 inclusive_ms=304.391 exclusive_ms=156.829
+hide_in_var calls=94512 inclusive_ms=1964.530 exclusive_ms=187.648
+merge_hidden calls=139047 inclusive_ms=186.995 exclusive_ms=144.296
+restore_hidden calls=301542 inclusive_ms=68.287 exclusive_ms=20.872
+solve calls=139047 inclusive_ms=3564.824 exclusive_ms=40.285
+reduce_vars calls=4909138 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=71423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=999666 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=45826336 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2725561 inclusive_ms=1240.668 exclusive_ms=196.381
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1409, 51865, 72204, 20700, 11306, 1897, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1419, 35, 38417, 12919, 12088, 12067, 9051, 4301, 6790, 10453, 3717, 3108, 2221, 1609, 1688, 1266, 2743, 1397, 1452, 1231, 1164, 993, 1032, 988, 994, 902, 901, 810, 927, 771, 746, 751, 683, 577, 506, 497, 492, 443, 377, 417, 393, 416, 360, 361, 337, 320, 357, 373, 381, 367, 369, 380, 386, 368, 328, 372, 385, 406, 448, 465, 473, 511, 471, 8132]
+hist2=[0, 0, 872164, 261622, 84930, 25080, 21615, 4943, 3213, 3829, 3600, 2382, 1463, 650, 543, 685, 588, 339, 991, 300, 20, 459, 94, 37, 343, 112, 17, 28, 14, 25, 13, 4, 9, 3, 5, 3, 11, 6, 5, 5, 5, 4, 5, 7, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 7, 6, 3, 5, 328]
+hist3=[1065228, 225382, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 81097, 46056, 14838, 2163, 1264, 1321, 1976, 1877, 2572, 2869, 1680, 929, 297, 238, 162, 140, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[22346, 22346, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[14350, 7996, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9374, 3301, 1230, 754, 550, 240, 238, 208, 220, 137, 80, 42, 14, 33, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== a1-profile.txt ===
+allocations=40518961 reallocations=863281 allocated_bytes=2537151830
+total calls=41000 inclusive_ms=3921.308 exclusive_ms=331.449
+reduce calls=18041509 inclusive_ms=9268.254 exclusive_ms=1549.713
+make_polynomial calls=139075 inclusive_ms=2419.235 exclusive_ms=23.969
+solve_linear calls=178623 inclusive_ms=494.991 exclusive_ms=291.206
+truth_table_masked calls=408067 inclusive_ms=247.501 exclusive_ms=247.501
+make_conjunction_sum calls=105976 inclusive_ms=27.175 exclusive_ms=27.175
+make_bitwise calls=1705916 inclusive_ms=9527.826 exclusive_ms=173.296
+is_linear_bitwise calls=148155 inclusive_ms=195.702 exclusive_ms=140.630
+group_terms calls=1321924 inclusive_ms=329.978 exclusive_ms=300.034
+prettify calls=41000 inclusive_ms=62.005 exclusive_ms=62.005
+projector_defect calls=26218 inclusive_ms=312.794 exclusive_ms=160.894
+hide_in_var calls=94512 inclusive_ms=2027.696 exclusive_ms=193.420
+merge_hidden calls=139047 inclusive_ms=189.473 exclusive_ms=146.723
+restore_hidden calls=301542 inclusive_ms=68.740 exclusive_ms=21.261
+solve calls=139047 inclusive_ms=3654.765 exclusive_ms=41.392
+reduce_vars calls=5114539 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=71423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=999666 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=47762393 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1331.983 exclusive_ms=210.638
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1560, 329, 41160, 14678, 12177, 12629, 12635, 5145, 7644, 12397, 3791, 3181, 2298, 1699, 1746, 1399, 2818, 1488, 1550, 1807, 1352, 3213, 1557, 1331, 1370, 1067, 1035, 899, 1086, 879, 748, 755, 687, 577, 509, 510, 492, 443, 377, 417, 394, 419, 362, 364, 339, 319, 357, 374, 382, 370, 373, 380, 388, 368, 330, 373, 385, 406, 448, 471, 473, 510, 471, 8132]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== a2-profile.txt ===
+allocations=38513949 reallocations=863271 allocated_bytes=2439156266
+total calls=41000 inclusive_ms=3656.990 exclusive_ms=256.528
+reduce calls=18041509 inclusive_ms=8664.790 exclusive_ms=1605.632
+make_polynomial calls=45535 inclusive_ms=2197.511 exclusive_ms=11.662
+solve_linear calls=178623 inclusive_ms=492.635 exclusive_ms=285.347
+truth_table_masked calls=408080 inclusive_ms=251.404 exclusive_ms=251.404
+make_conjunction_sum calls=105989 inclusive_ms=27.594 exclusive_ms=27.594
+make_bitwise calls=1449138 inclusive_ms=8658.493 exclusive_ms=161.868
+is_linear_bitwise calls=148155 inclusive_ms=196.368 exclusive_ms=140.484
+group_terms calls=1321924 inclusive_ms=310.891 exclusive_ms=283.253
+prettify calls=41000 inclusive_ms=65.207 exclusive_ms=65.207
+projector_defect calls=26218 inclusive_ms=286.890 exclusive_ms=159.157
+hide_in_var calls=94512 inclusive_ms=1828.978 exclusive_ms=192.602
+merge_hidden calls=45507 inclusive_ms=186.751 exclusive_ms=145.651
+restore_hidden calls=301542 inclusive_ms=69.063 exclusive_ms=21.286
+solve calls=176222 inclusive_ms=3669.032 exclusive_ms=49.318
+reduce_vars calls=4974535 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=206645 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=1470717 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=47504703 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=130715 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1586, 36521, 23012, 16673, 6810, 5015, 16310, 4944, 7761, 5430, 2580, 1903, 1665, 1507, 1687, 1409, 2750, 1462, 1528, 1748, 1353, 3223, 1580, 1302, 1388, 1050, 1005, 861, 1076, 861, 735, 707, 687, 577, 506, 507, 496, 447, 380, 404, 388, 421, 359, 363, 340, 320, 358, 372, 379, 371, 376, 378, 385, 371, 330, 370, 385, 410, 449, 469, 473, 509, 470, 8131]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+
+=== b-profile.txt ===
+allocations=39241973 reallocations=863281 allocated_bytes=2449475618
+total calls=41000 inclusive_ms=3787.304 exclusive_ms=255.299
+reduce calls=18041509 inclusive_ms=8546.504 exclusive_ms=1604.167
+make_polynomial calls=176250 inclusive_ms=2349.205 exclusive_ms=40.708
+solve_linear calls=178623 inclusive_ms=538.884 exclusive_ms=306.678
+truth_table_masked calls=408067 inclusive_ms=276.363 exclusive_ms=276.363
+make_conjunction_sum calls=105976 inclusive_ms=28.130 exclusive_ms=28.130
+make_bitwise calls=2614565 inclusive_ms=8989.290 exclusive_ms=233.576
+is_linear_bitwise calls=148155 inclusive_ms=196.258 exclusive_ms=139.718
+group_terms calls=1321924 inclusive_ms=299.079 exclusive_ms=271.768
+prettify calls=41000 inclusive_ms=64.276 exclusive_ms=64.276
+projector_defect calls=26218 inclusive_ms=283.910 exclusive_ms=157.345
+hide_in_var calls=94512 inclusive_ms=1880.066 exclusive_ms=193.122
+merge_hidden calls=176222 inclusive_ms=188.957 exclusive_ms=146.722
+restore_hidden calls=301542 inclusive_ms=69.613 exclusive_ms=21.153
+solve calls=176222 inclusive_ms=3871.512 exclusive_ms=48.280
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+
+=== c1-profile.txt ===
+allocations=39487902 reallocations=863281 allocated_bytes=2472150554
+total calls=41000 inclusive_ms=3650.515 exclusive_ms=251.483
+reduce calls=18041509 inclusive_ms=8513.197 exclusive_ms=1573.003
+make_polynomial calls=176250 inclusive_ms=2289.858 exclusive_ms=39.694
+solve_linear calls=178623 inclusive_ms=444.779 exclusive_ms=319.916
+truth_table_masked calls=318166 inclusive_ms=170.698 exclusive_ms=170.698
+make_conjunction_sum calls=105976 inclusive_ms=26.775 exclusive_ms=26.775
+make_bitwise calls=2614565 inclusive_ms=8808.439 exclusive_ms=232.168
+is_linear_bitwise calls=148155 inclusive_ms=195.144 exclusive_ms=138.420
+group_terms calls=1321924 inclusive_ms=303.204 exclusive_ms=276.385
+prettify calls=41000 inclusive_ms=63.161 exclusive_ms=63.161
+projector_defect calls=26218 inclusive_ms=283.899 exclusive_ms=157.853
+hide_in_var calls=94512 inclusive_ms=1824.254 exclusive_ms=189.139
+merge_hidden calls=176222 inclusive_ms=185.453 exclusive_ms=144.071
+restore_hidden calls=301542 inclusive_ms=68.012 exclusive_ms=20.873
+solve calls=176222 inclusive_ms=3696.759 exclusive_ms=46.877
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=31744725 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+packed_success calls=89901 inclusive_ms=0.000 exclusive_ms=0.000
+cube_nodes calls=1458699 inclusive_ms=0.000 exclusive_ms=0.000
+packed_term_nodes calls=962394 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[380, 13482, 52708, 16369, 4552, 2336, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist9=[380, 13738, 59520, 22743, 6624, 2561, 293, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+=== c1b-profile.txt ===
+allocations=39547024 reallocations=863281 allocated_bytes=2472879658
+total calls=41000 inclusive_ms=4106.886 exclusive_ms=280.152
+reduce calls=18041509 inclusive_ms=9500.221 exclusive_ms=1742.269
+make_polynomial calls=176250 inclusive_ms=2534.081 exclusive_ms=44.717
+solve_linear calls=178623 inclusive_ms=519.620 exclusive_ms=368.765
+truth_table_masked calls=384736 inclusive_ms=198.813 exclusive_ms=198.813
+make_conjunction_sum calls=105976 inclusive_ms=30.554 exclusive_ms=30.554
+make_bitwise calls=2614565 inclusive_ms=9887.090 exclusive_ms=260.471
+is_linear_bitwise calls=148155 inclusive_ms=223.457 exclusive_ms=162.339
+group_terms calls=1321924 inclusive_ms=325.479 exclusive_ms=296.533
+prettify calls=41000 inclusive_ms=71.226 exclusive_ms=71.226
+projector_defect calls=26218 inclusive_ms=333.392 exclusive_ms=191.010
+hide_in_var calls=94512 inclusive_ms=2007.050 exclusive_ms=214.562
+merge_hidden calls=176222 inclusive_ms=213.222 exclusive_ms=169.123
+restore_hidden calls=301542 inclusive_ms=74.632 exclusive_ms=23.325
+solve calls=176222 inclusive_ms=4143.920 exclusive_ms=53.028
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=34434395 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+packed_success calls=23331 inclusive_ms=0.000 exclusive_ms=0.000
+cube_nodes calls=985699 inclusive_ms=0.000 exclusive_ms=0.000
+packed_term_nodes calls=508571 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 0, 16369, 4552, 2336, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist9=[0, 0, 0, 22743, 6624, 2561, 293, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+=== c2-profile.txt ===
+allocations=39547024 reallocations=863281 allocated_bytes=2472879658
+total calls=41000 inclusive_ms=3662.668 exclusive_ms=249.889
+reduce calls=18041509 inclusive_ms=8520.668 exclusive_ms=1575.488
+make_polynomial calls=176250 inclusive_ms=2299.146 exclusive_ms=40.298
+solve_linear calls=178623 inclusive_ms=460.712 exclusive_ms=315.064
+truth_table_masked calls=384736 inclusive_ms=191.011 exclusive_ms=191.011
+make_conjunction_sum calls=105976 inclusive_ms=26.892 exclusive_ms=26.892
+make_bitwise calls=2614565 inclusive_ms=8830.559 exclusive_ms=230.593
+is_linear_bitwise calls=148155 inclusive_ms=194.039 exclusive_ms=137.742
+group_terms calls=1321924 inclusive_ms=304.096 exclusive_ms=277.003
+prettify calls=41000 inclusive_ms=62.050 exclusive_ms=62.050
+projector_defect calls=26218 inclusive_ms=281.494 exclusive_ms=155.240
+hide_in_var calls=94512 inclusive_ms=1835.613 exclusive_ms=188.612
+merge_hidden calls=176222 inclusive_ms=186.888 exclusive_ms=143.900
+restore_hidden calls=301542 inclusive_ms=69.496 exclusive_ms=21.214
+solve calls=176222 inclusive_ms=3723.054 exclusive_ms=47.675
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=34434395 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+packed_success calls=23331 inclusive_ms=0.000 exclusive_ms=0.000
+cube_nodes calls=985699 inclusive_ms=0.000 exclusive_ms=0.000
+packed_term_nodes calls=508571 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 0, 16369, 4552, 2336, 74, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist9=[0, 0, 0, 22743, 6624, 2561, 293, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+=== d1-profile.txt ===
+allocations=36121393 reallocations=863280 allocated_bytes=2117600986
+total calls=41000 inclusive_ms=3809.587 exclusive_ms=259.716
+reduce calls=18041509 inclusive_ms=8750.888 exclusive_ms=1545.121
+make_polynomial calls=176250 inclusive_ms=2350.634 exclusive_ms=40.676
+solve_linear calls=178623 inclusive_ms=523.194 exclusive_ms=302.216
+truth_table_masked calls=408067 inclusive_ms=264.899 exclusive_ms=264.899
+make_conjunction_sum calls=105976 inclusive_ms=27.747 exclusive_ms=27.747
+make_bitwise calls=2614565 inclusive_ms=9047.801 exclusive_ms=231.570
+is_linear_bitwise calls=148155 inclusive_ms=194.253 exclusive_ms=138.504
+group_terms calls=1321924 inclusive_ms=189.357 exclusive_ms=161.439
+prettify calls=41000 inclusive_ms=64.191 exclusive_ms=64.191
+projector_defect calls=26218 inclusive_ms=293.728 exclusive_ms=158.402
+hide_in_var calls=94512 inclusive_ms=1885.602 exclusive_ms=191.085
+merge_hidden calls=176222 inclusive_ms=188.521 exclusive_ms=146.605
+restore_hidden calls=301542 inclusive_ms=67.886 exclusive_ms=20.753
+solve calls=176222 inclusive_ms=3875.648 exclusive_ms=47.401
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1269.370 exclusive_ms=209.261
+group_fastpath calls=1208364 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== d1b-profile.txt ===
+allocations=37324941 reallocations=863281 allocated_bytes=2245195622
+total calls=41000 inclusive_ms=3883.389 exclusive_ms=255.416
+reduce calls=18041509 inclusive_ms=8925.551 exclusive_ms=1562.709
+make_polynomial calls=176250 inclusive_ms=2427.115 exclusive_ms=40.587
+solve_linear calls=178623 inclusive_ms=542.070 exclusive_ms=318.530
+truth_table_masked calls=408067 inclusive_ms=266.074 exclusive_ms=266.074
+make_conjunction_sum calls=105976 inclusive_ms=28.213 exclusive_ms=28.213
+make_bitwise calls=2614565 inclusive_ms=9322.419 exclusive_ms=233.198
+is_linear_bitwise calls=148155 inclusive_ms=194.031 exclusive_ms=138.867
+group_terms calls=1321924 inclusive_ms=221.955 exclusive_ms=193.143
+prettify calls=41000 inclusive_ms=63.273 exclusive_ms=63.273
+projector_defect calls=26218 inclusive_ms=303.424 exclusive_ms=158.881
+hide_in_var calls=94512 inclusive_ms=1960.697 exclusive_ms=193.914
+merge_hidden calls=176222 inclusive_ms=195.008 exclusive_ms=150.338
+restore_hidden calls=301542 inclusive_ms=67.877 exclusive_ms=20.719
+solve calls=176222 inclusive_ms=3986.642 exclusive_ms=47.891
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1306.766 exclusive_ms=211.634
+group_fastpath calls=866155 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== d2-profile.txt ===
+allocations=38173134 reallocations=863296 allocated_bytes=2380456570
+total calls=41000 inclusive_ms=3873.450 exclusive_ms=263.326
+reduce calls=16590353 inclusive_ms=8570.511 exclusive_ms=1478.258
+make_polynomial calls=176254 inclusive_ms=2317.482 exclusive_ms=40.910
+solve_linear calls=178627 inclusive_ms=553.144 exclusive_ms=322.724
+truth_table_masked calls=408074 inclusive_ms=277.048 exclusive_ms=277.048
+make_conjunction_sum calls=105976 inclusive_ms=28.460 exclusive_ms=28.460
+make_bitwise calls=2614584 inclusive_ms=8994.748 exclusive_ms=237.901
+is_linear_bitwise calls=148156 inclusive_ms=202.808 exclusive_ms=144.111
+group_terms calls=1170802 inclusive_ms=285.191 exclusive_ms=254.711
+prettify calls=41000 inclusive_ms=65.540 exclusive_ms=65.540
+projector_defect calls=26219 inclusive_ms=289.483 exclusive_ms=165.136
+hide_in_var calls=94514 inclusive_ms=1837.402 exclusive_ms=195.031
+merge_hidden calls=176226 inclusive_ms=193.567 exclusive_ms=150.360
+restore_hidden calls=301566 inclusive_ms=70.187 exclusive_ms=21.655
+solve calls=176226 inclusive_ms=3897.865 exclusive_ms=48.311
+reduce_vars calls=5314295 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524523 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278723 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2396837 inclusive_ms=1010.426 exclusive_ms=179.969
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52989, 83696, 25129, 11948, 2669, 562, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38106, 14867, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1037, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 776027, 233783, 75469, 24554, 24196, 7062, 5309, 6072, 6398, 3859, 2189, 782, 588, 611, 553, 328, 769, 304, 26, 396, 98, 38, 287, 120, 16, 37, 19, 27, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 508]
+hist3=[972079, 198723, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83147, 49715, 19686, 4653, 1581, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40868, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22069, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9373, 3302, 1231, 754, 551, 240, 238, 208, 220, 137, 80, 41, 15, 35, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 16, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+
+=== d4-profile.txt ===
+allocations=37631892 reallocations=864281 allocated_bytes=2343832520
+total calls=41000 inclusive_ms=3900.415 exclusive_ms=271.584
+reduce calls=15738272 inclusive_ms=8275.728 exclusive_ms=1426.595
+make_polynomial calls=176315 inclusive_ms=2642.443 exclusive_ms=43.831
+solve_linear calls=178681 inclusive_ms=561.417 exclusive_ms=321.296
+truth_table_masked calls=408486 inclusive_ms=286.859 exclusive_ms=286.859
+make_conjunction_sum calls=106070 inclusive_ms=30.576 exclusive_ms=30.576
+make_bitwise calls=2614992 inclusive_ms=10199.432 exclusive_ms=243.729
+is_linear_bitwise calls=148109 inclusive_ms=207.349 exclusive_ms=147.605
+group_terms calls=1223246 inclusive_ms=293.693 exclusive_ms=262.641
+prettify calls=41000 inclusive_ms=70.070 exclusive_ms=70.070
+projector_defect calls=26272 inclusive_ms=322.157 exclusive_ms=167.726
+hide_in_var calls=94565 inclusive_ms=2148.929 exclusive_ms=206.923
+merge_hidden calls=176281 inclusive_ms=202.418 exclusive_ms=155.609
+restore_hidden calls=302389 inclusive_ms=73.855 exclusive_ms=22.169
+solve calls=176281 inclusive_ms=3888.318 exclusive_ms=43.704
+reduce_vars calls=5317161 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30533 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40583 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49543089 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278625 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2613358 inclusive_ms=1245.755 exclusive_ms=199.497
+group_fastpath calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1479, 52935, 83647, 25130, 12078, 2670, 582, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1490, 105, 38042, 14831, 13791, 13219, 9368, 4086, 6907, 14390, 4262, 4312, 4217, 1645, 1709, 1336, 2842, 1451, 1414, 1302, 1133, 1017, 1043, 1041, 952, 1298, 912, 2912, 1311, 789, 1039, 1129, 818, 694, 602, 616, 624, 692, 589, 502, 496, 454, 402, 398, 349, 328, 359, 332, 325, 320, 302, 310, 285, 270, 206, 238, 238, 218, 259, 270, 295, 287, 307, 11001]
+hist2=[0, 0, 816806, 253952, 85692, 22664, 19222, 5381, 3697, 3682, 3567, 2258, 1299, 511, 363, 536, 461, 241, 977, 300, 20, 459, 94, 27, 324, 105, 17, 28, 14, 25, 13, 4, 9, 3, 5, 3, 11, 6, 5, 5, 5, 4, 5, 7, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 7, 6, 3, 5, 328]
+hist3=[997674, 225572, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83202, 49701, 19682, 4671, 1581, 4188, 3100, 2607, 2744, 3107, 1689, 937, 298, 240, 164, 146, 105, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22114, 18753, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11688, 9410, 3305, 1243, 754, 550, 240, 237, 209, 220, 137, 79, 40, 13, 33, 8, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80720, 30241, 11096, 1098, 822, 200, 135, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]

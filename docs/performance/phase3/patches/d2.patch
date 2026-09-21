@@ -1,0 +1,25 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -195,8 +195,20 @@
+                 }
+ 
+                 Expr::Add(sum) => {
+-                    // TODO: the arith reduce is unnecessary here
+-                    self.reduce_masked(Expr::Add(sum.into_iter().map(|e| scale * e).collect()))
++                    let mut terms: Vec<_> = sum.into_iter().filter_map(|term| {
++                        let term = match term {
++                            Expr::Const(c) => Expr::Const(scale.wrapping_mul(c) & self.mask),
++                            Expr::Scale(c, e) => Expr::scale(scale.wrapping_mul(c) & self.mask, *e),
++                            e => scale * e,
++                        };
++                        (term != Expr::zero()).then_some(term)
++                    }).collect();
++                    terms.sort();
++                    match terms.len() {
++                        0 => Expr::zero(),
++                        1 => terms.remove(0),
++                        _ => Expr::Add(terms),
++                    }
+                 }
+ 
+                 other => scale * other,

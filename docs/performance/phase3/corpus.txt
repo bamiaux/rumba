@@ -1,0 +1,65 @@
+=== initial reference ===
+## Quality
+
+| Dataset           | Total |    OK |   OKZ |    NG |   Win |  Tied |  Loss | Actual AST | Raw AST |
+|-------------------|------:|------:|------:|------:|------:|------:|------:|-----------:|--------:|
+| loki_tiny         | 25000 | 25000 |     0 |     0 |     0 | 25000 |     0 |      80000 |   80000 |
+| mba_flatten       |  3000 |  3000 |     0 |     0 |  2338 |   383 |   279 |      29535 |   38329 |
+| mba_obf_linear    |  1000 |  1000 |     0 |     0 |   821 |    37 |   142 |       9892 |   12389 |
+| mba_obf_nonlinear |  1000 |  1000 |     0 |     0 |  1000 |     0 |     0 |       5878 |    9582 |
+| neureduce         | 10000 | 10000 |     0 |     0 |  9083 |   816 |   101 |      79931 |  115827 |
+| qsynth_ea         |   500 |   500 |     0 |     0 |   261 |    20 |   219 |      10682 |    7145 |
+| syntia            |   500 |   500 |     0 |     0 |   104 |   342 |    54 |       2100 |    2076 |
+| **Total**         | 41000 | 41000 |     0 |     0 | 13607 | 26598 |   795 |     218018 |  265348 |
+
+## Performance
+
+Runs: 5 measured per dataset (quality pass used as warm-up)
+
+| Dataset           |     Time | Expr/s |      p50 |      p95 |      p99 |      Max |
+|-------------------|---------:|-------:|---------:|---------:|---------:|---------:|
+| loki_tiny         |   1.25 s |  19941 |    26 µs |   165 µs |   382 µs |  6.19 ms |
+| mba_flatten       |   206 ms |  14553 |    40 µs |   183 µs |   236 µs |  3.12 ms |
+| mba_obf_linear    |   134 ms |   7445 |    39 µs |   415 µs |   527 µs |   861 µs |
+| mba_obf_nonlinear |  65.0 ms |  15374 |    49 µs |   148 µs |   181 µs |  1.16 ms |
+| neureduce         |   295 ms |  33875 |    28 µs |    51 µs |    95 µs |   276 µs |
+| qsynth_ea         |   520 ms |    961 |   312 µs |  4.32 ms |  10.1 ms |  33.4 ms |
+| syntia            |  14.9 ms |  33522 |    12 µs |   142 µs |   237 µs |   415 µs |
+| **Total**         |   2.50 s |  16422 |    28 µs |   174 µs |   453 µs |  33.4 ms |
+
+Slowest median maximum: 33.4 ms — qsynth_ea:34
+
+Snapshot saved: /tmp/rumba-phase3-results/baseline.snapshot
+
+=== final reference (unchanged production code) ===
+## Quality
+
+| Dataset           | Total |    OK |   OKZ |    NG |   Win |  Tied |  Loss | Actual AST | Raw AST |
+|-------------------|------:|------:|------:|------:|------:|------:|------:|-----------:|--------:|
+| loki_tiny         | 25000 | 25000 |     0 |     0 |     0 | 25000 |     0 |      80000 |   80000 |
+| mba_flatten       |  3000 |  3000 |     0 |     0 |  2338 |   383 |   279 |      29535 |   38329 |
+| mba_obf_linear    |  1000 |  1000 |     0 |     0 |   821 |    37 |   142 |       9892 |   12389 |
+| mba_obf_nonlinear |  1000 |  1000 |     0 |     0 |  1000 |     0 |     0 |       5878 |    9582 |
+| neureduce         | 10000 | 10000 |     0 |     0 |  9083 |   816 |   101 |      79931 |  115827 |
+| qsynth_ea         |   500 |   500 |     0 |     0 |   261 |    20 |   219 |      10682 |    7145 |
+| syntia            |   500 |   500 |     0 |     0 |   104 |   342 |    54 |       2100 |    2076 |
+| **Total**         | 41000 | 41000 |     0 |     0 | 13607 | 26598 |   795 |     218018 |  265348 |
+
+## Performance
+
+Runs: 5 measured per dataset (quality pass used as warm-up)
+
+| Dataset           |     Time | Expr/s |      p50 |      p95 |      p99 |      Max |
+|-------------------|---------:|-------:|---------:|---------:|---------:|---------:|
+| loki_tiny         |   1.18 s |  21099 |    26 µs |   149 µs |   348 µs |  5.92 ms |
+| mba_flatten       |   200 ms |  15030 |    37 µs |   179 µs |   224 µs |  3.01 ms |
+| mba_obf_linear    |   131 ms |   7657 |    36 µs |   403 µs |   473 µs |  1.23 ms |
+| mba_obf_nonlinear |  65.5 ms |  15271 |    50 µs |   147 µs |   176 µs |  1.27 ms |
+| neureduce         |   280 ms |  35778 |    28 µs |    49 µs |    59 µs |   145 µs |
+| qsynth_ea         |   488 ms |   1025 |   283 µs |  3.95 ms |  9.49 ms |  31.5 ms |
+| syntia            |  12.8 ms |  39108 |    11 µs |   127 µs |   197 µs |   282 µs |
+| **Total**         |   2.37 s |  17322 |    28 µs |   161 µs |   432 µs |  31.5 ms |
+
+Slowest median maximum: 31.5 ms — qsynth_ea:34
+
+Snapshot saved: /tmp/rumba-phase3-results/best.snapshot

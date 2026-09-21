@@ -1,0 +1,16 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -718,6 +718,13 @@
+ fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
+     let mask = make_mask(n);
+     let e = e.reduce_masked(mask);
++    let mut solver = MBASolver::new(cache, &e, n);
++    if solver.is_linear(&e) {
++        let e = simplify_to_fixed_point(e, |e| {
++            solver.solve_linear(e.reduce_masked(mask), false)
++        })?;
++        return Ok(prettify(e, n));
++    }
+     let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
+ 
+     // The only place prettify may run: on the way out, after the fixed point has

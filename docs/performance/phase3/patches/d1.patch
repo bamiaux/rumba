@@ -1,0 +1,32 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -114,8 +114,28 @@
+         flat
+     }
+ 
+-    pub fn group_terms(&self, exprs: Vec<Expr>) -> Expr {
++    pub fn group_terms(&self, mut exprs: Vec<Expr>) -> Expr {
+         let initial_len = exprs.len();
++
++        // Flattening already reduced the terms. Distinct bases cannot combine.
++        if self.mask != 0
++            && initial_len <= 4
++            && exprs.iter().enumerate().all(|(i, e)| {
++                let base = match e {
++                    Expr::Scale(_, e) => e.as_ref(),
++                    e => e,
++                };
++                exprs[..i].iter().all(|other| {
++                    base != match other {
++                        Expr::Scale(_, e) => e.as_ref(),
++                        e => e,
++                    }
++                })
++            })
++        {
++            exprs.sort();
++            return Expr::Add(exprs);
++        }
+ 
+         let mut map =
+             HashMap::<Expr, u64>::with_capacity_and_hasher(initial_len, Default::default());

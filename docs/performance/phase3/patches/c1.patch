@@ -1,0 +1,62 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -220,7 +220,8 @@
+ 
+     /// Solves a linear MBA
+     fn solve_linear_inner(&self, e: Expr, t: usize, from_poly: bool) -> Expr {
+-        let signature = self.calc_signature(&e, t);
++        let signature = if t <= 6 { self.packed_signature(&e, t) } else { None }
++            .unwrap_or_else(|| self.calc_signature(&e, t));
+ 
+         if from_poly {
+             // We necessarily want a sum of conjunctions
+@@ -229,6 +230,49 @@
+ 
+         // TODO: add a refined solution to identify xor etc
+         self.make_conjunction_sum(signature, t)
++    }
++
++    fn packed_signature(&self, e: &Expr, t: usize) -> Option<Vec<u64>> {
++        fn cube(e: &Expr, mask: u64) -> Option<u64> {
++            const LANES: [u64; 6] = [
++                0xaaaaaaaaaaaaaaaa, 0xcccccccccccccccc, 0xf0f0f0f0f0f0f0f0,
++                0xff00ff00ff00ff00, 0xffff0000ffff0000, 0xffffffff00000000,
++            ];
++            match e {
++                Expr::Const(c) if c & mask == 0 => Some(0),
++                Expr::Const(c) if c & mask == mask => Some(u64::MAX),
++                Expr::Var(v) => Some(LANES[v.0]),
++                Expr::Not(e) => Some(!cube(e, mask)?),
++                Expr::And(es) => es.iter().try_fold(u64::MAX, |a, e| Some(a & cube(e, mask)?)),
++                Expr::Or(es) => es.iter().try_fold(0, |a, e| Some(a | cube(e, mask)?)),
++                Expr::Xor(es) => es.iter().try_fold(0, |a, e| Some(a ^ cube(e, mask)?)),
++                _ => None,
++            }
++        }
++        fn add(e: &Expr, coeff: u64, mask: u64, signature: &mut [u64]) -> Option<()> {
++            match e {
++                Expr::Const(c) => {
++                    for value in signature { *value = value.wrapping_add(coeff.wrapping_mul(*c)); }
++                }
++                Expr::Scale(c, e) => return add(e, coeff.wrapping_mul(*c), mask, signature),
++                Expr::Add(es) => {
++                    for e in es { add(e, coeff, mask, signature)?; }
++                }
++                Expr::Mul(es) if es.len() == 1 => return add(&es[0], coeff, mask, signature),
++                _ => {
++                    let bits = cube(e, mask)?;
++                    let high = if bits & 1 != 0 { mask & !1 } else { 0 };
++                    for (i, value) in signature.iter_mut().enumerate() {
++                        *value = value.wrapping_add(coeff.wrapping_mul(high | ((bits >> i) & 1)));
++                    }
++                }
++            }
++            Some(())
++        }
++        let mut signature = vec![0; 1usize << t];
++        add(e, 1, self.mask, &mut signature)?;
++        for value in &mut signature { *value &= self.mask; }
++        Some(signature)
+     }
+ 
+     /// Simplifies a linear MBA

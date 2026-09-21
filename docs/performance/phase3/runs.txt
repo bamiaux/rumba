@@ -1,0 +1,316 @@
+=== a0-times.txt ===
+run=0 count=41000 seconds=2.269077581
+run=1 count=41000 seconds=2.208869785
+run=2 count=41000 seconds=2.147158450
+run=3 count=41000 seconds=2.166720658
+run=4 count=41000 seconds=2.188414832
+run=5 count=41000 seconds=2.156366479
+median=2.166720658
+
+=== a1-times.txt ===
+run=0 count=41000 seconds=2.393041429
+run=1 count=41000 seconds=2.311915914
+run=2 count=41000 seconds=2.402591387
+run=3 count=41000 seconds=2.389794976
+run=4 count=41000 seconds=2.374533538
+run=5 count=41000 seconds=2.392843230
+median=2.389794976
+
+=== a2-cohort.txt ===
+run=0 count=18654 seconds=0.463816625 cpu=0.463185905
+run=1 count=18654 seconds=0.462447649 cpu=0.463861463
+run=2 count=18654 seconds=0.460469676 cpu=0.459929516
+run=3 count=18654 seconds=0.462433789 cpu=0.463923532
+run=4 count=18654 seconds=0.477392736 cpu=0.475952101
+run=5 count=18654 seconds=0.464534690 cpu=0.463845343
+median=0.462447649
+cpu_median=0.463861463
+
+=== a2-times-2.txt ===
+run=0 count=41000 seconds=2.283262970 cpu=2.283584116
+run=1 count=41000 seconds=2.243817193 cpu=2.243601668
+run=2 count=41000 seconds=2.325137751 cpu=2.327530711
+run=3 count=41000 seconds=2.355782250 cpu=2.355324026
+run=4 count=41000 seconds=2.300971042 cpu=2.299524628
+run=5 count=41000 seconds=2.262760607 cpu=2.263598583
+median=2.300971042
+cpu_median=2.299524628
+
+=== a2-times-3.txt ===
+run=0 count=41000 seconds=2.264545331 cpu=2.263555696
+run=1 count=41000 seconds=2.292943303 cpu=2.291507070
+run=2 count=41000 seconds=2.256259823 cpu=2.255467357
+run=3 count=41000 seconds=2.280900758 cpu=2.283397660
+run=4 count=41000 seconds=2.282183941 cpu=2.283527056
+run=5 count=41000 seconds=2.304204432 cpu=2.303486939
+median=2.282183941
+cpu_median=2.283527056
+
+=== a2-times.txt ===
+run=0 count=41000 seconds=2.220453828 cpu=2.212502523
+run=1 count=41000 seconds=2.266578496 cpu=2.267622295
+run=2 count=41000 seconds=2.234314826 cpu=2.235565703
+run=3 count=41000 seconds=2.181232342 cpu=2.179574402
+run=4 count=41000 seconds=2.187081372 cpu=2.183573596
+run=5 count=41000 seconds=2.266453929 cpu=2.267295479
+median=2.234314826
+cpu_median=2.235565703
+
+=== b-times.txt ===
+run=0 count=41000 seconds=2.299901218 cpu=2.299629692
+run=1 count=41000 seconds=2.370663749 cpu=2.371686443
+run=2 count=41000 seconds=2.301392806 cpu=2.299550350
+run=3 count=41000 seconds=2.239891584 cpu=2.239726165
+run=4 count=41000 seconds=2.315953136 cpu=2.315624780
+run=5 count=41000 seconds=2.415942850 cpu=2.414800853
+median=2.315953136
+cpu_median=2.315624780
+
+=== base-cohort.txt ===
+run=0 count=18654 seconds=0.511296946 cpu=0.508994809
+run=1 count=18654 seconds=0.496374368 cpu=0.495919102
+run=2 count=18654 seconds=0.522184621 cpu=0.523852889
+run=3 count=18654 seconds=0.506076697 cpu=0.503889565
+run=4 count=18654 seconds=0.480833496 cpu=0.479934078
+run=5 count=18654 seconds=0.501553403 cpu=0.499922780
+median=0.501553403
+cpu_median=0.499922780
+
+=== base-times-2.txt ===
+run=0 count=41000 seconds=2.321951138 cpu=2.319582167
+run=1 count=41000 seconds=2.340926423 cpu=2.339487161
+run=2 count=41000 seconds=2.354731842 cpu=2.355562569
+run=3 count=41000 seconds=2.379171762 cpu=2.379549808
+run=4 count=41000 seconds=2.196502366 cpu=2.195572415
+run=5 count=41000 seconds=2.218391314 cpu=2.219535823
+median=2.340926423
+cpu_median=2.339487161
+
+=== base-times-3.txt ===
+run=0 count=41000 seconds=2.213940355 cpu=2.215711842
+run=1 count=41000 seconds=2.239375579 cpu=2.239640669
+run=2 count=41000 seconds=2.309748828 cpu=2.307655756
+run=3 count=41000 seconds=2.396144956 cpu=2.395705472
+run=4 count=41000 seconds=2.244406890 cpu=2.243703274
+run=5 count=41000 seconds=2.242256436 cpu=2.243597698
+median=2.244406890
+cpu_median=2.243703274
+
+=== base-times-b.txt ===
+run=0 count=41000 seconds=2.239213156 cpu=2.229655980
+run=1 count=41000 seconds=2.261243105 cpu=2.262833508
+run=2 count=41000 seconds=2.296728739 cpu=2.295414638
+run=3 count=41000 seconds=2.286800361 cpu=2.287621108
+run=4 count=41000 seconds=2.218692690 cpu=2.218834534
+run=5 count=41000 seconds=2.245710279 cpu=2.243579866
+median=2.261243105
+cpu_median=2.262833508
+
+=== base-times-c1.txt ===
+run=0 count=41000 seconds=2.241510686 cpu=2.235574296
+run=1 count=41000 seconds=2.250124090 cpu=2.245993912
+run=2 count=41000 seconds=2.346300168 cpu=2.346665961
+run=3 count=41000 seconds=2.217514309 cpu=2.219544945
+run=4 count=41000 seconds=2.248589182 cpu=2.251593068
+run=5 count=41000 seconds=2.251168569 cpu=2.251568674
+median=2.250124090
+cpu_median=2.251568674
+
+=== base-times-c1b.txt ===
+run=0 count=41000 seconds=2.185092658 cpu=2.181167015
+run=1 count=41000 seconds=2.180496853 cpu=2.178538384
+run=2 count=41000 seconds=2.241500117 cpu=2.242875779
+run=3 count=41000 seconds=2.221083957 cpu=2.219403288
+run=4 count=41000 seconds=2.257098067 cpu=2.255550761
+run=5 count=41000 seconds=2.182447947 cpu=2.183513346
+median=2.221083957
+cpu_median=2.219403288
+
+=== base-times-c2.txt ===
+run=0 count=41000 seconds=2.258733264 cpu=2.255312921
+run=1 count=41000 seconds=2.218863457 cpu=2.219248284
+run=2 count=41000 seconds=2.376604451 cpu=2.375403460
+run=3 count=41000 seconds=2.216536557 cpu=2.215538208
+run=4 count=41000 seconds=2.198464559 cpu=2.199641052
+run=5 count=41000 seconds=2.205617271 cpu=2.207507986
+median=2.216536557
+cpu_median=2.215538208
+
+=== base-times-d1.txt ===
+run=0 count=41000 seconds=2.334993239 cpu=2.335494917
+run=1 count=41000 seconds=2.339609528 cpu=2.338434346
+run=2 count=41000 seconds=2.279608929 cpu=2.278304880
+run=3 count=41000 seconds=2.222742062 cpu=2.219576284
+run=4 count=41000 seconds=2.280773356 cpu=2.279391687
+run=5 count=41000 seconds=2.244715953 cpu=2.243625309
+median=2.279608929
+cpu_median=2.278304880
+
+=== base-times-d1b.txt ===
+run=0 count=41000 seconds=2.171901903 cpu=2.171496268
+run=1 count=41000 seconds=2.165867863 cpu=2.163557265
+run=2 count=41000 seconds=2.171823771 cpu=2.171582238
+run=3 count=41000 seconds=2.168298515 cpu=2.167497682
+run=4 count=41000 seconds=2.177940441 cpu=2.179459831
+run=5 count=41000 seconds=2.172327500 cpu=2.175453585
+median=2.171823771
+cpu_median=2.171582238
+
+=== base-times-d2.txt ===
+run=0 count=41000 seconds=2.230182945 cpu=2.227721003
+run=1 count=41000 seconds=2.311566581 cpu=2.307676242
+run=2 count=41000 seconds=2.233374242 cpu=2.231731434
+run=3 count=41000 seconds=2.208761557 cpu=2.211658157
+run=4 count=41000 seconds=2.276031917 cpu=2.275673196
+run=5 count=41000 seconds=2.314896651 cpu=2.315273100
+median=2.276031917
+cpu_median=2.275673196
+
+=== base-times-d4.txt ===
+run=0 count=41000 seconds=2.192167808 cpu=2.190819005
+run=1 count=41000 seconds=2.166811662 cpu=2.163616495
+run=2 count=41000 seconds=2.193804849 cpu=2.195551845
+run=3 count=41000 seconds=2.232664739 cpu=2.231357293
+run=4 count=41000 seconds=2.250505006 cpu=2.251510712
+run=5 count=41000 seconds=2.208841997 cpu=2.211584379
+median=2.208841997
+cpu_median=2.211584379
+
+=== base-times.txt ===
+run=0 count=41000 seconds=2.680567081
+run=1 count=41000 seconds=2.820941943
+run=2 count=41000 seconds=2.436798078
+run=3 count=41000 seconds=2.440879604
+run=4 count=41000 seconds=2.264026170
+run=5 count=41000 seconds=2.331151617
+median=2.436798078
+
+=== c1-times.txt ===
+run=0 count=41000 seconds=2.331510852 cpu=2.330913156
+run=1 count=41000 seconds=2.319100592 cpu=2.319667589
+run=2 count=41000 seconds=2.223174386 cpu=2.223588017
+run=3 count=41000 seconds=2.314018234 cpu=2.311723803
+run=4 count=41000 seconds=2.314037263 cpu=2.315617580
+run=5 count=41000 seconds=2.333939084 cpu=2.335510538
+median=2.314037263
+cpu_median=2.315617580
+
+=== c1b-times.txt ===
+run=0 count=41000 seconds=2.209797297 cpu=2.211598706
+run=1 count=41000 seconds=2.201469756 cpu=2.199640066
+run=2 count=41000 seconds=2.202255184 cpu=2.199658506
+run=3 count=41000 seconds=2.209011130 cpu=2.207644587
+run=4 count=41000 seconds=2.207813203 cpu=2.207622699
+run=5 count=41000 seconds=2.205969201 cpu=2.207593245
+median=2.205969201
+cpu_median=2.207593245
+
+=== c2-times.txt ===
+run=0 count=41000 seconds=2.210993823 cpu=2.211629801
+run=1 count=41000 seconds=2.366538692 cpu=2.367377660
+run=2 count=41000 seconds=2.196944429 cpu=2.195678326
+run=3 count=41000 seconds=2.200080768 cpu=2.199589822
+run=4 count=41000 seconds=2.206009756 cpu=2.206442887
+run=5 count=41000 seconds=2.200976062 cpu=2.199573562
+median=2.200976062
+cpu_median=2.199589822
+
+=== d1-repeat-1-base.txt ===
+run=0 count=41000 seconds=2.205517403 cpu=2.203692599
+run=1 count=41000 seconds=2.264073761 cpu=2.263679814
+run=2 count=41000 seconds=2.217820890 cpu=2.214791482
+run=3 count=41000 seconds=2.229910159 cpu=2.231581594
+run=4 count=41000 seconds=2.214405003 cpu=2.215554047
+run=5 count=41000 seconds=2.204002910 cpu=2.203598908
+median=2.217820890
+cpu_median=2.215554047
+
+=== d1-repeat-1-d1.txt ===
+run=0 count=41000 seconds=2.143323300 cpu=2.142588539
+run=1 count=41000 seconds=2.142572353 cpu=2.143488414
+run=2 count=41000 seconds=2.151994749 cpu=2.151481483
+run=3 count=41000 seconds=2.155377540 cpu=2.155552052
+run=4 count=41000 seconds=2.213087799 cpu=2.211338214
+run=5 count=41000 seconds=2.207979755 cpu=2.207328932
+median=2.155377540
+cpu_median=2.155552052
+
+=== d1-repeat-2-base.txt ===
+run=0 count=41000 seconds=2.236440711 cpu=2.234458438
+run=1 count=41000 seconds=2.229916292 cpu=2.231345497
+run=2 count=41000 seconds=2.231030442 cpu=2.231420066
+run=3 count=41000 seconds=2.342440519 cpu=2.343374820
+run=4 count=41000 seconds=2.238847713 cpu=2.239386641
+run=5 count=41000 seconds=2.220303606 cpu=2.219503895
+median=2.231030442
+cpu_median=2.231420066
+
+=== d1-repeat-2-d1.txt ===
+run=0 count=41000 seconds=2.163893761 cpu=2.162662174
+run=1 count=41000 seconds=2.215225499 cpu=2.215314197
+run=2 count=41000 seconds=2.194336367 cpu=2.195318101
+run=3 count=41000 seconds=2.205376243 cpu=2.203293882
+run=4 count=41000 seconds=2.187734100 cpu=2.187229064
+run=5 count=41000 seconds=2.189959934 cpu=2.187390482
+median=2.194336367
+cpu_median=2.195318101
+
+=== d1-repeat-3-base.txt ===
+run=0 count=41000 seconds=2.267501502 cpu=2.266684644
+run=1 count=41000 seconds=2.248967632 cpu=2.247439322
+run=2 count=41000 seconds=2.241200731 cpu=2.243443293
+run=3 count=41000 seconds=2.232173823 cpu=2.231378379
+run=4 count=41000 seconds=2.218096213 cpu=2.219549137
+run=5 count=41000 seconds=2.251449037 cpu=2.251577259
+median=2.241200731
+cpu_median=2.243443293
+
+=== d1-repeat-3-d1.txt ===
+run=0 count=41000 seconds=2.171122695 cpu=2.171568240
+run=1 count=41000 seconds=2.190765516 cpu=2.187441399
+run=2 count=41000 seconds=2.152892749 cpu=2.151567025
+run=3 count=41000 seconds=2.160507762 cpu=2.159481400
+run=4 count=41000 seconds=2.201825359 cpu=2.199493833
+run=5 count=41000 seconds=2.199446727 cpu=2.199401149
+median=2.190765516
+cpu_median=2.187441399
+
+=== d1-times.txt ===
+run=0 count=41000 seconds=2.185486834 cpu=2.180911783
+run=1 count=41000 seconds=2.196374093 cpu=2.194181625
+run=2 count=41000 seconds=2.196070697 cpu=2.195473240
+run=3 count=41000 seconds=2.141921997 cpu=2.143466734
+run=4 count=41000 seconds=2.150395803 cpu=2.151529024
+run=5 count=41000 seconds=2.313066339 cpu=2.311506665
+median=2.196070697
+cpu_median=2.194181625
+
+=== d1b-times.txt ===
+run=0 count=41000 seconds=2.148898564 cpu=2.151647516
+run=1 count=41000 seconds=2.145522973 cpu=2.143627093
+run=2 count=41000 seconds=2.148772833 cpu=2.147659810
+run=3 count=41000 seconds=2.132850076 cpu=2.130617818
+run=4 count=41000 seconds=2.197970426 cpu=2.195353829
+run=5 count=41000 seconds=2.144886612 cpu=2.147530206
+median=2.145522973
+cpu_median=2.147530206
+
+=== d2-times.txt ===
+run=0 count=41000 seconds=2.273343865 cpu=2.259183270
+run=1 count=41000 seconds=2.265284859 cpu=2.266121932
+run=2 count=41000 seconds=2.328084644 cpu=2.327571287
+run=3 count=41000 seconds=2.303935630 cpu=2.303604700
+run=4 count=41000 seconds=2.234845919 cpu=2.231655625
+run=5 count=41000 seconds=2.299865538 cpu=2.299435323
+median=2.299865538
+cpu_median=2.299435323
+
+=== d4-times.txt ===
+run=0 count=41000 seconds=2.171172203 cpu=2.171705037
+run=1 count=41000 seconds=2.180317024 cpu=2.179674880
+run=2 count=41000 seconds=2.200032464 cpu=2.199595172
+run=3 count=41000 seconds=2.143230857 cpu=2.143649736
+run=4 count=41000 seconds=2.167590624 cpu=2.167685758
+run=5 count=41000 seconds=2.120625951 cpu=2.119616325
+median=2.167590624
+cpu_median=2.167685758

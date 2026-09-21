@@ -1,0 +1,32 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -128,9 +128,10 @@
+ 
+     /// Solves a non polynomial MBA
+     fn solve(&mut self, e: Expr) -> Result<Expr, SolveError> {
+-        // TODO: Remove this only needs to be done once
+-        let e = e.reduce_masked(self.mask);
+-
++        self.solve_reduced(e.reduce_masked(self.mask))
++    }
++
++    fn solve_reduced(&mut self, e: Expr) -> Result<Expr, SolveError> {
+         let p = self.make_polynomial(e)?;
+         let first_degree = self.degree;
+         let merged = self.merge_equal_hidden_components(p);
+@@ -718,7 +719,14 @@
+ fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<Expr, SolveError> {
+     let mask = make_mask(n);
+     let e = e.reduce_masked(mask);
+-    let e = simplify_to_fixed_point(e, |e| simplify_mba_inner(cache, e, n))?;
++    let mut first = true;
++    let e = simplify_to_fixed_point(e, |e| {
++        if std::mem::take(&mut first) {
++            MBASolver::new(cache, &e, n).solve_reduced(e)
++        } else {
++            simplify_mba_inner(cache, e, n)
++        }
++    })?;
+ 
+     // The only place prettify may run: on the way out, after the fixed point has
+     // settled. See the module docs for why it must stay out of the loop.

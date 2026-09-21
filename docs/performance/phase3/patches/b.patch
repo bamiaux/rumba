@@ -1,0 +1,24 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -491,7 +491,7 @@
+     fn is_linear_bitwise(&self, l: Expr, mask: u64) -> Option<Expr> {
+         let mut t = 0;
+         let mut var_map = BiMap::new();
+-        let e = reduce_vars(l.clone(), &mut var_map, &mut t);
++        let e = reduce_vars(l, &mut var_map, &mut t);
+ 
+         if t > 10 {
+             // This would be too expensive
+@@ -502,10 +502,10 @@
+ 
+         if self.is_signature_bitwise(&s, mask) {
+             debug!("Will treat {} as a bitwise expression", e);
+-            Some(l)
++            restore_vars(e, &var_map).ok()
+         } else {
+             // Attempt to "fix" the signature with a variable substitution
+-            self.variable_substitution(l)
++            self.variable_substitution(restore_vars(e, &var_map).ok()?)
+         }
+     }
+ 

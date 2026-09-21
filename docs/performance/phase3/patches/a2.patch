@@ -1,0 +1,13 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -130,6 +130,10 @@
+     fn solve(&mut self, e: Expr) -> Result<Expr, SolveError> {
+         // TODO: Remove this only needs to be done once
+         let e = e.reduce_masked(self.mask);
++
++        if self.is_linear(&e) {
++            return self.solve_linear(e, false);
++        }
+ 
+         let p = self.make_polynomial(e)?;
+         let first_degree = self.degree;

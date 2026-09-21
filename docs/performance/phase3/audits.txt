@@ -1,0 +1,96 @@
+=== c1-audit-tests.txt ===
+   Compiling rumba-core v1.0.1 (/tmp/rumba-phase3-control/core)
+    Finished `release` profile [optimized] target(s) in 4.25s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-ed7d3581c8991fc2)
+
+running 2 tests
+test simplify::phase3_packed_tests::packed_rejects_non_bitwise_arithmetic_and_partial_masks ... ok
+test simplify::phase3_packed_tests::packed_truth_and_coefficients_all_word_widths ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.10s
+
+
+=== c2-audit-tests.txt ===
+    Blocking waiting for file lock on artifact directory
+   Compiling rumba-core v1.0.1 (/tmp/rumba-phase3-control/core)
+    Finished `release` profile [optimized] target(s) in 4.58s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-ed7d3581c8991fc2)
+
+running 2 tests
+test simplify::phase3_packed_tests::packed_rejects_non_bitwise_arithmetic_and_partial_masks ... ok
+test simplify::phase3_packed_tests::packed_truth_and_coefficients_all_word_widths ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.11s
+
+
+=== d1-audit-tests.txt ===
+   Compiling rumba-core v1.0.1 (/tmp/rumba-phase3-control/core)
+    Finished `release` profile [optimized] target(s) in 4.75s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-ed7d3581c8991fc2)
+
+running 1 test
+test reduce::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.13s
+
+
+=== d2-audit-tests.txt ===
+   Compiling rumba-core v1.0.1 (/tmp/rumba-phase3-control/core)
+    Finished `release` profile [optimized] target(s) in 4.62s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-ed7d3581c8991fc2)
+
+running 1 test
+test reduce::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks ... FAILED
+
+failures:
+
+---- reduce::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks stdout ----
+
+thread 'reduce::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks' (65) panicked at core/src/reduce.rs:453:17:
+assertion `left == right` failed: n=3, e=Mul([Mul([Xor([Const(13965941205798774797), Var(VarId(2))]), Add([Var(VarId(0)), Const(1838390255483147017), Var(VarId(0))])]), Mul([Not(Var(VarId(3))), Add([Var(VarId(3)), Var(VarId(3))])])])
+  left: Add([Scale(2, Mul([Var(VarId(3)), Not(Var(VarId(3))), Xor([Var(VarId(2)), Const(5)])])), Scale(4, Mul([Var(VarId(3)), Not(Var(VarId(3))), Mul([Var(VarId(0)), Xor([Var(VarId(2)), Const(5)])])]))])
+ right: Add([Scale(2, Mul([Var(VarId(3)), Not(Var(VarId(3))), Xor([Var(VarId(2)), Const(5)])])), Scale(4, Mul([Var(VarId(0)), Var(VarId(3)), Not(Var(VarId(3))), Xor([Var(VarId(2)), Const(5)])]))])
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    reduce::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rumba-core --lib`
+
+=== d4-audit-tests.txt ===
+   Compiling rumba-core v1.0.1 (/tmp/rumba-phase3-control/core)
+warning: struct `SimplifyCache` is never constructed
+   --> core/src/reference_simplify.rs:698:12
+    |
+698 | pub struct SimplifyCache(MbaCache);
+    |            ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated function `new` is never used
+   --> core/src/reference_simplify.rs:702:12
+    |
+700 | impl SimplifyCache {
+    | ------------------ associated function in this implementation
+701 |     /// An empty cache.
+702 |     pub fn new() -> Self {
+    |            ^^^
+
+warning: function `simplify_mba_cached` is never used
+   --> core/src/reference_simplify.rs:714:8
+    |
+714 | pub fn simplify_mba_cached(e: Expr, n: u8, cache: &SimplifyCache) -> Result<Expr, SolveError> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: `rumba-core` (lib test) generated 3 warnings
+    Finished `release` profile [optimized] target(s) in 5.21s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-ed7d3581c8991fc2)
+
+running 1 test
+test simplify::phase3_differential_tests::reducer_matches_reference_on_arbitrary_trees_and_all_masks ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.21s
+
