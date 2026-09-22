@@ -1,0 +1,102 @@
+[base, run 1]
+# started on Mon Sep 21 22:15:23 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/base-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        9558150759      cycles:u                                                              
+       20072782912      instructions:u                                                        
+        3405833916      branches:u                                                            
+          68958843      branch-misses:u                                                       
+
+       6.422809713 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+[final, run 1]
+# started on Mon Sep 21 22:15:30 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/final-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        8140887122      cycles:u                                                              
+       16430632417      instructions:u                                                        
+        2805781792      branches:u                                                            
+          64794353      branch-misses:u                                                       
+
+       5.716359496 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+[base, run 2]
+# started on Mon Sep 21 22:15:35 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/base-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        9600017768      cycles:u                                                              
+       20072843919      instructions:u                                                        
+        3405870964      branches:u                                                            
+          68803613      branch-misses:u                                                       
+
+       6.359424274 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+[final, run 2]
+# started on Mon Sep 21 22:15:42 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/final-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        8122256108      cycles:u                                                              
+       16429468677      instructions:u                                                        
+        2805579724      branches:u                                                            
+          64331754      branch-misses:u                                                       
+
+       5.591742234 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+[base, run 3]
+# started on Mon Sep 21 22:15:47 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/base-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        9568396672      cycles:u                                                              
+       20069105515      instructions:u                                                        
+        3405150581      branches:u                                                            
+          69474030      branch-misses:u                                                       
+
+       6.479149403 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+[final, run 3]
+# started on Mon Sep 21 22:15:54 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-layout-results/final-isolated-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+        8121838337      cycles:u                                                              
+       16430495852      instructions:u                                                        
+        2805779845      branches:u                                                            
+          63933192      branch-misses:u                                                       
+
+       5.676378021 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+

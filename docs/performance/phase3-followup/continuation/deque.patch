@@ -1,0 +1,36 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -95,22 +95,21 @@
+     where
+         F: FnMut(Expr) -> FlattenResult,
+     {
+-        let mut flat = Vec::with_capacity(v.len());
+-
+-        let mut stack: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
+-
+-        while let Some(e) = stack.pop() {
+-            match handler(e) {
+-                FlattenResult::Vec(mut v) => {
+-                    stack.append(&mut v);
++        let reduced: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
++        let mut queue = std::collections::VecDeque::from(reduced);
++        let mut emitted = 0;
++        while queue.len() > emitted {
++            match handler(queue.pop_back().unwrap()) {
++                FlattenResult::Vec(v) => queue.extend(v),
++                FlattenResult::Expr(e) => {
++                    queue.push_front(e);
++                    emitted += 1;
+                 }
+-
+-                FlattenResult::Expr(e) => flat.push(e),
+-
+                 FlattenResult::None => {}
+             }
+         }
+-
++        let mut flat = Vec::from(queue);
++        flat.reverse();
+         flat
+     }
+ 

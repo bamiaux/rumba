@@ -1,5 +1,18 @@
 # RUMBA v1.0.1 — phase 3 depuis `prettify`
 
+> **Correction du protocole, campagne suivante :** l'audit des exécutables a
+> établi que `base-probe` et `a2-probe` utilisés dans les répétitions avaient
+> le même SHA-256 (`d68634c25aea0e1523f79b2035a5a880bb09338305bd974498206716d956babe`).
+> Le partage du répertoire Cargo `target` entre checkouts a contaminé le témoin.
+> Les deltas et verdicts de performance ci-dessous ne permettent donc pas de
+> conclure à l'absence de gain contre `prettify`. Ils sont conservés comme trace
+> de l'expérience, et remplacés par une campagne utilisant un répertoire de
+> compilation distinct pour chaque variante. Les snapshots d'origine et les
+> contre-exemples structurels restent des preuves séparées des chronométrages.
+> Voir la [campagne corrigée et les optimisations retenues](../phase3-followup/README.md).
+
+## Rapport historique — conclusions de performance invalidées
+
 **Aucun patch de production retenu.** Les expérimentations A, B, C, puis D
 n'ont pas établi un gain respectant les seuils demandés et la parité structurelle.
 La branche finale `perf/rumba-1.0.1-phase3` contient ce dossier de preuves ;

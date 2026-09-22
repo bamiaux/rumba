@@ -83,21 +83,36 @@ fn complete_truth_table(observed: &[Option<bool>]) -> Vec<u8> {
 
 fn infer_bitwise_truth_tables(target: &[u64], parents: &[&[u64]], n: u8) -> Vec<u8> {
     let input_count = 1usize << parents.len();
-    let mut observed = vec![None; input_count];
-    for sample in 0..target.len() {
-        for bit in 0..n {
-            let mut input = 0usize;
+    let mask = crate::varint::make_mask(n);
+    let mut seen_zero = 0u8;
+    let mut seen_one = 0u8;
+    for (sample, &output) in target.iter().enumerate() {
+        for input in 0..input_count {
+            // Each set bit selects an observation with this parent assignment.
+            let mut active = mask;
             for (index, parent) in parents.iter().enumerate() {
-                input |= (((parent[sample] >> bit) & 1) as usize) << index;
+                active &= if input & (1 << index) != 0 {
+                    parent[sample]
+                } else {
+                    !parent[sample]
+                };
             }
-            let output = ((target[sample] >> bit) & 1) != 0;
-            match observed[input] {
-                Some(previous) if previous != output => return Vec::new(),
-                Some(_) => {}
-                None => observed[input] = Some(output),
-            }
+            seen_zero |= u8::from(active & !output != 0) << input;
+            seen_one |= u8::from(active & output != 0) << input;
+        }
+        if seen_zero & seen_one != 0 {
+            return Vec::new();
         }
     }
+    let observed: Vec<_> = (0..input_count)
+        .map(|input| {
+            if (seen_zero | seen_one) & (1 << input) == 0 {
+                None
+            } else {
+                Some(seen_one & (1 << input) != 0)
+            }
+        })
+        .collect();
     complete_truth_table(&observed)
 }
 
@@ -398,6 +413,76 @@ mod tests {
                     mask
                 };
                 assert_eq!(expression.eval_bits(&variables).get(mask), expected);
+            }
+        }
+    }
+
+    use rand::{Rng, SeedableRng, rngs::StdRng};
+    fn infer_bitwise_truth_tables_scalar(target: &[u64], parents: &[&[u64]], n: u8) -> Vec<u8> {
+        let input_count = 1usize << parents.len();
+        let mut observed = vec![None; input_count];
+        for sample in 0..target.len() {
+            for bit in 0..n {
+                let mut input = 0usize;
+                for (index, parent) in parents.iter().enumerate() {
+                    input |= (((parent[sample] >> bit) & 1) as usize) << index;
+                }
+                let output = ((target[sample] >> bit) & 1) != 0;
+                match observed[input] {
+                    Some(previous) if previous != output => return Vec::new(),
+                    Some(_) => {}
+                    None => observed[input] = Some(output),
+                }
+            }
+        }
+        complete_truth_table(&observed)
+    }
+
+    #[test]
+    fn parallel_observations_match_scalar_tables_including_wildcards() {
+        let mut rng = StdRng::seed_from_u64(0x5153594e5448);
+        for n in 0..=64 {
+            for arity in 0..=2 {
+                for len in [0, 1, 5, 20] {
+                    for table in 0u8..(1 << (1 << arity)) {
+                        let parents: Vec<Vec<u64>> = (0..arity)
+                            .map(|_| {
+                                (0..len)
+                                    .map(|_| match rng.random_range(0..4) {
+                                        0 => 0,
+                                        1 => u64::MAX,
+                                        _ => rng.random(),
+                                    })
+                                    .collect()
+                            })
+                            .collect();
+                        let parents: Vec<&[u64]> = parents.iter().map(Vec::as_slice).collect();
+                        let mut target: Vec<u64> = (0..len)
+                            .map(|sample| {
+                                let mut value = 0;
+                                for bit in 0..64 {
+                                    let input =
+                                        parents.iter().enumerate().fold(0, |input, (i, p)| {
+                                            input | ((((p[sample] >> bit) & 1) as usize) << i)
+                                        });
+                                    value |= (((table >> input) & 1) as u64) << bit;
+                                }
+                                value
+                            })
+                            .collect();
+                        assert_eq!(
+                            infer_bitwise_truth_tables(&target, &parents, n),
+                            infer_bitwise_truth_tables_scalar(&target, &parents, n)
+                        );
+                        if let Some(first) = target.first_mut() {
+                            *first ^= rng.random::<u64>();
+                            assert_eq!(
+                                infer_bitwise_truth_tables(&target, &parents, n),
+                                infer_bitwise_truth_tables_scalar(&target, &parents, n)
+                            );
+                        }
+                    }
+                }
             }
         }
     }

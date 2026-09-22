@@ -1,0 +1,115 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 3K of event 'cycles:u'
+# Event count (approx.): 14811092017
+#
+# Overhead  Command      Shared Object  Symbol                                                                                                                                                                                                                                               
+# ........  ...........  .............  .....................................................................................................................................................................................................................................................
+#
+    15.61%  final-probe  final-probe    [.] rumba_core::reduce::Reducer::reduce_masked
+     6.72%  final-probe  final-probe    [.] rumba_core::reduce::Reducer::reduce_and
+     5.88%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     5.71%  final-probe  final-probe    [.] rumba_core::expr::Expr::eval_bits
+     4.45%  final-probe  libc.so.6      [.] malloc
+     4.07%  final-probe  final-probe    [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     3.43%  final-probe  final-probe    [.] rumba_core::expr::Expr::eval_four
+     3.41%  final-probe  libc.so.6      [.] _int_malloc
+     3.25%  final-probe  final-probe    [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     2.86%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     2.78%  final-probe  libc.so.6      [.] cfree@GLIBC_2.2.5
+     2.31%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     2.30%  final-probe  final-probe    [.] rumba_core::reduce::Reducer::group_terms
+     1.47%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     1.45%  final-probe  final-probe    [.] rumba_core::expr::Expr::scale
+     1.41%  final-probe  final-probe    [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     1.27%  final-probe  final-probe    [.] __rustc::__rdl_dealloc
+     1.08%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     1.07%  final-probe  final-probe    [.] rumba_core::simplify::hidden_gauge::canonicalize
+     0.96%  final-probe  libc.so.6      [.] _int_free_chunk
+     0.91%  final-probe  libc.so.6      [.] malloc_consolidate
+     0.79%  final-probe  libc.so.6      [.] unlink_chunk.isra.0
+     0.77%  final-probe  final-probe    [.] rumba_core::simplify::hidden_gauge::structural_key
+     0.77%  final-probe  final-probe    [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     0.76%  final-probe  final-probe    [.] <alloc::vec::into_iter::IntoIter<T,A> as core::ops::drop::Drop>::drop
+     0.71%  final-probe  final-probe    [.] rumba_core::expr::Expr::map
+     0.67%  final-probe  final-probe    [.] rumba_core::simplify::reduce_vars
+     0.65%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::cmp::PartialEq>::eq
+     0.63%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     0.63%  final-probe  final-probe    [.] __rustc::__rust_no_alloc_shim_is_unstable_v2
+     0.60%  final-probe  final-probe    [.] rumba_core::simplify::sub_coeff
+     0.58%  final-probe  final-probe    [.] rumba_core::expr::Expr::get_vars::collect
+     0.57%  final-probe  final-probe    [.] <std::hash::random::DefaultHasher as core::hash::Hasher>::write
+     0.54%  final-probe  libc.so.6      [.] __libc_malloc2
+     0.52%  final-probe  final-probe    [.] rumba_core::simplify::hidden_gauge::height
+     0.49%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     0.44%  final-probe  final-probe    [.] hashbrown::map::HashMap<K,V,S,A>::insert
+     0.44%  final-probe  final-probe    [.] __rustc::__rust_dealloc
+     0.44%  final-probe  libc.so.6      [.] __memmove_avx_unaligned_erms
+     0.43%  final-probe  final-probe    [.] rumba_core::expr::Expr::map
+     0.38%  final-probe  final-probe    [.] hashbrown::map::HashMap<K,V,S,A>::insert
+     0.36%  final-probe  libc.so.6      [.] realloc
+     0.36%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+     0.35%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::solve
+     0.33%  final-probe  final-probe    [.] rumba_core::expr::Expr::try_map
+     0.33%  final-probe  final-probe    [.] hashbrown::raw::RawTableInner::fallible_with_capacity
+     0.33%  final-probe  final-probe    [.] rumba_core::expr::Expr::try_map
+     0.30%  final-probe  final-probe    [.] __rustc::__rust_alloc
+     0.30%  final-probe  final-probe    [.] hashbrown::raw::RawTable<T,A>::reserve_rehash
+     0.30%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::solve_linear
+     0.30%  final-probe  libc.so.6      [.] _int_free_create_chunk
+     0.30%  final-probe  final-probe    [.] rumba_core::expr::Expr::truth_table_masked
+     0.28%  final-probe  final-probe    [.] rumba_core::simplify::projector_defect::coeffs
+     0.28%  final-probe  final-probe    [.] alloc::vec::Vec<T,A>::dedup::{{closure}}
+     0.27%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::linear_to_poly
+     0.27%  final-probe  final-probe    [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     0.27%  final-probe  final-probe    [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     0.27%  final-probe  final-probe    [.] rumba_core::simplify::projector_defect::literal_indexes
+     0.27%  final-probe  final-probe    [.] __rustc::__rdl_alloc
+     0.27%  final-probe  final-probe    [.] core::hash::BuildHasher::hash_one
+     0.25%  final-probe  final-probe    [.] rumba_core::simplify::restore_vars
+     0.24%  final-probe  final-probe    [.] hashbrown::rustc_entry::<impl hashbrown::map::HashMap<K,V,S,A>>::rustc_entry
+     0.24%  final-probe  libc.so.6      [.] _int_realloc
+     0.24%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::poly_to_nonpoly
+     0.24%  final-probe  final-probe    [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+     0.22%  final-probe  final-probe    [.] hashbrown::raw::RawTable<T,A>::reserve_rehash
+     0.22%  final-probe  final-probe    [.] rumba_core::simplify::merge_hidden::make_signature_samples
+     0.22%  final-probe  libc.so.6      [.] __memmove_avx_unaligned
+     0.22%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::cmp::Ord>::cmp
+     0.19%  final-probe  final-probe    [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     0.19%  final-probe  final-probe    [.] rumba_core::simplify::hidden_gauge::intern
+     0.19%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     0.19%  final-probe  final-probe    [.] core::iter::adapters::try_process
+     0.17%  final-probe  final-probe    [.] alloc::vec::Vec<T,A>::dedup_by
+     0.16%  final-probe  final-probe    [.] core::iter::adapters::try_process
+     0.14%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     0.14%  final-probe  libc.so.6      [.] _int_free_merge_chunk
+     0.14%  final-probe  final-probe    [.] rumba_core::expr::Expr::map
+     0.14%  final-probe  final-probe    [.] rumba_core::expr::Expr::try_map
+     0.14%  final-probe  final-probe    [.] rumba_core::reduce::Reducer::reduce_xor
+     0.14%  final-probe  final-probe    [.] <rumba_core::expr::Expr as core::cmp::PartialEq>::eq
+     0.11%  final-probe  final-probe    [.] core::slice::sort::shared::smallsort::small_sort_general_with_scratch
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::is_linear_bitwise
+     0.11%  final-probe  final-probe    [.] rumba_core::prettify::prettify_masked
+     0.11%  final-probe  final-probe    [.] alloc::collections::btree::map::entry::Entry<K,V,A>::or_insert
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::hidden_gauge::orientation_is_complemented
+     0.11%  final-probe  final-probe    [.] core::iter::adapters::try_process
+     0.11%  final-probe  libc.so.6      [.] __memset_avx2_unaligned_erms
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::simplify_mba_inner
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::projector_defect::term_map
+     0.11%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     0.11%  final-probe  final-probe    [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     0.11%  final-probe  final-probe    [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::MBASolver<C>::poly_to_linear
+     0.11%  final-probe  final-probe    [.] rumba_core::expr::Expr::try_map
+     0.11%  final-probe  final-probe    [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+     0.11%  final-probe  final-probe    [.] alloc::vec::in_place_collect::from_iter_in_place
+     0.11%  final-probe  final-probe    [.] core::hash::BuildHasher::hash_one
+     0.11%  final-probe  final-probe    [.] rumba_core::simplify::lambda::find_lambda_int
+
+
+#
+# (Tip: For memory address profiling, try: perf mem record / perf mem report)
+#

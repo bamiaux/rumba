@@ -1,0 +1,80 @@
+[base]
+allocations=29583855 reallocations=863280 allocated_bytes=1777063642
+total calls=41000 inclusive_ms=3717.091 exclusive_ms=91.546
+reduce calls=18041509 inclusive_ms=8992.066 exclusive_ms=1581.547
+make_polynomial calls=176250 inclusive_ms=2339.826 exclusive_ms=41.445
+solve_linear calls=178623 inclusive_ms=563.246 exclusive_ms=331.281
+truth_table_masked calls=408067 inclusive_ms=278.515 exclusive_ms=278.515
+make_conjunction_sum calls=105976 inclusive_ms=28.835 exclusive_ms=28.835
+make_bitwise calls=2614565 inclusive_ms=9041.406 exclusive_ms=238.126
+is_linear_bitwise calls=148155 inclusive_ms=180.481 exclusive_ms=111.972
+group_terms calls=1321924 inclusive_ms=196.444 exclusive_ms=167.788
+prettify calls=41000 inclusive_ms=64.826 exclusive_ms=64.826
+projector_defect calls=26218 inclusive_ms=289.206 exclusive_ms=141.087
+hide_in_var calls=94512 inclusive_ms=1881.270 exclusive_ms=157.499
+merge_hidden calls=176222 inclusive_ms=188.448 exclusive_ms=142.277
+restore_hidden calls=301542 inclusive_ms=70.122 exclusive_ms=21.420
+solve calls=176222 inclusive_ms=3909.018 exclusive_ms=48.262
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1301.907 exclusive_ms=215.027
+group_fastpath calls=1208364 inclusive_ms=0.000 exclusive_ms=0.000
+get_vars calls=396544 inclusive_ms=55.638 exclusive_ms=55.638
+variable_nodes calls=4467939 inclusive_ms=0.000 exclusive_ms=0.000
+linear_inputs calls=105976 inclusive_ms=0.000 exclusive_ms=0.000
+linear_input_nodes calls=2824707 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+get_vars_allocations=(419098, 22664512)
+
+[borrow]
+allocations=27848733 reallocations=863280 allocated_bytes=1690064250
+total calls=41000 inclusive_ms=3573.715 exclusive_ms=92.030
+reduce calls=18041509 inclusive_ms=8882.804 exclusive_ms=1559.978
+make_polynomial calls=176250 inclusive_ms=2290.372 exclusive_ms=40.568
+solve_linear calls=178623 inclusive_ms=481.148 exclusive_ms=255.859
+truth_table_masked calls=408067 inclusive_ms=273.359 exclusive_ms=273.359
+make_conjunction_sum calls=105976 inclusive_ms=26.200 exclusive_ms=26.200
+make_bitwise calls=2614565 inclusive_ms=8870.520 exclusive_ms=234.859
+is_linear_bitwise calls=148155 inclusive_ms=175.554 exclusive_ms=108.017
+group_terms calls=1321924 inclusive_ms=180.202 exclusive_ms=152.026
+prettify calls=41000 inclusive_ms=62.184 exclusive_ms=62.184
+projector_defect calls=26218 inclusive_ms=285.761 exclusive_ms=140.312
+hide_in_var calls=94512 inclusive_ms=1840.705 exclusive_ms=157.112
+merge_hidden calls=176222 inclusive_ms=183.377 exclusive_ms=137.434
+restore_hidden calls=301542 inclusive_ms=67.960 exclusive_ms=20.931
+solve calls=176222 inclusive_ms=3749.898 exclusive_ms=47.424
+reduce_vars calls=5314248 inclusive_ms=0.000 exclusive_ms=0.000
+is_linear calls=30423 inclusive_ms=0.000 exclusive_ms=0.000
+is_bitwise calls=40469 inclusive_ms=0.000 exclusive_ms=0.000
+eval_nodes calls=49524435 inclusive_ms=0.000 exclusive_ms=0.000
+signature_input_nodes calls=1278721 inclusive_ms=0.000 exclusive_ms=0.000
+direct_linear calls=0 inclusive_ms=0.000 exclusive_ms=0.000
+reduce_scale calls=2884664 inclusive_ms=1279.467 exclusive_ms=210.559
+group_fastpath calls=1208364 inclusive_ms=0.000 exclusive_ms=0.000
+get_vars calls=396544 inclusive_ms=54.862 exclusive_ms=54.862
+variable_nodes calls=4467939 inclusive_ms=0.000 exclusive_ms=0.000
+linear_inputs calls=105976 inclusive_ms=0.000 exclusive_ms=0.000
+linear_input_nodes calls=2824707 inclusive_ms=0.000 exclusive_ms=0.000
+hist0=[1474, 52988, 83694, 25129, 11948, 2669, 561, 42, 86, 10, 8, 2, 10, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist1=[0, 1484, 105, 38104, 14866, 13821, 13203, 9318, 4084, 6852, 14424, 4262, 4307, 4217, 1642, 1714, 1335, 2795, 1443, 1418, 1296, 1134, 1023, 1036, 1028, 952, 1293, 906, 2913, 1308, 791, 1036, 1127, 820, 693, 603, 616, 622, 689, 584, 504, 495, 453, 402, 396, 352, 326, 359, 334, 325, 319, 301, 310, 285, 273, 205, 238, 237, 219, 260, 271, 297, 290, 302, 11006]
+hist2=[0, 0, 877840, 267234, 87652, 25947, 25336, 7262, 5436, 6162, 6433, 3934, 2223, 807, 603, 694, 600, 346, 996, 308, 26, 466, 98, 41, 349, 120, 20, 36, 19, 31, 21, 8, 17, 5, 10, 6, 17, 12, 10, 10, 9, 8, 10, 13, 10, 14, 8, 10, 12, 16, 12, 12, 12, 8, 10, 10, 14, 10, 10, 12, 13, 12, 6, 10, 528]
+hist3=[1095415, 226509, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist4=[0, 83144, 49715, 19686, 4653, 1580, 4190, 3099, 2607, 2744, 3107, 1689, 938, 299, 240, 163, 146, 104, 26, 9, 6, 11, 4, 14, 28, 16, 3, 8, 6, 6, 8, 4, 8, 2, 5, 3, 7, 6, 5, 5, 4, 4, 5, 6, 5, 7, 4, 5, 6, 8, 6, 6, 6, 4, 5, 5, 7, 5, 5, 6, 6, 6, 3, 5, 200]
+hist5=[41000, 40867, 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist6=[22068, 18799, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+hist7=[0, 0, 11685, 9375, 3302, 1230, 754, 551, 240, 238, 208, 220, 137, 80, 42, 15, 34, 9, 17, 6, 9, 99, 4, 2, 61, 8, 0, 15, 4, 5, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 16]
+hist8=[0, 0, 80638, 30146, 10973, 1086, 822, 200, 127, 90, 35, 75, 34, 25, 14, 83, 48, 18, 227, 4, 0, 70, 0, 3, 62, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20]
+get_vars_allocations=(419098, 22664512)
+

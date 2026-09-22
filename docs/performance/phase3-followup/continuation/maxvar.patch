@@ -1,0 +1,71 @@
+--- a/core/src/expr.rs
++++ b/core/src/expr.rs
+@@ -252,21 +252,7 @@
+         mask: u64,
+         count: usize,
+     ) -> Result<(), (Vec<u64>, u64, u64)> {
+-        let t = max(
+-            self.get_vars()
+-                .iter()
+-                .copied()
+-                .map(|v| v.0)
+-                .max()
+-                .unwrap_or(0),
+-            other
+-                .get_vars()
+-                .iter()
+-                .copied()
+-                .map(|v| v.0)
+-                .max()
+-                .unwrap_or(0),
+-        );
++        let t = max(self.max_var(), other.max_var()).map_or(0, |v| v.0);
+ 
+         for _ in 0..count {
+             let vars: Vec<_> = (0..=t).map(|_| random_range(0..=mask)).collect();
+@@ -326,6 +312,17 @@
+         }
+ 
+         tt
++    }
++
++    pub(crate) fn max_var(&self) -> Option<VarId> {
++        match self {
++            Expr::Var(v) => Some(*v),
++            Expr::Const(_) => None,
++            Expr::Not(e) | Expr::Scale(_, e) => e.max_var(),
++            Expr::And(es) | Expr::Or(es) | Expr::Xor(es) | Expr::Add(es) | Expr::Mul(es) => {
++                es.iter().filter_map(Expr::max_var).max()
++            }
++        }
+     }
+ 
+     /// Collects the distinct variables in the expression.
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -100,7 +100,7 @@
+     fn new(l_cache: &'a C, e: &Expr, n: u8) -> Self {
+         Self {
+             non_linear_components: BiMap::new(),
+-            t: e.get_vars().iter().copied().map(|v| v.0).max().unwrap_or(0) + 1,
++            t: e.max_var().map_or(0, |v| v.0) + 1,
+             degree: 1,
+             n,
+             mask: make_mask(n),
+--- a/core/src/simplify/merge_hidden.rs
++++ b/core/src/simplify/merge_hidden.rs
+@@ -31,13 +31,7 @@
+ }
+ 
+ fn passes_quick_zero_check(e: &Expr, mask: u64) -> bool {
+-    let variable_count = e
+-        .get_vars()
+-        .into_iter()
+-        .map(|variable| variable.0)
+-        .max()
+-        .unwrap_or(0)
+-        + 1;
++    let variable_count = e.max_var().map_or(0, |v| v.0) + 1;
+     let mut variables = vec![0u64; variable_count];
+ 
+     for sample in 0..3u64 {

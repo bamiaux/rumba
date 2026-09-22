@@ -98,3 +98,29 @@ fn de_morgan_outputs_are_ac_canonical() {
         ((!var(2)) & (!var(0)) & (!var(1))).reduce(64)
     );
 }
+
+#[test]
+fn small_sums_normalize_coefficients_and_merge_repeated_bases() {
+    let x = var(0);
+    let y = var(1);
+    let distinct = Expr::Add(vec![7 * y.clone(), 11 * x.clone()]);
+    assert_eq!(distinct.clone().reduce(0), Expr::zero());
+    assert_eq!(
+        distinct.clone().reduce(1),
+        Expr::Xor(vec![x.clone(), y.clone()])
+    );
+    assert_eq!(
+        distinct.reduce(3),
+        Expr::Add(vec![3 * x.clone(), 7 * y.clone()])
+    );
+
+    // The same base can occur both scaled and unscaled, and cancel modulo 2^n.
+    assert_eq!(
+        Expr::Add(vec![7 * x.clone(), x.clone()]).reduce(3),
+        Expr::zero()
+    );
+    assert_eq!(
+        Expr::Add(vec![3 * x.clone(), 5 * x, 7 * y.clone()]).reduce(3),
+        7 * y
+    );
+}

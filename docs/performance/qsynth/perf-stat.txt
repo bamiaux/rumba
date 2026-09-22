@@ -1,0 +1,108 @@
+[current, run 1, 10 passes]
+# started on Mon Sep 21 23:38:25 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/current-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       17049278822      cycles:u                                                              
+       38973612233      instructions:u                                                        
+        6499985470      branches:u                                                            
+         109723789      branch-misses:u                                                       
+
+       4.748527046 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+
+[final, run 1, 10 passes]
+# started on Mon Sep 21 23:38:30 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/final-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       14681592465      cycles:u                                                              
+       30996175498      instructions:u                                                        
+        5201362245      branches:u                                                            
+          96433128      branch-misses:u                                                       
+
+       4.043093628 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+
+[current, run 2, 10 passes]
+# started on Mon Sep 21 23:38:34 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/current-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       16953447106      cycles:u                                                              
+       38972451940      instructions:u                                                        
+        6499704525      branches:u                                                            
+         109904711      branch-misses:u                                                       
+
+       4.698946950 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+
+[final, run 2, 10 passes]
+# started on Mon Sep 21 23:38:39 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/final-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       14704690573      cycles:u                                                              
+       30996566494      instructions:u                                                        
+        5201572609      branches:u                                                            
+          96698974      branch-misses:u                                                       
+
+       4.086233106 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+
+[current, run 3, 10 passes]
+# started on Mon Sep 21 23:38:43 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/current-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       16943193194      cycles:u                                                              
+       38969029607      instructions:u                                                        
+        6499020533      branches:u                                                            
+         109267341      branch-misses:u                                                       
+
+       4.708405397 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+
+[final, run 3, 10 passes]
+# started on Mon Sep 21 23:38:48 2026
+
+
+ Performance counter stats for 'taskset -c 2 /tmp/rumba-qsynth-results/final-probe profile /tmp/rumba-layout-results/perf-control /tmp/rumba-layout-results/perf-ack':
+
+       14567253462      cycles:u                                                              
+       30998788687      instructions:u                                                        
+        5201905096      branches:u                                                            
+          95797034      branch-misses:u                                                       
+
+       4.002751868 seconds time elapsed
+
+       0.000000000 seconds user
+       0.000000000 seconds sys
+
+
+

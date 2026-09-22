@@ -10,6 +10,9 @@ use rustc_hash::FxHashSet as HashSet;
 
 use crate::varint::{VarInt, make_mask};
 
+#[cfg(test)]
+mod tests;
+
 #[cfg(feature = "jit")]
 use crate::jit;
 
@@ -279,11 +282,52 @@ impl Expr {
         Ok(())
     }
 
+    /// Evaluates four full-width assignments in one traversal of the AST.
+    fn eval_four(&self, vars: &[[u64; 4]]) -> [u64; 4] {
+        fn fold<F: Fn(u64, u64) -> u64>(
+            exprs: &[Expr],
+            vars: &[[u64; 4]],
+            identity: u64,
+            op: F,
+        ) -> [u64; 4] {
+            let mut result = [identity; 4];
+            for expr in exprs {
+                let values = expr.eval_four(vars);
+                for i in 0..4 {
+                    result[i] = op(result[i], values[i]);
+                }
+            }
+            result
+        }
+        match self {
+            Expr::Var(v) => vars[v.0],
+            Expr::Const(c) => [*c; 4],
+            Expr::Not(e) => e.eval_four(vars).map(|value| !value),
+            Expr::Scale(c, e) => e.eval_four(vars).map(|value| c.wrapping_mul(value)),
+            Expr::And(es) => fold(es, vars, u64::MAX, |a, b| a & b),
+            Expr::Or(es) => fold(es, vars, 0, |a, b| a | b),
+            Expr::Xor(es) => fold(es, vars, 0, |a, b| a ^ b),
+            Expr::Add(es) => fold(es, vars, 0, u64::wrapping_add),
+            Expr::Mul(es) => fold(es, vars, 1, u64::wrapping_mul),
+        }
+    }
+
     /// Calculates the truth table of an expression on n values with t variables
     pub(crate) fn truth_table_masked(&self, t: usize, mask: u64) -> Vec<u64> {
-        // if t > 20 {
-        //     panic!("CRAZYY");
-        // }
+        // Batch large interpreted tables, retaining the existing JIT crossover.
+        if t >= 8 && (t <= 10 || !cfg!(feature = "jit")) {
+            let mut vars = vec![[0; 4]; t];
+            vars[0] = [0, 1, 0, 1];
+            vars[1] = [0, 0, 1, 1];
+            let mut table = Vec::with_capacity(1 << t);
+            for assignment in (0..1 << t).step_by(4) {
+                for (j, value) in vars.iter_mut().enumerate().skip(2) {
+                    *value = [((assignment >> j) & 1) as u64; 4];
+                }
+                table.extend(self.eval_four(&vars).map(|value| value & mask));
+            }
+            return table;
+        }
 
         let size = 1usize << t;
         let mut tt = Vec::with_capacity(size);
@@ -325,39 +369,25 @@ impl Expr {
         tt
     }
 
-    /// Calls a function recursively on each node of an expression
-    pub(crate) fn visit<T, F>(&self, mut f: F) -> T
-    where
-        F: FnMut(&Expr, Vec<T>) -> T + Clone,
-    {
-        match self {
-            Expr::Var(_) | Expr::Const(_) => f(self, vec![]),
-
-            Expr::Not(expr) | Expr::Scale(_, expr) => {
-                let v = vec![expr.visit::<T, F>(f.clone())];
-                f(self, v)
-            }
-
-            Expr::And(exprs)
-            | Expr::Or(exprs)
-            | Expr::Xor(exprs)
-            | Expr::Add(exprs)
-            | Expr::Mul(exprs) => {
-                let v = exprs.iter().map(|e| e.visit(f.clone())).collect();
-                f(self, v)
+    /// Collects the distinct variables in the expression.
+    pub fn get_vars(&self) -> HashSet<VarId> {
+        fn collect(e: &Expr, vars: &mut HashSet<VarId>) {
+            match e {
+                Expr::Var(v) => {
+                    vars.insert(*v);
+                }
+                Expr::Const(_) => {}
+                Expr::Not(e) | Expr::Scale(_, e) => collect(e, vars),
+                Expr::And(es) | Expr::Or(es) | Expr::Xor(es) | Expr::Add(es) | Expr::Mul(es) => {
+                    for e in es {
+                        collect(e, vars);
+                    }
+                }
             }
         }
-    }
-
-    /// Counts the number of variables in the expression
-    pub fn get_vars(&self) -> HashSet<VarId> {
-        self.visit(|e, children: Vec<HashSet<VarId>>| {
-            let mut acc: HashSet<VarId> = children.into_iter().flatten().collect();
-            if let Expr::Var(v) = e {
-                acc.insert(*v);
-            }
-            acc
-        })
+        let mut vars = HashSet::default();
+        collect(self, &mut vars);
+        vars
     }
 
     // Operator precedence

@@ -1,0 +1,36 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 4K of event 'cycles:u'
+# Event count (approx.): 17023721128
+#
+# Overhead  Command        Shared Object     Symbol                                                                                                                                                                                                                                               
+# ........  .............  ................  .....................................................................................................................................................................................................................................................
+#
+    14.53%  current-probe  current-probe     [.] rumba_core::expr::Expr::eval_bits
+    14.20%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::reduce_masked
+     5.90%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::reduce_and
+     5.71%  current-probe  current-probe     [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     5.15%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+     4.00%  current-probe  libc.so.6         [.] malloc
+     3.62%  current-probe  current-probe     [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     3.51%  current-probe  current-probe     [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     3.28%  current-probe  libc.so.6         [.] cfree@GLIBC_2.2.5
+     2.58%  current-probe  libc.so.6         [.] _int_malloc
+     2.35%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     1.98%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::group_terms
+     1.96%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     1.39%  current-probe  current-probe     [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     1.27%  current-probe  current-probe     [.] rumba_core::expr::Expr::scale
+     1.24%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     1.10%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+     1.10%  current-probe  current-probe     [.] __rustc::__rdl_dealloc
+     1.05%  current-probe  libc.so.6         [.] malloc_consolidate
+     0.93%  current-probe  libc.so.6         [.] _int_free_chunk
+
+
+#
+# (Tip: To set sample time separation other than 100ms with --sort time use --time-quantum)
+#

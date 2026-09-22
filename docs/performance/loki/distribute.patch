@@ -1,0 +1,23 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -4,7 +4,7 @@
+ 
+ /// Distributes an expression
+ fn distribute<F>(
+-    v: &mut [Expr],
++    v: &mut Vec<Expr>,
+     self_cst: fn(Vec<Expr>) -> Expr,
+     child_cst: fn(Vec<Expr>) -> Expr,
+     extractor: F,
+@@ -15,8 +15,9 @@
+     if let Some((idx, terms)) = extractor(v) {
+         let mut distributed_terms: Vec<Expr> = Vec::with_capacity(terms.len());
+ 
+-        for term in terms {
+-            let mut copy = v.to_vec();
++        let last = terms.len().saturating_sub(1);
++        for (i, term) in terms.into_iter().enumerate() {
++            let mut copy = if i == last { std::mem::take(v) } else { v.clone() };
+             copy[idx] = term;
+             distributed_terms.push(self_cst(copy));
+         }

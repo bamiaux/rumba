@@ -36,9 +36,14 @@ pub trait LinearCache {
 /// costs a borrow-flag check, so a single-threaded caller pays nothing for a
 /// sharing capability it does not use. Not [`Sync`] — use [`MbaCache`] to share one
 /// across threads.
+///
+/// Entries are stored contiguously and searched by structural equality. The
+/// short-lived cache of one simplification normally has few entries, making
+/// this cheaper than recursively hashing every query. Lookup is linear in the
+/// number of entries; [`MbaCache`] retains hash lookup for reuse across calls.
 #[derive(Debug, Default)]
 pub struct LocalCache {
-    entries: RefCell<HashMap<Expr, Expr>>,
+    entries: RefCell<Vec<(Expr, Expr)>>,
 }
 
 impl LocalCache {
@@ -49,11 +54,20 @@ impl LocalCache {
 
 impl LinearCache for LocalCache {
     fn get(&self, e: &Expr) -> Option<Expr> {
-        self.entries.borrow().get(e).cloned()
+        self.entries
+            .borrow()
+            .iter()
+            .find(|(key, _)| key == e)
+            .map(|(_, value)| value.clone())
     }
 
     fn insert(&self, e: Expr, solved: Expr) {
-        self.entries.borrow_mut().insert(e, solved);
+        let mut entries = self.entries.borrow_mut();
+        if let Some((_, value)) = entries.iter_mut().find(|(key, _)| key == &e) {
+            *value = solved;
+        } else {
+            entries.push((e, solved));
+        }
     }
 }
 
@@ -63,11 +77,6 @@ impl LinearCache for LocalCache {
 ///
 /// Critical sections are one hash-map operation each — the solve itself runs
 /// outside the lock — so contention stays low even with many workers.
-///
-/// A caller that never shares should still prefer [`LocalCache`]: the lock adds
-/// roughly 35ns per lookup. Against a miss, which pays for a full solve, that is
-/// nothing; against a hit, which is only an `Expr` hash, it is about a third —
-/// and a cache exists to be hit.
 #[derive(Debug, Default)]
 pub struct MbaCache {
     entries: Mutex<HashMap<Expr, Expr>>,
@@ -87,5 +96,42 @@ impl LinearCache for MbaCache {
             .lock()
             .expect("MBA cache mutex poisoned")
             .insert(e, solved);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn check_cache(cache: &impl LinearCache) {
+        let key = |i| Expr::Add(vec![Expr::Var(0.into()), Expr::Const(i)]);
+        assert_eq!(cache.get(&key(0)), None);
+        for i in 0..256 {
+            cache.insert(key(i), Expr::Const(i + 1));
+        }
+        // Equal keys replace their value; nearby structural keys stay distinct.
+        for i in (0..256).step_by(7) {
+            cache.insert(key(i), Expr::Var((i as usize + 1).into()));
+        }
+        for i in 0..256 {
+            let expected = if i % 7 == 0 {
+                Expr::Var((i as usize + 1).into())
+            } else {
+                Expr::Const(i + 1)
+            };
+            assert_eq!(cache.get(&key(i)), Some(expected));
+        }
+        // A returned tree is owned, so it can outlive subsequent cache writes.
+        let previous = cache.get(&key(1)).unwrap();
+        cache.insert(key(1), Expr::zero());
+        assert_eq!(previous, Expr::Const(2));
+        assert_eq!(cache.get(&key(1)), Some(Expr::zero()));
+        assert_eq!(cache.get(&key(256)), None);
+    }
+
+    #[test]
+    fn cache_implementations_preserve_structural_keys_and_replacement() {
+        check_cache(&LocalCache::new());
+        check_cache(&MbaCache::default());
     }
 }

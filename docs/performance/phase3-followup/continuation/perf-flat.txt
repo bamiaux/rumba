@@ -1,0 +1,41 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 1K of event 'cycles:u'
+# Event count (approx.): 7772434642
+#
+# Overhead  Command       Shared Object  Symbol                                                                                                                                                                                                                                               
+# ........  ............  .............  .....................................................................................................................................................................................................................................................
+#
+    11.94%  borrow-probe  borrow-probe   [.] rumba_core::reduce::Reducer::reduce_masked
+    10.00%  borrow-probe  borrow-probe   [.] rumba_core::expr::Expr::eval_bits
+     4.75%  borrow-probe  libc.so.6      [.] malloc
+     4.25%  borrow-probe  borrow-probe   [.] rumba_core::reduce::Reducer::reduce_and
+     4.13%  borrow-probe  borrow-probe   [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     4.07%  borrow-probe  libc.so.6      [.] cfree@GLIBC_2.2.5
+     4.03%  borrow-probe  borrow-probe   [.] alloc::vec::in_place_collect::from_iter_in_place
+     2.62%  borrow-probe  libc.so.6      [.] _int_malloc
+     2.34%  borrow-probe  borrow-probe   [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     2.30%  borrow-probe  borrow-probe   [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     2.08%  borrow-probe  borrow-probe   [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     1.72%  borrow-probe  borrow-probe   [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     1.57%  borrow-probe  borrow-probe   [.] rumba_core::reduce::Reducer::group_terms
+     1.51%  borrow-probe  borrow-probe   [.] <std::hash::random::DefaultHasher as core::hash::Hasher>::write
+     1.51%  borrow-probe  borrow-probe   [.] __rustc::__rdl_dealloc
+     1.47%  borrow-probe  libc.so.6      [.] malloc_consolidate
+     1.43%  borrow-probe  borrow-probe   [.] rumba_core::expr::Expr::get_vars::collect
+     1.31%  borrow-probe  borrow-probe   [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+     1.24%  borrow-probe  libc.so.6      [.] _int_free_chunk
+     1.22%  borrow-probe  borrow-probe   [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     1.10%  borrow-probe  borrow-probe   [.] rumba_core::simplify::reduce_vars
+     0.99%  borrow-probe  borrow-probe   [.] rumba_core::reduce::Reducer::reduce_xor
+     0.99%  borrow-probe  borrow-probe   [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     0.95%  borrow-probe  borrow-probe   [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     0.83%  borrow-probe  borrow-probe   [.] rumba_core::prettify::prettify_masked
+
+
+#
+# (Tip: To trace calls using Processor Trace use perf record -e intel_pt// ... ; perf script --call-trace. Then use perf script --time A-B --insn-trace to look at region of interest.)
+#

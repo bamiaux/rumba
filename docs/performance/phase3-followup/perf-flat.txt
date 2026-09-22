@@ -1,0 +1,99 @@
+[base]
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cycles:u'
+# Event count (approx.): 9698327115
+#
+# Overhead  Command          Shared Object        Symbol                                                                                                                                                                                                                                                                                     
+# ........  ...............  ...................  ...........................................................................................................................................................................................................................................................................................
+#
+     8.77%  base-isolated-p  base-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_masked
+     7.05%  base-isolated-p  base-isolated-probe  [.] rumba_core::expr::Expr::eval_bits
+     4.70%  base-isolated-p  libc.so.6            [.] malloc
+     4.53%  base-isolated-p  base-isolated-probe  [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     4.25%  base-isolated-p  libc.so.6            [.] cfree@GLIBC_2.2.5
+     3.99%  base-isolated-p  libc.so.6            [.] _int_malloc
+     3.28%  base-isolated-p  base-isolated-probe  [.] rumba_core::reduce::Reducer::group_terms
+     2.92%  base-isolated-p  base-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_and
+     2.90%  base-isolated-p  base-isolated-probe  [.] alloc::vec::in_place_collect::from_iter_in_place
+     2.54%  base-isolated-p  base-isolated-probe  [.] hashbrown::map::HashMap<K,V,S,A>::insert
+     2.46%  base-isolated-p  base-isolated-probe  [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     2.13%  base-isolated-p  base-isolated-probe  [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     2.03%  base-isolated-p  base-isolated-probe  [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     2.00%  base-isolated-p  base-isolated-probe  [.] __rustc::__rdl_dealloc
+     1.58%  base-isolated-p  base-isolated-probe  [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::fold
+     1.58%  base-isolated-p  libc.so.6            [.] _int_free_chunk
+     1.49%  base-isolated-p  base-isolated-probe  [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     1.45%  base-isolated-p  base-isolated-probe  [.] rumba_core::expr::Expr::visit
+     1.41%  base-isolated-p  base-isolated-probe  [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     1.25%  base-isolated-p  base-isolated-probe  [.] <std::hash::random::DefaultHasher as core::hash::Hasher>::write
+     1.24%  base-isolated-p  base-isolated-probe  [.] hashbrown::raw::RawTableInner::fallible_with_capacity
+     1.12%  base-isolated-p  libc.so.6            [.] malloc_consolidate
+     1.09%  base-isolated-p  base-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_xor
+     1.08%  base-isolated-p  base-isolated-probe  [.] __rustc::__rust_no_alloc_shim_is_unstable_v2
+     1.08%  base-isolated-p  base-isolated-probe  [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+     1.04%  base-isolated-p  base-isolated-probe  [.] rumba_core::simplify::reduce_vars
+     1.02%  base-isolated-p  base-isolated-probe  [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     1.00%  base-isolated-p  base-isolated-probe  [.] rumba_core::expr::Expr::scale
+     0.97%  base-isolated-p  base-isolated-probe  [.] <core::iter::adapters::map::Map<I,F> as core::iter::traits::iterator::Iterator>::fold
+     0.87%  base-isolated-p  base-isolated-probe  [.] hashbrown::rustc_entry::<impl hashbrown::map::HashMap<K,V,S,A>>::rustc_entry
+     0.87%  base-isolated-p  libc.so.6            [.] unlink_chunk.isra.0
+     0.83%  base-isolated-p  base-isolated-probe  [.] __rustc::__rust_dealloc
+
+
+#
+# (Tip: To measure approximate function latency with Processor Trace use perf record -e intel_pt// ... ; perf script --call-ret-trace)
+#
+
+[final]
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 2K of event 'cycles:u'
+# Event count (approx.): 8166713274
+#
+# Overhead  Command          Shared Object         Symbol                                                                                                                                                                                                                                               
+# ........  ...............  ....................  .....................................................................................................................................................................................................................................................
+#
+    11.29%  final-isolated-  final-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_masked
+     9.03%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::eval_bits
+     5.82%  final-isolated-  final-isolated-probe  [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     5.47%  final-isolated-  libc.so.6             [.] malloc
+     4.03%  final-isolated-  libc.so.6             [.] _int_malloc
+     3.63%  final-isolated-  final-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_and
+     3.23%  final-isolated-  libc.so.6             [.] cfree@GLIBC_2.2.5
+     2.99%  final-isolated-  final-isolated-probe  [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     2.98%  final-isolated-  final-isolated-probe  [.] alloc::vec::in_place_collect::from_iter_in_place
+     2.66%  final-isolated-  final-isolated-probe  [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     2.07%  final-isolated-  final-isolated-probe  [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     1.86%  final-isolated-  final-isolated-probe  [.] rumba_core::reduce::Reducer::group_terms
+     1.65%  final-isolated-  libc.so.6             [.] _int_free_chunk
+     1.63%  final-isolated-  final-isolated-probe  [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     1.50%  final-isolated-  final-isolated-probe  [.] <std::hash::random::DefaultHasher as core::hash::Hasher>::write
+     1.39%  final-isolated-  libc.so.6             [.] malloc_consolidate
+     1.30%  final-isolated-  final-isolated-probe  [.] __rustc::__rdl_dealloc
+     1.29%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::map
+     1.25%  final-isolated-  final-isolated-probe  [.] <rumba_core::expr::Expr as core::hash::Hash>::hash
+     1.25%  final-isolated-  final-isolated-probe  [.] rumba_core::simplify::reduce_vars
+     1.09%  final-isolated-  final-isolated-probe  [.] rumba_core::reduce::Reducer::reduce_xor
+     1.06%  final-isolated-  final-isolated-probe  [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+     1.01%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::try_map
+     1.01%  final-isolated-  final-isolated-probe  [.] alloc::vec::in_place_collect::from_iter_in_place
+     1.00%  final-isolated-  libc.so.6             [.] unlink_chunk.isra.0
+     0.92%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::get_vars::collect
+     0.91%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::scale
+     0.88%  final-isolated-  final-isolated-probe  [.] __rustc::__rust_no_alloc_shim_is_unstable_v2
+     0.86%  final-isolated-  final-isolated-probe  [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     0.84%  final-isolated-  final-isolated-probe  [.] rumba_core::expr::Expr::truth_table_masked
+     0.82%  final-isolated-  final-isolated-probe  [.] rumba_core::prettify::prettify_masked
+
+
+#
+# (Tip: To compare scalability of two workload samples use perf diff -c ratio file1 file2)
+#
+

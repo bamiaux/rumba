@@ -1,0 +1,209 @@
+{
+  "prettify": {
+    "binary_sha256": "b57661bbe2bfc7d6f882f9e885d92f6f27714ea784fa267f01ada3a086a12146",
+    "runs": {
+      "prettify-times-2.txt": [
+        "run=0 count=41000 seconds=2.324314826 cpu=2.323786988",
+        "run=1 count=41000 seconds=2.266657611 cpu=2.267753089",
+        "run=2 count=41000 seconds=2.378008918 cpu=2.379627997",
+        "run=3 count=41000 seconds=2.416231146 cpu=2.415603683",
+        "run=4 count=41000 seconds=2.432374575 cpu=2.431059997",
+        "run=5 count=41000 seconds=2.453379047 cpu=2.451666149",
+        "median=2.416231146",
+        "cpu_median=2.415603683",
+        "run=0 count=41000 seconds=2.367284443 cpu=2.366215131",
+        "run=1 count=41000 seconds=2.338455687 cpu=2.339498818",
+        "run=2 count=41000 seconds=2.290989308 cpu=2.291509334",
+        "run=3 count=41000 seconds=2.434611841 cpu=2.434723865",
+        "run=4 count=41000 seconds=2.340667631 cpu=2.339490007",
+        "run=5 count=41000 seconds=2.304542526 cpu=2.303325503",
+        "median=2.338455687",
+        "cpu_median=2.339490007"
+      ]
+    }
+  },
+  "base": {
+    "binary_sha256": "8618449f7df27c28790130fefc421eff2abd164cca9fd42dbdca7f169d35b135",
+    "runs": {
+      "base-times-1.txt": [
+        "run=0 count=41000 seconds=1.934262313 cpu=1.935688047",
+        "run=1 count=41000 seconds=1.927425987 cpu=1.927755023",
+        "run=2 count=41000 seconds=2.038907857 cpu=2.039591190",
+        "run=3 count=41000 seconds=1.913199882 cpu=1.911672148",
+        "run=4 count=41000 seconds=1.939614389 cpu=1.935573035",
+        "run=5 count=41000 seconds=1.918503414 cpu=1.919608082",
+        "median=1.927425987",
+        "cpu_median=1.927755023",
+        "run=0 count=41000 seconds=1.919261191 cpu=1.918817494",
+        "run=1 count=41000 seconds=1.948491710 cpu=1.947491236",
+        "run=2 count=41000 seconds=1.961276460 cpu=1.959453817",
+        "run=3 count=41000 seconds=2.026307883 cpu=2.023346087",
+        "run=4 count=41000 seconds=2.077219980 cpu=2.075460024",
+        "run=5 count=41000 seconds=1.926125838 cpu=1.923587877",
+        "median=1.961276460",
+        "cpu_median=1.959453817"
+      ],
+      "base-times-2.txt": [
+        "run=0 count=41000 seconds=1.920403973 cpu=1.919592050",
+        "run=1 count=41000 seconds=1.975753732 cpu=1.975607431",
+        "run=2 count=41000 seconds=2.048679445 cpu=2.047590269",
+        "run=3 count=41000 seconds=2.069113269 cpu=2.067391489",
+        "run=4 count=41000 seconds=1.977786232 cpu=1.979594565",
+        "run=5 count=41000 seconds=2.008646328 cpu=2.006701846",
+        "median=2.008646328",
+        "cpu_median=2.006701846",
+        "run=0 count=41000 seconds=2.018127152 cpu=2.018393019",
+        "run=1 count=41000 seconds=2.011404218 cpu=2.011504161",
+        "run=2 count=41000 seconds=2.101452826 cpu=2.103318361",
+        "run=3 count=41000 seconds=1.961794547 cpu=1.963546615",
+        "run=4 count=41000 seconds=1.939309071 cpu=1.939622008",
+        "run=5 count=41000 seconds=1.969728035 cpu=1.971504115",
+        "median=1.969728035",
+        "cpu_median=1.971504115"
+      ]
+    },
+    "hardware_runs": [
+      {
+        "cycles:u": 8076251633,
+        "instructions:u": 16430706025,
+        "branches:u": 2805818104,
+        "branch-misses:u": 64223687
+      },
+      {
+        "cycles:u": 8028267344,
+        "instructions:u": 16432968643,
+        "branches:u": 2806271053,
+        "branch-misses:u": 64035091
+      },
+      {
+        "cycles:u": 8118787623,
+        "instructions:u": 16433261207,
+        "branches:u": 2806348445,
+        "branch-misses:u": 65040610
+      }
+    ]
+  },
+  "deque": {
+    "binary_sha256": "062cfdf452f5b65486a44fe82e7158aba31a966650cad6c0a848ed07eedac99d",
+    "runs": {
+      "deque-times-1.txt": [
+        "run=0 count=41000 seconds=2.194003845 cpu=2.191519631",
+        "run=1 count=41000 seconds=1.965506060 cpu=1.967649981",
+        "run=2 count=41000 seconds=2.051515601 cpu=2.051534319",
+        "run=3 count=41000 seconds=2.036319107 cpu=2.035463336",
+        "run=4 count=41000 seconds=2.043547727 cpu=2.043536284",
+        "run=5 count=41000 seconds=2.030483952 cpu=2.031602753",
+        "median=2.036319107",
+        "cpu_median=2.035463336"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "dense": {
+    "binary_sha256": "96b39f577523f7bc3f45378b8932354c4e06f5ddc4f7dc1c40e74f992300b703",
+    "runs": {
+      "dense-times-1.txt": [
+        "run=0 count=41000 seconds=1.981491865 cpu=1.979399466",
+        "run=1 count=41000 seconds=1.937883596 cpu=1.939606928",
+        "run=2 count=41000 seconds=1.954558690 cpu=1.955625847",
+        "run=3 count=41000 seconds=1.970772723 cpu=1.971524272",
+        "run=4 count=41000 seconds=1.937759017 cpu=1.935591295",
+        "run=5 count=41000 seconds=1.921048945 cpu=1.919698100",
+        "median=1.937883596",
+        "cpu_median=1.939606928"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "maxvar": {
+    "binary_sha256": "c05abbdf2b96269b9ff07bed9570a579f431ea0e017922dcba413765b2dba51b",
+    "runs": {
+      "maxvar-times-1.txt": [
+        "run=0 count=41000 seconds=1.923079587 cpu=1.919665280",
+        "run=1 count=41000 seconds=1.954767372 cpu=1.954998592",
+        "run=2 count=41000 seconds=1.929960927 cpu=1.927676745",
+        "run=3 count=41000 seconds=1.961118930 cpu=1.959533541",
+        "run=4 count=41000 seconds=1.926601057 cpu=1.927572449",
+        "run=5 count=41000 seconds=1.956577896 cpu=1.955455969",
+        "median=1.954767372",
+        "cpu_median=1.954998592"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "borrow": {
+    "binary_sha256": "18cdba5ed10bd3fc00c3364d171a6b2da94d9aad68854a510cbf34bcfbb5d348",
+    "runs": {
+      "borrow-times-1.txt": [
+        "run=0 count=41000 seconds=1.902459670 cpu=1.902869043",
+        "run=1 count=41000 seconds=1.878672235 cpu=1.879487598",
+        "run=2 count=41000 seconds=1.873041957 cpu=1.875623776",
+        "run=3 count=41000 seconds=1.853435535 cpu=1.851613493",
+        "run=4 count=41000 seconds=1.886762621 cpu=1.887510849",
+        "run=5 count=41000 seconds=1.921164370 cpu=1.919578028",
+        "median=1.878672235",
+        "cpu_median=1.879487598"
+      ],
+      "borrow-times-2.txt": [
+        "run=0 count=41000 seconds=1.991271489 cpu=1.990717325",
+        "run=1 count=41000 seconds=1.933397233 cpu=1.931542366",
+        "run=2 count=41000 seconds=1.898468527 cpu=1.899623089",
+        "run=3 count=41000 seconds=1.864132149 cpu=1.863662950",
+        "run=4 count=41000 seconds=1.920702272 cpu=1.919589039",
+        "run=5 count=41000 seconds=2.005037201 cpu=2.003578413",
+        "median=1.920702272",
+        "cpu_median=1.919589039",
+        "run=0 count=41000 seconds=1.944519406 cpu=1.942717479",
+        "run=1 count=41000 seconds=1.945477932 cpu=1.943494998",
+        "run=2 count=41000 seconds=1.929318096 cpu=1.927594115",
+        "run=3 count=41000 seconds=1.863254288 cpu=1.863621974",
+        "run=4 count=41000 seconds=1.884528603 cpu=1.883537123",
+        "run=5 count=41000 seconds=1.845048582 cpu=1.847592196",
+        "median=1.884528603",
+        "cpu_median=1.883537123"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e",
+    "hardware_runs": [
+      {
+        "cycles:u": 7703712492,
+        "instructions:u": 15869867778,
+        "branches:u": 2693755384,
+        "branch-misses:u": 59760875
+      },
+      {
+        "cycles:u": 7904416693,
+        "instructions:u": 15871779896,
+        "branches:u": 2694146079,
+        "branch-misses:u": 61648862
+      },
+      {
+        "cycles:u": 7828161354,
+        "instructions:u": 15870747487,
+        "branches:u": 2693951435,
+        "branch-misses:u": 61082205
+      }
+    ]
+  },
+  "subsets": {
+    "binary_sha256": "0711849a88c35c8d1e6da9a3b5d0c8ce89abc66f4c97b907e590e00c79841ce8",
+    "runs": {
+      "subsets-times-2.txt": [
+        "run=0 count=41000 seconds=1.953225908 cpu=1.950551224",
+        "run=1 count=41000 seconds=1.928499234 cpu=1.927642997",
+        "run=2 count=41000 seconds=1.974853226 cpu=1.975584340",
+        "run=3 count=41000 seconds=2.033267317 cpu=2.035393509",
+        "run=4 count=41000 seconds=1.999530161 cpu=1.995593241",
+        "run=5 count=41000 seconds=1.958550657 cpu=1.955556669",
+        "median=1.974853226",
+        "cpu_median=1.975584340"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  }
+}

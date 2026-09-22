@@ -1,0 +1,144 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -10,6 +10,9 @@
+ 
+ pub use crate::utils::error::SolveError;
+ use log::debug;
++use indexmap::IndexSet;
++use rustc_hash::FxBuildHasher;
++type VariableMap = IndexSet<VarId, FxBuildHasher>;
+ 
+ mod hidden_gauge;
+ mod lambda;
+@@ -42,35 +45,18 @@
+ }
+ 
+ /// Reduces the number of variables present in the MBA
+-fn reduce_vars(e: Expr, var_map: &mut BiMap<VarId, VarId>, t: &mut usize) -> Expr {
++fn reduce_vars(e: Expr, var_map: &mut VariableMap) -> Expr {
+     match e {
+-        Expr::Var(v) => {
+-            let vv = if let Some(v) = var_map.get_by_left(&v) {
+-                *v
+-            } else {
+-                let vv = (*t).into();
+-                var_map.insert(v, vv);
+-                *t += 1;
+-                vv
+-            };
+-            Expr::Var(vv)
+-        }
+-
+-        _ => e.map(|e| reduce_vars(e, var_map, t)),
+-    }
+-}
+-
+-/// Restores the varialbes in the mba
+-fn restore_vars(e: Expr, var_map: &BiMap<VarId, VarId>) -> Result<Expr, SolveError> {
++        Expr::Var(v) => Expr::Var(var_map.insert_full(v).0.into()),
++        _ => e.map(|e| reduce_vars(e, var_map)),
++    }
++}
++
++/// Restores the original variable identifiers.
++fn restore_vars(e: Expr, var_map: &VariableMap) -> Result<Expr, SolveError> {
+     match e {
+-        Expr::Var(v) => {
+-            let vv = var_map
+-                .get_by_right(&v)
+-                .copied()
+-                .ok_or(SolveError::UnknownVariable(v))?;
+-            Ok(Expr::Var(vv))
+-        }
+-
++        Expr::Var(v) => var_map.get_index(v.0).copied()
++            .map(Expr::Var).ok_or(SolveError::UnknownVariable(v)),
+         _ => e.try_map(|e| restore_vars(e, var_map)),
+     }
+ }
+@@ -233,13 +219,13 @@
+ 
+     /// Simplifies a linear MBA
+     fn solve_linear(&mut self, e: Expr, from_poly: bool) -> Result<Expr, SolveError> {
+-        let mut var_map = BiMap::<VarId, VarId>::new();
+-        let mut t = 0;
++        let mut var_map = VariableMap::default();
+ 
+         debug!("Solving linear MBA: {}", e);
+ 
+         // Reduce the number of variables in the expression
+-        let e = reduce_vars(e, &mut var_map, &mut t);
++        let e = reduce_vars(e, &mut var_map);
++        let t = var_map.len();
+         debug!("Reduced number of variables to equivalent problem: {}", e);
+ 
+         let e = if let Some(simplified) = self.l_cache.get(&e) {
+@@ -437,15 +423,15 @@
+             zero_expressions.push(zero);
+         }
+ 
+-        let mut var_map = BiMap::new();
+-        let mut t = 0;
+-
+-        let reduced_e = reduce_vars(e.clone(), &mut var_map, &mut t);
++        let mut var_map = VariableMap::default();
++
++        let reduced_e = reduce_vars(e.clone(), &mut var_map);
+         let reduced_zeros: Vec<_> = zero_expressions
+             .iter()
+             .cloned()
+-            .map(|zero| reduce_vars(zero, &mut var_map, &mut t))
++            .map(|zero| reduce_vars(zero, &mut var_map))
+             .collect();
++        let t = var_map.len();
+         if t > 10 {
+             return None;
+         }
+@@ -489,9 +475,9 @@
+ 
+     // A Linear MBA might "hide" a bitwise expression
+     fn is_linear_bitwise(&self, l: Expr, mask: u64) -> Option<Expr> {
+-        let mut t = 0;
+-        let mut var_map = BiMap::new();
+-        let e = reduce_vars(l.clone(), &mut var_map, &mut t);
++        let mut var_map = VariableMap::default();
++        let e = reduce_vars(l.clone(), &mut var_map);
++        let t = var_map.len();
+ 
+         if t > 10 {
+             // This would be too expensive
+--- a/core/src/simplify/merge_hidden.rs
++++ b/core/src/simplify/merge_hidden.rs
+@@ -10,14 +10,13 @@
+ 
+ use crate::{
+     expr::{Expr, VarId},
+-    utils::bimap::BiMap,
+     utils::cache::LinearCache,
+ };
+ 
+ use log::debug;
+ use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
+ 
+-use super::{MBASolver, reduce_vars};
++use super::{MBASolver, VariableMap, reduce_vars};
+ 
+ pub(super) struct HiddenMergeResult {
+     pub(super) expr: Expr,
+@@ -134,13 +133,13 @@
+ }
+ 
+ fn make_signature_samples(expressions: &[Expr], mask: u64) -> Option<Vec<Vec<u64>>> {
+-    let mut variable_map = BiMap::<VarId, VarId>::new();
+-    let mut variable_count = 0;
++    let mut variable_map = VariableMap::default();
+     let reduced: Vec<_> = expressions
+         .iter()
+         .cloned()
+-        .map(|expression| reduce_vars(expression, &mut variable_map, &mut variable_count))
++        .map(|expression| reduce_vars(expression, &mut variable_map))
+         .collect();
++    let variable_count = variable_map.len();
+     if variable_count > 10 {
+         return None;
+     }

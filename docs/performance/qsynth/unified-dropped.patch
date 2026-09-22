@@ -1,0 +1,132 @@
+--- a/core/src/expr.rs
++++ b/core/src/expr.rs
+@@ -184,40 +184,7 @@
+ 
+     /// Evaluates the expression with the given variable values
+     pub(crate) fn eval_bits(&self, vars: &[u64]) -> VarInt {
+-        match self {
+-            Expr::Var(i) => vars[i.0].into(),
+-
+-            Expr::Const(c) => (*c).into(),
+-
+-            Expr::And(exprs) => exprs
+-                .iter()
+-                .map(|e| e.eval_bits(vars))
+-                .fold(VarInt::MAX, |x, y| x & y),
+-
+-            Expr::Or(exprs) => exprs
+-                .iter()
+-                .map(|e| e.eval_bits(vars))
+-                .fold(VarInt::ZERO, |x, y| x | y),
+-
+-            Expr::Xor(exprs) => exprs
+-                .iter()
+-                .map(|e| e.eval_bits(vars))
+-                .fold(VarInt::ZERO, |x, y| x ^ y),
+-
+-            Expr::Add(exprs) => exprs
+-                .iter()
+-                .map(|e| e.eval_bits(vars))
+-                .fold(VarInt::ZERO, |x, y| x + y),
+-
+-            Expr::Mul(exprs) => exprs
+-                .iter()
+-                .map(|e| e.eval_bits(vars))
+-                .fold(VarInt::ONE, |x, y| x * y),
+-
+-            Expr::Scale(v, e) => VarInt::from(*v) * e.eval_bits(vars),
+-
+-            Expr::Not(e) => !e.eval_bits(vars),
+-        }
++        self.eval_lanes(vars.as_chunks::<1>().0)[0].into()
+     }
+ 
+     /// Evaluates the expression for the given variable values on `n` bits.
+@@ -282,8 +249,46 @@
+         Ok(())
+     }
+ 
++    fn eval_lanes<const N: usize>(&self, vars: &[[u64; N]]) -> [u64; N] {
++        fn fold<const N: usize, F: Fn(u64, u64) -> u64>(
++            exprs: &[Expr], vars: &[[u64; N]], identity: u64, op: F,
++        ) -> [u64; N] {
++            let mut result = [identity; N];
++            for expr in exprs {
++                let values = expr.eval_lanes(vars);
++                for i in 0..N { result[i] = op(result[i], values[i]); }
++            }
++            result
++        }
++        match self {
++            Expr::Var(v) => vars[v.0],
++            Expr::Const(c) => [*c; N],
++            Expr::Not(e) => e.eval_lanes(vars).map(|value| !value),
++            Expr::Scale(c, e) => e.eval_lanes(vars).map(|value| c.wrapping_mul(value)),
++            Expr::And(es) => fold(es, vars, u64::MAX, |a, b| a & b),
++            Expr::Or(es) => fold(es, vars, 0, |a, b| a | b),
++            Expr::Xor(es) => fold(es, vars, 0, |a, b| a ^ b),
++            Expr::Add(es) => fold(es, vars, 0, u64::wrapping_add),
++            Expr::Mul(es) => fold(es, vars, 1, u64::wrapping_mul),
++        }
++    }
++
+     /// Calculates the truth table of an expression on n values with t variables
+     pub(crate) fn truth_table_masked(&self, t: usize, mask: u64) -> Vec<u64> {
++        if t >= 8 && (t <= 10 || !cfg!(feature = "jit")) {
++            let mut vars = vec![[0; 4]; t];
++            vars[0] = [0, 1, 0, 1];
++            vars[1] = [0, 0, 1, 1];
++            let mut table = Vec::with_capacity(1 << t);
++            for assignment in (0..1 << t).step_by(4) {
++                for (j, value) in vars.iter_mut().enumerate().skip(2) {
++                    *value = [((assignment >> j) & 1) as u64; 4];
++                }
++                table.extend(self.eval_lanes(&vars).map(|value| value & mask));
++            }
++            return table;
++        }
++
+         // if t > 20 {
+         //     panic!("CRAZYY");
+         // }
+--- a/core/src/simplify/merge_hidden.rs
++++ b/core/src/simplify/merge_hidden.rs
+@@ -83,21 +83,24 @@
+ 
+ fn infer_bitwise_truth_tables(target: &[u64], parents: &[&[u64]], n: u8) -> Vec<u8> {
+     let input_count = 1usize << parents.len();
+-    let mut observed = vec![None; input_count];
+-    for sample in 0..target.len() {
+-        for bit in 0..n {
+-            let mut input = 0usize;
++    let mask = crate::varint::make_mask(n);
++    let mut seen_zero = 0u8;
++    let mut seen_one = 0u8;
++    for (sample, &output) in target.iter().enumerate() {
++        for input in 0..input_count {
++            let mut active = mask;
+             for (index, parent) in parents.iter().enumerate() {
+-                input |= (((parent[sample] >> bit) & 1) as usize) << index;
+-            }
+-            let output = ((target[sample] >> bit) & 1) != 0;
+-            match observed[input] {
+-                Some(previous) if previous != output => return Vec::new(),
+-                Some(_) => {}
+-                None => observed[input] = Some(output),
+-            }
+-        }
+-    }
++                active &= if input & (1 << index) != 0 { parent[sample] } else { !parent[sample] };
++            }
++            seen_zero |= u8::from(active & !output != 0) << input;
++            seen_one |= u8::from(active & output != 0) << input;
++        }
++        if seen_zero & seen_one != 0 { return Vec::new(); }
++    }
++    let observed: Vec<_> = (0..input_count).map(|input| {
++        if (seen_zero | seen_one) & (1 << input) == 0 { None }
++        else { Some(seen_one & (1 << input) != 0) }
++    }).collect();
+     complete_truth_table(&observed)
+ }
+ 

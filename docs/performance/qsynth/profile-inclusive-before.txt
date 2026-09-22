@@ -1,0 +1,82 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 4K of event 'cycles:u'
+# Event count (approx.): 17023721128
+#
+# Children      Self  Command        Shared Object     Symbol                                                                                                                                                                                                                                               
+# ........  ........  .............  ................  .....................................................................................................................................................................................................................................................
+#
+    83.24%     0.33%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::solve
+    74.22%     0.02%  current-probe  current-probe     [.] rumba_core::simplify::simplify_mba_inner
+    73.15%     0.33%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+    69.53%     0.00%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::hide_in_var
+    68.63%     0.05%  current-probe  current-probe     [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+    61.71%     0.00%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::make_product
+    54.87%     0.14%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    50.10%     0.02%  current-probe  current-probe     [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+    49.08%     0.02%  current-probe  current-probe     [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+    49.05%     0.02%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    48.91%     0.02%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    48.77%     0.09%  current-probe  current-probe     [.] core::iter::adapters::try_process
+    48.74%     0.07%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    48.04%     0.05%  current-probe  current-probe     [.] core::iter::adapters::try_process
+    46.85%     0.09%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    45.28%     0.00%  current-probe  current-probe     [.] rumba_core::simplify::simplify_mba
+    41.96%     0.07%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    41.75%     0.07%  current-probe  current-probe     [.] core::iter::adapters::try_process
+    41.73%    14.20%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::reduce_masked
+    41.67%     0.00%  current-probe  current-probe     [.] qsynth_probe::main
+    38.58%     0.00%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    38.44%     0.02%  current-probe  current-probe     [.] core::iter::adapters::try_process
+    38.07%     0.14%  current-probe  current-probe     [.] rumba_core::simplify::hidden_gauge::intern
+    32.51%     0.00%  current-probe  current-probe     [.] std::sys::backtrace::__rust_begin_short_backtrace
+    32.44%     0.00%  current-probe  current-probe     [.] std::rt::lang_start::{{closure}}
+    32.34%     0.00%  current-probe  current-probe     [.] std::rt::lang_start_internal
+    31.82%     0.00%  current-probe  current-probe     [.] main
+    31.72%     0.00%  current-probe  libc.so.6         [.] __libc_start_call_main
+    30.62%     5.15%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    30.28%     0.00%  current-probe  libc.so.6         [.] __libc_start_main@@GLIBC_2.34
+    29.83%     0.00%  current-probe  current-probe     [.] _start
+    27.67%     0.10%  current-probe  current-probe     [.] <alloc::vec::into_iter::IntoIter<T,A> as core::iter::traits::iterator::Iterator>::try_fold
+    27.07%     0.00%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+    26.79%     0.10%  current-probe  current-probe     [.] core::iter::adapters::try_process
+    26.33%     0.05%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    19.94%     0.02%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    18.56%     0.50%  current-probe  current-probe     [.] rumba_core::simplify::hidden_gauge::canonicalize
+    18.20%     0.34%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::solve_linear
+    17.65%     5.90%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::reduce_and
+    15.95%     0.05%  current-probe  current-probe     [.] rumba_core::expr::Expr::try_map
+    14.78%     0.48%  current-probe  current-probe     [.] rumba_core::expr::Expr::truth_table_masked
+    14.53%    14.53%  current-probe  current-probe     [.] rumba_core::expr::Expr::eval_bits
+    11.98%     0.31%  current-probe  current-probe     [.] rumba_core::expr::Expr::map
+    11.86%     1.10%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+     8.29%     3.51%  current-probe  current-probe     [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     7.87%     1.98%  current-probe  current-probe     [.] rumba_core::reduce::Reducer::group_terms
+     7.44%     0.12%  current-probe  current-probe     [.] rumba_core::simplify::projector_defect::close
+     6.52%     1.96%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     5.80%     5.71%  current-probe  current-probe     [.] rumba_core::simplify::merge_hidden::infer_bitwise_truth_tables
+     5.39%     3.62%  current-probe  current-probe     [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     5.04%     0.19%  current-probe  current-probe     [.] rumba_core::simplify::MBASolver<C>::is_linear_bitwise
+     4.00%     4.00%  current-probe  libc.so.6         [.] malloc
+     3.87%     0.19%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     3.77%     2.58%  current-probe  libc.so.6         [.] _int_malloc
+     3.47%     0.07%  current-probe  current-probe     [.] rumba_core::simplify::merge_hidden::make_signature_samples
+     3.32%     1.39%  current-probe  current-probe     [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     3.28%     3.28%  current-probe  libc.so.6         [.] cfree@GLIBC_2.2.5
+     3.22%     0.30%  current-probe  libc.so.6         [.] __libc_malloc2
+     2.95%     0.57%  current-probe  current-probe     [.] rumba_core::simplify::reduce_vars
+     2.90%     0.49%  current-probe  current-probe     [.] rumba_core::expr::Expr::map
+     2.75%     0.64%  current-probe  current-probe     [.] alloc::vec::in_place_collect::from_iter_in_place
+     2.73%     0.07%  current-probe  current-probe     [.] rumba_core::simplify::projector_defect::literal_indexes
+     2.43%     0.00%  current-probe  current-probe     [.] std::thread::local::LocalKey<T>::with
+     2.35%     2.35%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     2.29%     0.14%  current-probe  current-probe     [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     2.20%     0.41%  current-probe  current-probe     [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+
+
+#
+# (Tip: To set sample time separation other than 100ms with --sort time use --time-quantum)
+#

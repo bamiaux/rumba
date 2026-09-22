@@ -1,0 +1,107 @@
+[
+  {
+    "dataset": "loki_tiny",
+    "count": 25000,
+    "median_seconds": 0.971417135,
+    "raw_runs": [
+      "run=0 count=25000 seconds=0.944352174 cpu=0.943898085",
+      "run=1 count=25000 seconds=0.964436548 cpu=0.963960104",
+      "run=2 count=25000 seconds=0.983968359 cpu=0.983856623",
+      "run=3 count=25000 seconds=0.986283859 cpu=0.983906723",
+      "run=4 count=25000 seconds=0.971417135 cpu=0.967864152",
+      "run=5 count=25000 seconds=0.948038031 cpu=0.951934973",
+      "median=0.971417135",
+      "cpu_median=0.967864152"
+    ]
+  },
+  {
+    "dataset": "qsynth_ea",
+    "count": 500,
+    "median_seconds": 0.415952078,
+    "raw_runs": [
+      "run=0 count=500 seconds=0.411266644 cpu=0.407842740",
+      "run=1 count=500 seconds=0.415952078 cpu=0.415957777",
+      "run=2 count=500 seconds=0.412486400 cpu=0.415965657",
+      "run=3 count=500 seconds=0.410260367 cpu=0.407920944",
+      "run=4 count=500 seconds=0.435562867 cpu=0.435953294",
+      "run=5 count=500 seconds=0.434866743 cpu=0.435877968",
+      "median=0.415952078",
+      "cpu_median=0.415965657"
+    ]
+  },
+  {
+    "dataset": "neureduce",
+    "count": 10000,
+    "median_seconds": 0.218943192,
+    "raw_runs": [
+      "run=0 count=10000 seconds=0.218670122 cpu=0.215986281",
+      "run=1 count=10000 seconds=0.216450160 cpu=0.215945971",
+      "run=2 count=10000 seconds=0.215505304 cpu=0.215979251",
+      "run=3 count=10000 seconds=0.221448762 cpu=0.219994777",
+      "run=4 count=10000 seconds=0.219760158 cpu=0.219997528",
+      "run=5 count=10000 seconds=0.218943192 cpu=0.219904727",
+      "median=0.218943192",
+      "cpu_median=0.219904727"
+    ]
+  },
+  {
+    "dataset": "mba_flatten",
+    "count": 3000,
+    "median_seconds": 0.150174829,
+    "raw_runs": [
+      "run=0 count=3000 seconds=0.154006776 cpu=0.155992066",
+      "run=1 count=3000 seconds=0.154702904 cpu=0.151943280",
+      "run=2 count=3000 seconds=0.149748642 cpu=0.152007259",
+      "run=3 count=3000 seconds=0.150906518 cpu=0.151925990",
+      "run=4 count=3000 seconds=0.150174829 cpu=0.147989643",
+      "run=5 count=3000 seconds=0.149899301 cpu=0.147986224",
+      "median=0.150174829",
+      "cpu_median=0.151925990"
+    ]
+  },
+  {
+    "dataset": "mba_obf_linear",
+    "count": 1000,
+    "median_seconds": 0.082496513,
+    "raw_runs": [
+      "run=0 count=1000 seconds=0.082793304 cpu=0.083995332",
+      "run=1 count=1000 seconds=0.082546863 cpu=0.083961859",
+      "run=2 count=1000 seconds=0.083758929 cpu=0.083994612",
+      "run=3 count=1000 seconds=0.082335304 cpu=0.079993016",
+      "run=4 count=1000 seconds=0.082444134 cpu=0.083998723",
+      "run=5 count=1000 seconds=0.082496513 cpu=0.083981743",
+      "median=0.082496513",
+      "cpu_median=0.083981743"
+    ]
+  },
+  {
+    "dataset": "mba_obf_nonlinear",
+    "count": 1000,
+    "median_seconds": 0.04929566,
+    "raw_runs": [
+      "run=0 count=1000 seconds=0.049612639 cpu=0.047991945",
+      "run=1 count=1000 seconds=0.050448335 cpu=0.047990605",
+      "run=2 count=1000 seconds=0.049494869 cpu=0.047984625",
+      "run=3 count=1000 seconds=0.049295660 cpu=0.047996756",
+      "run=4 count=1000 seconds=0.049075851 cpu=0.047996586",
+      "run=5 count=1000 seconds=0.049262370 cpu=0.051999582",
+      "median=0.049295660",
+      "cpu_median=0.047996586"
+    ]
+  },
+  {
+    "dataset": "syntia",
+    "count": 500,
+    "median_seconds": 0.009799665,
+    "raw_runs": [
+      "run=0 count=500 seconds=0.009930955 cpu=0.007994732",
+      "run=1 count=500 seconds=0.009799665 cpu=0.011999229",
+      "run=2 count=500 seconds=0.010290265 cpu=0.008002883",
+      "run=3 count=500 seconds=0.009861695 cpu=0.011996589",
+      "run=4 count=500 seconds=0.009705327 cpu=0.008000592",
+      "run=5 count=500 seconds=0.009687416 cpu=0.011999259",
+      "median=0.009799665",
+      "cpu_median=0.011996589"
+    ]
+  }
+]

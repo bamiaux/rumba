@@ -1,0 +1,43 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -95,23 +95,29 @@
+     where
+         F: FnMut(Expr) -> FlattenResult,
+     {
+-        let mut flat = Vec::with_capacity(v.len());
+-
+         let mut stack: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
+-
+-        while let Some(e) = stack.pop() {
++        let mut read = stack.len();
++        let mut write = read;
++        while read != 0 {
++            read -= 1;
++            let e = std::mem::replace(&mut stack[read], Expr::zero());
+             match handler(e) {
+-                FlattenResult::Vec(mut v) => {
+-                    stack.append(&mut v);
++                FlattenResult::Vec(v) => {
++                    let len = v.len();
++                    stack.splice(read..write, v);
++                    read += len;
++                    write = read;
++                }
++                FlattenResult::Expr(e) => {
++                    write -= 1;
++                    stack[write] = e;
+                 }
+-
+-                FlattenResult::Expr(e) => flat.push(e),
+-
+                 FlattenResult::None => {}
+             }
+         }
+-
+-        flat
++        stack.drain(..write);
++        stack.reverse();
++        stack
+     }
+ 
+     pub fn group_terms(&self, mut exprs: Vec<Expr>) -> Expr {

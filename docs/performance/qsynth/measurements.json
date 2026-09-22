@@ -1,0 +1,300 @@
+{
+  "current": {
+    "binary_sha256": "2242c62a7660ddab30032e7a6e016e27f8517daec2f6cb47541acd5da14b8504",
+    "runs": {
+      "current-trials.txt": [
+        "run=0 count=500 seconds=0.409486007 cpu=0.411952031",
+        "run=1 count=500 seconds=0.406126619 cpu=0.403978507",
+        "run=2 count=500 seconds=0.410744813 cpu=0.411988600",
+        "run=3 count=500 seconds=0.407484395 cpu=0.407944464",
+        "run=4 count=500 seconds=0.406791787 cpu=0.407969664",
+        "run=5 count=500 seconds=0.406920636 cpu=0.407910444",
+        "median=0.406920636",
+        "cpu_median=0.407944464",
+        "run=0 count=500 seconds=0.408718681 cpu=0.407814874",
+        "run=1 count=500 seconds=0.409736518 cpu=0.407975324",
+        "run=2 count=500 seconds=0.408735249 cpu=0.411891320",
+        "run=3 count=500 seconds=0.414025583 cpu=0.411976841",
+        "run=4 count=500 seconds=0.407022436 cpu=0.407900984",
+        "run=5 count=500 seconds=0.409262359 cpu=0.407874114",
+        "median=0.409262359",
+        "cpu_median=0.407975324"
+      ],
+      "current-combined-trials.txt": [
+        "run=0 count=500 seconds=0.411082866 cpu=0.411972110",
+        "run=1 count=500 seconds=0.422962465 cpu=0.423909280",
+        "run=2 count=500 seconds=0.418399042 cpu=0.415929197",
+        "run=3 count=500 seconds=0.451504361 cpu=0.448002413",
+        "run=4 count=500 seconds=0.439927440 cpu=0.439878011",
+        "run=5 count=500 seconds=0.435327691 cpu=0.435980178",
+        "median=0.435327691",
+        "cpu_median=0.435980178",
+        "run=0 count=500 seconds=0.439850921 cpu=0.439863290",
+        "run=1 count=500 seconds=0.438140902 cpu=0.435966738",
+        "run=2 count=500 seconds=0.429068762 cpu=0.427863336",
+        "run=3 count=500 seconds=0.422956573 cpu=0.423986739",
+        "run=4 count=500 seconds=0.421412308 cpu=0.419978353",
+        "run=5 count=500 seconds=0.425136655 cpu=0.423483531",
+        "median=0.425136655",
+        "cpu_median=0.423986739"
+      ],
+      "current-full-trials.txt": [
+        "run=0 count=41000 seconds=1.845875777 cpu=1.843574052",
+        "run=1 count=41000 seconds=1.844900262 cpu=1.842917594",
+        "run=2 count=41000 seconds=1.871907124 cpu=1.871692612",
+        "run=3 count=41000 seconds=1.842248125 cpu=1.843438775",
+        "run=4 count=41000 seconds=1.840306856 cpu=1.839653894",
+        "run=5 count=41000 seconds=1.899255226 cpu=1.895640119",
+        "median=1.844900262",
+        "cpu_median=1.843438775",
+        "run=0 count=41000 seconds=1.833948868 cpu=1.830650347",
+        "run=1 count=41000 seconds=1.887229479 cpu=1.887552198",
+        "run=2 count=41000 seconds=1.897665660 cpu=1.899580021",
+        "run=3 count=41000 seconds=1.842949768 cpu=1.839599958",
+        "run=4 count=41000 seconds=1.854284907 cpu=1.851557167",
+        "run=5 count=41000 seconds=1.883247943 cpu=1.879568477",
+        "median=1.883247943",
+        "cpu_median=1.879568477"
+      ],
+      "current-validation-qsynth.txt": [
+        "run=0 count=500 seconds=0.409455233 cpu=0.411979251",
+        "run=1 count=500 seconds=0.412065094 cpu=0.411947061",
+        "run=2 count=500 seconds=0.422707666 cpu=0.419988023",
+        "run=3 count=500 seconds=0.408687447 cpu=0.411935091",
+        "run=4 count=500 seconds=0.422672724 cpu=0.419950439",
+        "run=5 count=500 seconds=0.434900380 cpu=0.435910782",
+        "median=0.422672724",
+        "cpu_median=0.419950439",
+        "run=0 count=500 seconds=0.408160145 cpu=0.407898955",
+        "run=1 count=500 seconds=0.407573136 cpu=0.403943599",
+        "run=2 count=500 seconds=0.408135655 cpu=0.407937496",
+        "run=3 count=500 seconds=0.409435400 cpu=0.407904876",
+        "run=4 count=500 seconds=0.409648778 cpu=0.407980015",
+        "run=5 count=500 seconds=0.408688602 cpu=0.411872292",
+        "median=0.408688602",
+        "cpu_median=0.407937496"
+      ],
+      "current-validation-full.txt": [
+        "run=0 count=41000 seconds=1.870523993 cpu=1.871650160",
+        "run=1 count=41000 seconds=1.844547304 cpu=1.843671666",
+        "run=2 count=41000 seconds=1.841362884 cpu=1.839606472",
+        "run=3 count=41000 seconds=1.822790508 cpu=1.823614213",
+        "run=4 count=41000 seconds=1.907160217 cpu=1.896362212",
+        "run=5 count=41000 seconds=1.837749453 cpu=1.835514924",
+        "median=1.841362884",
+        "cpu_median=1.839606472",
+        "run=0 count=41000 seconds=1.821911057 cpu=1.822901030",
+        "run=1 count=41000 seconds=1.920240955 cpu=1.919588051",
+        "run=2 count=41000 seconds=1.876117617 cpu=1.875515468",
+        "run=3 count=41000 seconds=1.841662245 cpu=1.843591369",
+        "run=4 count=41000 seconds=1.825406978 cpu=1.827641344",
+        "run=5 count=41000 seconds=1.832068044 cpu=1.831588451",
+        "median=1.841662245",
+        "cpu_median=1.843591369"
+      ]
+    },
+    "hardware_runs": [
+      {
+        "cycles:u": 17049278822,
+        "instructions:u": 38973612233,
+        "branches:u": 6499985470,
+        "branch-misses:u": 109723789
+      },
+      {
+        "cycles:u": 16953447106,
+        "instructions:u": 38972451940,
+        "branches:u": 6499704525,
+        "branch-misses:u": 109904711
+      },
+      {
+        "cycles:u": 16943193194,
+        "instructions:u": 38969029607,
+        "branches:u": 6499020533,
+        "branch-misses:u": 109267341
+      }
+    ]
+  },
+  "swar": {
+    "binary_sha256": "3fa8621c50d12d465a06066ec57d1a92243ff44b6ad0c5ffb5c1360450bf210b",
+    "runs": {
+      "swar-trials.txt": [
+        "run=0 count=500 seconds=0.392102137 cpu=0.391991098",
+        "run=1 count=500 seconds=0.390701013 cpu=0.391982128",
+        "run=2 count=500 seconds=0.390852989 cpu=0.391913625",
+        "run=3 count=500 seconds=0.378146395 cpu=0.375995944",
+        "run=4 count=500 seconds=0.382101242 cpu=0.383902566",
+        "run=5 count=500 seconds=0.397612074 cpu=0.395993411",
+        "median=0.390701013",
+        "cpu_median=0.391913625",
+        "run=0 count=500 seconds=0.410421005 cpu=0.407955744",
+        "run=1 count=500 seconds=0.395063915 cpu=0.395834045",
+        "run=2 count=500 seconds=0.381370423 cpu=0.383992312",
+        "run=3 count=500 seconds=0.379002514 cpu=0.375957623",
+        "run=4 count=500 seconds=0.379681471 cpu=0.379929410",
+        "run=5 count=500 seconds=0.379236834 cpu=0.379941460",
+        "median=0.379681471",
+        "cpu_median=0.379941460"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "wide": {
+    "binary_sha256": "844ad808cd0a8b8a1b3f31c09254bebc382004a62de6d9678c533e6a795cca25",
+    "runs": {
+      "wide-trials.txt": [
+        "run=0 count=500 seconds=0.377043161 cpu=0.375985293",
+        "run=1 count=500 seconds=0.376433971 cpu=0.375903513",
+        "run=2 count=500 seconds=0.377829578 cpu=0.379989017",
+        "run=3 count=500 seconds=0.386852257 cpu=0.387800203",
+        "run=4 count=500 seconds=0.386878616 cpu=0.387983912",
+        "run=5 count=500 seconds=0.390444414 cpu=0.387997143",
+        "median=0.386852257",
+        "cpu_median=0.387800203",
+        "run=0 count=500 seconds=0.387275588 cpu=0.387937636",
+        "run=1 count=500 seconds=0.376865310 cpu=0.375972713",
+        "run=2 count=500 seconds=0.374358359 cpu=0.375810924",
+        "run=3 count=500 seconds=0.378240607 cpu=0.375993584",
+        "run=4 count=500 seconds=0.395718476 cpu=0.384893052",
+        "run=5 count=500 seconds=0.378702926 cpu=0.375868574",
+        "median=0.378240607",
+        "cpu_median=0.375972713"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "combined": {
+    "binary_sha256": "30f8aa6ba1bc7e6b2ce68a9ee96076d390ec5b1f29923600795572e29428dab2",
+    "runs": {
+      "combined-combined-trials.txt": [
+        "run=0 count=500 seconds=0.356707175 cpu=0.359875159",
+        "run=1 count=500 seconds=0.351995592 cpu=0.351993465",
+        "run=2 count=500 seconds=0.358771077 cpu=0.356006902",
+        "run=3 count=500 seconds=0.351975280 cpu=0.351965045",
+        "run=4 count=500 seconds=0.354436982 cpu=0.355997882",
+        "run=5 count=500 seconds=0.352558199 cpu=0.351910085",
+        "median=0.352558199",
+        "cpu_median=0.351993465",
+        "run=0 count=500 seconds=0.356451354 cpu=0.355968172",
+        "run=1 count=500 seconds=0.352688096 cpu=0.355909802",
+        "run=2 count=500 seconds=0.354010373 cpu=0.351961876",
+        "run=3 count=500 seconds=0.352585669 cpu=0.351870265",
+        "run=4 count=500 seconds=0.353730765 cpu=0.355976472",
+        "run=5 count=500 seconds=0.352901187 cpu=0.351964215",
+        "median=0.352901187",
+        "cpu_median=0.351964215"
+      ],
+      "combined-full-trials.txt": [
+        "run=0 count=41000 seconds=1.818047228 cpu=1.818001747",
+        "run=1 count=41000 seconds=1.852588192 cpu=1.851540026",
+        "run=2 count=41000 seconds=1.795655725 cpu=1.795618059",
+        "run=3 count=41000 seconds=1.769743237 cpu=1.767694907",
+        "run=4 count=41000 seconds=1.765097186 cpu=1.763637264",
+        "run=5 count=41000 seconds=1.779813960 cpu=1.779676075",
+        "median=1.779813960",
+        "cpu_median=1.779676075"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "unified": {
+    "binary_sha256": "05c796badc2289206dd593e296e58066b1b7628807eec833ffdd0ceeea87b4da",
+    "runs": {
+      "unified-combined-trials.txt": [
+        "run=0 count=500 seconds=0.358679247 cpu=0.355990422",
+        "run=1 count=500 seconds=0.357455271 cpu=0.359967108",
+        "run=2 count=500 seconds=0.354849859 cpu=0.355908033",
+        "run=3 count=500 seconds=0.356512103 cpu=0.355964871",
+        "run=4 count=500 seconds=0.358086678 cpu=0.355961511",
+        "run=5 count=500 seconds=0.360597640 cpu=0.363872434",
+        "median=0.357455271",
+        "cpu_median=0.355964871",
+        "run=0 count=500 seconds=0.371770421 cpu=0.371987687",
+        "run=1 count=500 seconds=0.358422127 cpu=0.355966562",
+        "run=2 count=500 seconds=0.357800689 cpu=0.359934838",
+        "run=3 count=500 seconds=0.358874617 cpu=0.359931878",
+        "run=4 count=500 seconds=0.355929447 cpu=0.355899002",
+        "run=5 count=500 seconds=0.356911693 cpu=0.355962418",
+        "median=0.357800689",
+        "cpu_median=0.355966562"
+      ],
+      "unified-full-trials.txt": [
+        "run=0 count=41000 seconds=1.783431179 cpu=1.783477818",
+        "run=1 count=41000 seconds=1.785491925 cpu=1.783551788",
+        "run=2 count=41000 seconds=1.776278807 cpu=1.775612363",
+        "run=3 count=41000 seconds=1.822837541 cpu=1.823577347",
+        "run=4 count=41000 seconds=1.883019367 cpu=1.879606612",
+        "run=5 count=41000 seconds=1.857563685 cpu=1.855536710",
+        "median=1.822837541",
+        "cpu_median=1.823577347"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e"
+  },
+  "final": {
+    "binary_sha256": "d3bcd88dde4abb0d3cb90b301e8ecbdc73c469e27935a23c676a732cc5deef27",
+    "runs": {
+      "final-validation-qsynth.txt": [
+        "run=0 count=500 seconds=0.386746813 cpu=0.383995576",
+        "run=1 count=500 seconds=0.375076078 cpu=0.375988903",
+        "run=2 count=500 seconds=0.378713787 cpu=0.379913700",
+        "run=3 count=500 seconds=0.369274052 cpu=0.367889955",
+        "run=4 count=500 seconds=0.360212241 cpu=0.363995025",
+        "run=5 count=500 seconds=0.355613495 cpu=0.351940066",
+        "median=0.369274052",
+        "cpu_median=0.367889955",
+        "run=0 count=500 seconds=0.360491952 cpu=0.359988203",
+        "run=1 count=500 seconds=0.350802583 cpu=0.351871789",
+        "run=2 count=500 seconds=0.351143281 cpu=0.347922171",
+        "run=3 count=500 seconds=0.350300674 cpu=0.347962431",
+        "run=4 count=500 seconds=0.354638679 cpu=0.355909323",
+        "run=5 count=500 seconds=0.359384844 cpu=0.359976918",
+        "median=0.351143281",
+        "cpu_median=0.351871789"
+      ],
+      "final-validation-full.txt": [
+        "run=0 count=41000 seconds=1.785261117 cpu=1.783658998",
+        "run=1 count=41000 seconds=1.755539397 cpu=1.755559116",
+        "run=2 count=41000 seconds=1.752937029 cpu=1.751620377",
+        "run=3 count=41000 seconds=1.808693487 cpu=1.807637753",
+        "run=4 count=41000 seconds=1.784235311 cpu=1.783661237",
+        "run=5 count=41000 seconds=1.746148152 cpu=1.743685644",
+        "median=1.755539397",
+        "cpu_median=1.755559116",
+        "run=0 count=41000 seconds=1.750765266 cpu=1.751002118",
+        "run=1 count=41000 seconds=1.747767897 cpu=1.747590082",
+        "run=2 count=41000 seconds=1.742463855 cpu=1.739694558",
+        "run=3 count=41000 seconds=1.766462429 cpu=1.767579747",
+        "run=4 count=41000 seconds=1.760476373 cpu=1.759685941",
+        "run=5 count=41000 seconds=1.800008520 cpu=1.799557771",
+        "median=1.760476373",
+        "cpu_median=1.759685941"
+      ]
+    },
+    "outputs_sha256": "16bd98fd3a3d2ae8b1e1fee2feb7a6e4a5ca6f067aef6c41ab08c9249531d2d2",
+    "synthetic_sha256": "ac3a0475c6df4426a2962b0443cbe2b181d591c415a750068001e9a38acd769e",
+    "hardware_runs": [
+      {
+        "cycles:u": 14681592465,
+        "instructions:u": 30996175498,
+        "branches:u": 5201362245,
+        "branch-misses:u": 96433128
+      },
+      {
+        "cycles:u": 14704690573,
+        "instructions:u": 30996566494,
+        "branches:u": 5201572609,
+        "branch-misses:u": 96698974
+      },
+      {
+        "cycles:u": 14567253462,
+        "instructions:u": 30998788687,
+        "branches:u": 5201905096,
+        "branch-misses:u": 95797034
+      }
+    ]
+  }
+}

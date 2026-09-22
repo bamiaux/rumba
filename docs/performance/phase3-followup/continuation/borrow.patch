@@ -1,0 +1,22 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -219,8 +219,8 @@
+     }
+ 
+     /// Solves a linear MBA
+-    fn solve_linear_inner(&self, e: Expr, t: usize, from_poly: bool) -> Expr {
+-        let signature = self.calc_signature(&e, t);
++    fn solve_linear_inner(&self, e: &Expr, t: usize, from_poly: bool) -> Expr {
++        let signature = self.calc_signature(e, t);
+ 
+         if from_poly {
+             // We necessarily want a sum of conjunctions
+@@ -255,7 +255,7 @@
+                 });
+             }
+ 
+-            let simplified = self.solve_linear_inner(e.clone(), t, from_poly);
++            let simplified = self.solve_linear_inner(&e, t, from_poly);
+             self.l_cache.insert(e, simplified.clone());
+             simplified
+         };

@@ -1,0 +1,162 @@
+   Compiling rumba-core v1.0.1 (/home/nixos/rumba/core)
+   Compiling wasm v1.0.1 (/home/nixos/rumba/bindings/wasm)
+   Compiling rumba v1.0.1 (/home/nixos/rumba/cli)
+   Compiling c v1.0.1 (/home/nixos/rumba/bindings/c)
+   Compiling pyrumba v1.0.1 (/home/nixos/rumba/bindings/python)
+    Finished `release` profile [optimized] target(s) in 8.42s
+     Running unittests src/lib.rs (target/release/deps/rumbac-3c3062548ac1cc59)
+
+running 2 tests
+test tests::builds_and_evaluates_expression ... ok
+test tests::parses_simplifies_and_evaluates_mba ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/release/deps/pyrumba-ed33bde986d8631e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/release/deps/rumba-d1d8016ca1ecb63d)
+
+running 7 tests
+test names::tests::accepts_underscores_and_digits_within_a_name ... ok
+test names::tests::does_not_read_an_identifier_out_of_a_hex_literal ... ok
+test names::tests::interns_names_in_order_of_first_appearance ... ok
+test names::tests::leaves_numbers_alone ... ok
+test names::tests::plain_v_indices_round_trip ... ok
+test names::tests::renumbers_and_restores_shuffled_v_names ... ok
+test names::tests::unknown_index_falls_back_to_its_v_form ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/release/deps/rumba_core-11e6480fd7e51c67)
+
+running 11 tests
+test expr::tests::variables_include_sparse_ids_under_every_operator ... ok
+test parser::tests::oversized_literal_errors_instead_of_panicking ... ok
+test parser::tests::test_parse_program ... ok
+test simplify::merge_hidden::tests::synthesizes_every_binary_bitwise_truth_table ... ok
+test simplify::tests::fixed_point_cycle_stops_at_the_first_non_shrinking_pass ... ok
+test simplify::tests::fixed_point_has_a_pass_limit ... ok
+test simplify::tests::fixed_point_stops_at_the_first_pass_that_does_not_shrink ... ok
+test simplify::tests::inverse_pct_round_trip_preserves_variable_index ... ok
+test jit::tests::jit_matches_interpreter ... ok
+test expr::tests::wide_truth_tables_match_scalar_evaluation_across_masks_and_dispatch_thresholds ... ok
+test simplify::merge_hidden::tests::parallel_observations_match_scalar_tables_including_wildcards ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/hidden_gauge.rs (target/release/deps/hidden_gauge-7f44c9fdbeedd4af)
+
+running 5 tests
+test hidden_definitions_use_word_width_after_subwidth_simplification ... ok
+test complementary_hidden_orbits_close_without_extra_coordinates ... ok
+test recursively_nested_hidden_definitions_are_restored ... ok
+test nested_hidden_construction_routes_share_the_same_result ... ok
+test nested_hidden_routes_are_equivalent_exhaustively_at_small_widths ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/prettify.rs (target/release/deps/prettify-f1a0f08613cf536e)
+
+running 4 tests
+test prettification_preserves_semantics_through_the_solver ... ok
+test prettified_outputs_preserve_boolean_identities ... ok
+test prettifies_added_forms_from_a_table ... ok
+test prettifies_basic_forms_from_a_table ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/projector_defect.rs (target/release/deps/projector_defect-b85326639794458f)
+
+running 3 tests
+test projector_defect_equivalence_is_exhaustive_at_small_widths ... ok
+test predecessor_and_order_certificates_rewrite_source_contexts ... ok
+test contextual_substitution_handles_direct_and_complemented_observers ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/reducer.rs (target/release/deps/reducer-e57d3816677ac503)
+
+running 4 tests
+test associative_commutative_reductions_ignore_construction_order ... ok
+test de_morgan_outputs_are_ac_canonical ... ok
+test small_sums_normalize_coefficients_and_merge_repeated_bases ... ok
+test xor_cancellation_is_construction_order_independent ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/test.rs (target/release/deps/test-72783b7fc1cc9b85)
+
+running 13 tests
+test discovers_proven_binary_relation_between_hidden_components ... ok
+test ignores_nonlinear_hidden_variables_when_selecting_lambda_relations ... ok
+test merges_semantically_equal_hidden_components ... ok
+test uses_two_hidden_definitions_to_recognize_bitwise_expression ... ok
+test merges_semantically_complementary_hidden_components ... ok
+test recursively_proves_hidden_components_are_complements ... ok
+test datasets::syntia ... ok
+test datasets::mba_obf_nonlinear ... ok
+test datasets::mba_obf_linear ... ok
+test datasets::qsynth_ea ... ok
+test datasets::mba_flatten ... ok
+test datasets::neureduce ... ok
+test datasets::loki_tiny ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.46s
+
+     Running unittests src/lib.rs (target/release/deps/wasm-9094dc2b4252650d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/web.rs (target/release/deps/web-effb0b4dec5fd6f5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests rumba_core
+
+running 1 test
+test core/src/lib.rs - (line 23) ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+all doctests ran in 0.72s; merged doctests compilation took 0.71s
+   Doc-tests wasm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+Without JIT:
+   Compiling memchr v2.7.6
+   Compiling serde_json v1.0.145
+   Compiling tinytemplate v1.2.1
+   Compiling criterion v0.7.0
+   Compiling rumba-core v1.0.1 (/home/nixos/rumba/core)
+    Finished `release` profile [optimized] target(s) in 9.09s
+     Running unittests src/lib.rs (target/release/deps/rumba_core-1072d4fc0c4cf62e)
+
+running 8 tests
+test expr::tests::variables_include_sparse_ids_under_every_operator ... ok
+test simplify::merge_hidden::tests::synthesizes_every_binary_bitwise_truth_table ... ok
+test simplify::tests::fixed_point_cycle_stops_at_the_first_non_shrinking_pass ... ok
+test simplify::tests::fixed_point_has_a_pass_limit ... ok
+test simplify::tests::fixed_point_stops_at_the_first_pass_that_does_not_shrink ... ok
+test simplify::tests::inverse_pct_round_trip_preserves_variable_index ... ok
+test expr::tests::wide_truth_tables_match_scalar_evaluation_across_masks_and_dispatch_thresholds ... ok
+test simplify::merge_hidden::tests::parallel_observations_match_scalar_tables_including_wildcards ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+Full corpus quality:
+OK=41000 OKZ=0 NG=0
+
+Exact cmp passed: 41000 AST + rendering outputs and 34176 generated outputs.

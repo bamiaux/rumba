@@ -1,0 +1,71 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -91,13 +91,20 @@
+ 
+ impl Reducer {
+     /// Flattens an expression by concatenating any same typed child expression into it
+-    fn flatten<F>(&self, v: Vec<Expr>, mut handler: F) -> Vec<Expr>
++    fn flatten<F>(&self, v: Vec<Expr>, nested: fn(&Expr) -> bool, mut handler: F) -> Vec<Expr>
+     where
+         F: FnMut(Expr) -> FlattenResult,
+     {
+-        let mut flat = Vec::with_capacity(v.len());
+-
+         let mut stack: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
++        if !stack.iter().any(nested) {
++            stack.reverse();
++            return stack.into_iter().filter_map(|e| match handler(e) {
++                FlattenResult::Expr(e) => Some(e),
++                FlattenResult::None => None,
++                FlattenResult::Vec(_) => unreachable!(),
++            }).collect();
++        }
++        let mut flat = Vec::with_capacity(stack.len());
+ 
+         while let Some(e) = stack.pop() {
+             match handler(e) {
+@@ -228,7 +235,7 @@
+     fn reduce_and(&self, exprs: Vec<Expr>) -> Expr {
+         let mut c: u64 = self.mask;
+ 
+-        let mut flat = self.flatten(exprs, |e| match e {
++        let mut flat = self.flatten(exprs, |e| matches!(e, Expr::And(_)), |e| match e {
+             Expr::And(v) => FlattenResult::Vec(v),
+             Expr::Const(v) => {
+                 c &= v;
+@@ -263,7 +270,7 @@
+     fn reduce_or(&self, exprs: Vec<Expr>) -> Expr {
+         let mut c: u64 = 0;
+ 
+-        let mut flat = self.flatten(exprs, |e| match e {
++        let mut flat = self.flatten(exprs, |e| matches!(e, Expr::Or(_)), |e| match e {
+             Expr::Or(v) => FlattenResult::Vec(v),
+             Expr::Const(v) => {
+                 c |= v;
+@@ -294,7 +301,7 @@
+     fn reduce_xor(&self, exprs: Vec<Expr>) -> Expr {
+         let mut c: u64 = 0;
+ 
+-        let mut flat = self.flatten(exprs, |e| match e {
++        let mut flat = self.flatten(exprs, |e| matches!(e, Expr::Xor(_)), |e| match e {
+             Expr::Xor(v) => FlattenResult::Vec(v),
+             Expr::Const(v) => {
+                 c ^= v;
+@@ -327,7 +334,7 @@
+ 
+         let mut c: u64 = 0;
+ 
+-        let mut flat = self.flatten(exprs, |e| match e {
++        let mut flat = self.flatten(exprs, |e| matches!(e, Expr::Add(_)), |e| match e {
+             Expr::Add(v) => FlattenResult::Vec(v),
+             Expr::Const(v) => {
+                 c = c.wrapping_add(v);
+@@ -357,7 +364,7 @@
+ 
+         let mut c: u64 = 1;
+ 
+-        let mut flat = self.flatten(exprs, |e| match e {
++        let mut flat = self.flatten(exprs, |e| matches!(e, Expr::Mul(_)), |e| match e {
+             Expr::Mul(v) => FlattenResult::Vec(v),
+             Expr::Const(v) => {
+                 c = c.wrapping_mul(v);

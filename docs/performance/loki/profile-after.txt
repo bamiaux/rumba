@@ -1,0 +1,56 @@
+# To display the perf.data header info, please use --header/--header-only options.
+#
+#
+# Total Lost Samples: 0
+#
+# Samples: 9K of event 'cycles:u'
+# Event count (approx.): 37173812578
+#
+# Overhead  Command     Shared Object     Symbol                                                                                                                                                                                                                                               
+# ........  ..........  ................  .....................................................................................................................................................................................................................................................
+#
+    12.91%  loki_probe  loki_probe        [.] rumba_core::reduce::Reducer::reduce_masked
+     6.33%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::eval_bits
+     5.89%  loki_probe  libc.so.6         [.] malloc
+     5.26%  loki_probe  loki_probe        [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     4.62%  loki_probe  libc.so.6         [.] cfree@GLIBC_2.2.5
+     3.50%  loki_probe  loki_probe        [.] <alloc::vec::Vec<T,A> as core::clone::Clone>::clone
+     3.39%  loki_probe  loki_probe        [.] rumba_core::reduce::Reducer::reduce_and
+     3.13%  loki_probe  loki_probe        [.] alloc::vec::in_place_collect::from_iter_in_place
+     2.42%  loki_probe  loki_probe        [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     2.28%  loki_probe  libc.so.6         [.] _int_malloc
+     1.77%  loki_probe  loki_probe        [.] __rustc::__rdl_dealloc
+     1.41%  loki_probe  loki_probe        [.] <rumba_core::expr::Expr as core::cmp::PartialOrd>::partial_cmp
+     1.40%  loki_probe  loki_probe        [.] rumba_core::reduce::Reducer::reduce_xor
+     1.35%  loki_probe  loki_probe        [.] __rustc::__rust_no_alloc_shim_is_unstable_v2
+     1.31%  loki_probe  libc.so.6         [.] _int_free_chunk
+     1.21%  loki_probe  loki_probe        [.] rumba_core::reduce::Reducer::group_terms
+     1.18%  loki_probe  loki_probe        [.] core::slice::sort::shared::smallsort::insertion_sort_shift_left
+     1.16%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::map
+     1.12%  loki_probe  loki_probe        [.] rumba_core::simplify::reduce_vars
+     1.09%  loki_probe  loki_probe        [.] alloc::vec::in_place_collect::from_iter_in_place
+     1.01%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::get_vars::collect
+     1.01%  loki_probe  libc.so.6         [.] malloc_consolidate
+     1.00%  loki_probe  loki_probe        [.] hashbrown::map::HashMap<K,V,S,A>::insert
+     0.92%  loki_probe  loki_probe        [.] rumba_core::simplify::MBASolver<C>::make_bitwise
+     0.87%  loki_probe  loki_probe        [.] hashbrown::map::HashMap<K,V,S,A>::insert
+     0.82%  loki_probe  loki_probe        [.] __rustc::__rust_dealloc
+     0.82%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::try_map
+     0.80%  loki_probe  loki_probe        [.] rumba_core::simplify::projector_defect::literal_indexes
+     0.77%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::truth_table_masked
+     0.76%  loki_probe  loki_probe        [.] rumba_core::simplify::MBASolver<C>::solve
+     0.73%  loki_probe  loki_probe        [.] rumba_core::simplify::MBASolver<C>::solve_linear
+     0.73%  loki_probe  loki_probe        [.] hashbrown::raw::RawTableInner::fallible_with_capacity
+     0.71%  loki_probe  loki_probe        [.] rumba_core::simplify::projector_defect::close
+     0.68%  loki_probe  loki_probe        [.] <alloc::vec::into_iter::IntoIter<T,A> as core::ops::drop::Drop>::drop
+     0.67%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::try_map
+     0.62%  loki_probe  loki_probe        [.] core::ptr::drop_in_place<rumba_core::expr::Expr>
+     0.57%  loki_probe  loki_probe        [.] __rustc::__rust_alloc
+     0.55%  loki_probe  loki_probe        [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+     0.52%  loki_probe  loki_probe        [.] rumba_core::expr::Expr::scale
+     0.50%  loki_probe  loki_probe        [.] <rumba_core::expr::Expr as core::clone::Clone>::clone
+
+
+#
+# (Tip: To see callchains in a more compact form: perf report -g folded)
+#

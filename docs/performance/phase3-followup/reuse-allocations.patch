@@ -1,0 +1,51 @@
+--- a/core/src/expr.rs
++++ b/core/src/expr.rs
+@@ -577,8 +577,14 @@
+         match self {
+             Expr::Var(_) | Expr::Const(_) => self,
+ 
+-            Expr::Not(expr) => !f(*expr),
+-            Expr::Scale(v, expr) => v * f(*expr),
++            Expr::Not(mut expr) => {
++                *expr = f(std::mem::replace(expr.as_mut(), Expr::zero()));
++                Expr::Not(expr)
++            }
++            Expr::Scale(v, mut expr) => {
++                *expr = f(std::mem::replace(expr.as_mut(), Expr::zero()));
++                match v { 0 => Expr::zero(), 1 => *expr, _ => Expr::Scale(v, expr) }
++            }
+ 
+             Expr::And(exprs) => Expr::And(vec_map(exprs, f)),
+             Expr::Or(exprs) => Expr::Or(vec_map(exprs, f)),
+@@ -596,18 +602,27 @@
+     where
+         F: FnMut(Self) -> Result<Self, E>,
+     {
+-        fn vec_try_map<F, E>(exprs: Vec<Expr>, f: F) -> Result<Vec<Expr>, E>
++        fn vec_try_map<F, E>(mut exprs: Vec<Expr>, mut f: F) -> Result<Vec<Expr>, E>
+         where
+             F: FnMut(Expr) -> Result<Expr, E>,
+         {
+-            exprs.into_iter().map(f).collect()
++            for e in &mut exprs {
++                *e = f(std::mem::replace(e, Expr::zero()))?;
++            }
++            Ok(exprs)
+         }
+ 
+         Ok(match self {
+             Expr::Var(_) | Expr::Const(_) => self,
+ 
+-            Expr::Not(expr) => !f(*expr)?,
+-            Expr::Scale(v, expr) => v * f(*expr)?,
++            Expr::Not(mut expr) => {
++                *expr = f(std::mem::replace(expr.as_mut(), Expr::zero()))?;
++                Expr::Not(expr)
++            }
++            Expr::Scale(v, mut expr) => {
++                *expr = f(std::mem::replace(expr.as_mut(), Expr::zero()))?;
++                match v { 0 => Expr::zero(), 1 => *expr, _ => Expr::Scale(v, expr) }
++            }
+ 
+             Expr::And(exprs) => Expr::And(vec_try_map(exprs, f)?),
+             Expr::Or(exprs) => Expr::Or(vec_try_map(exprs, f)?),

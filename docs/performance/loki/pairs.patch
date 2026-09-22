@@ -1,0 +1,45 @@
+--- a/core/src/reduce.rs
++++ b/core/src/reduce.rs
+@@ -43,29 +43,22 @@
+ }
+ 
+ /// Remove pairs of elements in a vector
+-fn remove_pairs(v: Vec<Expr>) -> Vec<Expr> {
+-    let mut reduced = Vec::with_capacity(v.len());
+-    let mut iter = v.into_iter().peekable();
+-
+-    while let Some(current) = iter.next() {
+-        let mut count = 1;
+-
+-        while let Some(next) = iter.peek() {
+-            if *next == current {
+-                count += 1;
+-                iter.next();
+-                continue;
+-            }
+-
+-            break;
++fn remove_pairs(mut v: Vec<Expr>) -> Vec<Expr> {
++    let mut read = 0;
++    let mut write = 0;
++    while read < v.len() {
++        let mut end = read + 1;
++        while end < v.len() && v[read] == v[end] {
++            end += 1;
+         }
+-
+-        if (count & 1) == 1 {
+-            reduced.push(current);
++        if (end - read) & 1 == 1 {
++            v.swap(write, read);
++            write += 1;
+         }
++        read = end;
+     }
+-
+-    reduced
++    v.truncate(write);
++    v
+ }
+ 
+ /// Deduplicates a list

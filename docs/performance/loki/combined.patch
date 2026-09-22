@@ -1,0 +1,67 @@
+--- a/core/src/utils/cache.rs
++++ b/core/src/utils/cache.rs
+@@ -38,7 +38,7 @@
+ /// across threads.
+ #[derive(Debug, Default)]
+ pub struct LocalCache {
+-    entries: RefCell<HashMap<Expr, Expr>>,
++    entries: RefCell<Vec<(Expr, Expr)>>,
+ }
+ 
+ impl LocalCache {
+@@ -49,11 +49,16 @@
+ 
+ impl LinearCache for LocalCache {
+     fn get(&self, e: &Expr) -> Option<Expr> {
+-        self.entries.borrow().get(e).cloned()
++        self.entries.borrow().iter().find(|(key, _)| key == e).map(|(_, value)| value.clone())
+     }
+ 
+     fn insert(&self, e: Expr, solved: Expr) {
+-        self.entries.borrow_mut().insert(e, solved);
++        let mut entries = self.entries.borrow_mut();
++        if let Some((_, value)) = entries.iter_mut().find(|(key, _)| key == &e) {
++            *value = solved;
++        } else {
++            entries.push((e, solved));
++        }
+     }
+ }
+ 
+--- a/core/src/simplify/merge_hidden.rs
++++ b/core/src/simplify/merge_hidden.rs
+@@ -148,11 +148,10 @@
+     }
+ }
+ 
+-fn make_signature_samples(expressions: &[Expr], mask: u64) -> Option<Vec<Vec<u64>>> {
++fn make_signature_samples<'a>(expressions: impl Iterator<Item = &'a Expr>, mask: u64) -> Option<Vec<Vec<u64>>> {
+     let mut variable_map = BiMap::<VarId, VarId>::new();
+     let mut variable_count = 0;
+     let reduced: Vec<_> = expressions
+-        .iter()
+         .cloned()
+         .map(|expression| reduce_vars(expression, &mut variable_map, &mut variable_count))
+         .collect();
+@@ -278,16 +277,15 @@
+             observed_atoms.push((Expr::Var(variable), Expr::Var(variable)));
+         }
+ 
+-        let sampled_expressions: Vec<_> = observed_expressions
++        let sampled_expressions = observed_expressions
+             .iter()
+-            .map(|(_, expression)| expression.clone())
++            .map(|(_, expression)| expression)
+             .chain(
+                 observed_atoms
+                     .iter()
+-                    .map(|(_, expression)| expression.clone()),
+-            )
+-            .collect();
+-        let Some(samples) = make_signature_samples(&sampled_expressions, self.mask) else {
++                    .map(|(_, expression)| expression),
++            );
++        let Some(samples) = make_signature_samples(sampled_expressions, self.mask) else {
+             return HiddenMergeResult {
+                 expr: e,
+                 changed: false,

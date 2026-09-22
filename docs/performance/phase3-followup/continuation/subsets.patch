@@ -1,0 +1,38 @@
+--- a/core/src/simplify.rs
++++ b/core/src/simplify.rs
+@@ -24,20 +24,14 @@
+ 
+ const MAX_SIMPLIFICATION_PASSES: usize = 8;
+ 
+-fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize, sublist: &[usize]) {
+-    let are_vars_true = |i: usize| sublist[1..].iter().copied().all(|v| ((i >> v) & 1) == 1);
+-
+-    let gp_size = 1usize << sublist[0];
+-    let period = 2 * gp_size;
+-
++fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize) {
++    let group_size = 1usize << index.trailing_zeros();
+     let mut start = index;
+     while start < tt.len() {
+-        for (i, e) in tt.iter_mut().enumerate().skip(start).take(gp_size) {
+-            if sublist.len() == 1 || are_vars_true(i) {
+-                *e = e.wrapping_sub(coeff);
+-            }
+-        }
+-        start += period;
++        for value in &mut tt[start..start + group_size] {
++            *value = value.wrapping_sub(coeff);
++        }
++        start = (start + group_size) | index;
+     }
+ }
+ 
+@@ -208,7 +202,7 @@
+                 c => c * conjunction,
+             });
+ 
+-            sub_coeff(&mut signature, coeff, index, &sublist);
++            sub_coeff(&mut signature, coeff, index);
+         }
+ 
+         match terms.len() {

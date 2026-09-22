@@ -1,0 +1,222 @@
+
+/tmp/rumba-qsynth-results/final-probe:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+00000000000205c0 <rumba_core::expr::Expr::eval_four>:
+   205c0:	55                   	push   %rbp
+   205c1:	41 57                	push   %r15
+   205c3:	41 56                	push   %r14
+   205c5:	41 55                	push   %r13
+   205c7:	41 54                	push   %r12
+   205c9:	53                   	push   %rbx
+   205ca:	48 83 ec 48          	sub    $0x48,%rsp
+   205ce:	49 89 cf             	mov    %rcx,%r15
+   205d1:	49 89 fe             	mov    %rdi,%r14
+   205d4:	48 8b 06             	mov    (%rsi),%rax
+   205d7:	48 8d 0d 2e 93 73 00 	lea    0x73932e(%rip),%rcx        # 75990c <anon.65f515f0a1b13261a4ffa71c0b0c5f1c.8.llvm.9993263919405147436+0x37c>
+   205de:	48 63 04 81          	movslq (%rcx,%rax,4),%rax
+   205e2:	48 01 c8             	add    %rcx,%rax
+   205e5:	ff e0                	jmp    *%rax
+   205e7:	48 8b 7e 08          	mov    0x8(%rsi),%rdi
+   205eb:	4c 39 ff             	cmp    %r15,%rdi
+   205ee:	0f 83 4b 03 00 00    	jae    2093f <rumba_core::expr::Expr::eval_four+0x37f>
+   205f4:	48 c1 e7 05          	shl    $0x5,%rdi
+   205f8:	f3 0f 6f 04 3a       	movdqu (%rdx,%rdi,1),%xmm0
+   205fd:	f3 0f 6f 4c 3a 10    	movdqu 0x10(%rdx,%rdi,1),%xmm1
+   20603:	f3 41 0f 7f 4e 10    	movdqu %xmm1,0x10(%r14)
+   20609:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   2060e:	e9 76 02 00 00       	jmp    20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   20613:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   20617:	48 8b 5e 18          	mov    0x18(%rsi),%rbx
+   2061b:	66 0f 76 c0          	pcmpeqd %xmm0,%xmm0
+   2061f:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   20625:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   2062a:	48 85 db             	test   %rbx,%rbx
+   2062d:	0f 84 56 02 00 00    	je     20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   20633:	48 c1 e3 05          	shl    $0x5,%rbx
+   20637:	49 89 e5             	mov    %rsp,%r13
+   2063a:	66 0f 76 c9          	pcmpeqd %xmm1,%xmm1
+   2063e:	48 89 d5             	mov    %rdx,%rbp
+   20641:	66 66 66 66 66 66 2e 	data16 data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+   20648:	0f 1f 84 00 00 00 00 
+   2064f:	00 
+   20650:	66 0f 7f 4c 24 20    	movdqa %xmm1,0x20(%rsp)
+   20656:	66 0f 7f 44 24 30    	movdqa %xmm0,0x30(%rsp)
+   2065c:	4c 89 ef             	mov    %r13,%rdi
+   2065f:	4c 89 e6             	mov    %r12,%rsi
+   20662:	48 89 ea             	mov    %rbp,%rdx
+   20665:	4c 89 f9             	mov    %r15,%rcx
+   20668:	e8 53 ff ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   2066d:	66 0f 6f 4c 24 20    	movdqa 0x20(%rsp),%xmm1
+   20673:	66 0f 6f 44 24 30    	movdqa 0x30(%rsp),%xmm0
+   20679:	66 0f db 04 24       	pand   (%rsp),%xmm0
+   2067e:	66 0f db 4c 24 10    	pand   0x10(%rsp),%xmm1
+   20684:	49 83 c4 20          	add    $0x20,%r12
+   20688:	48 83 c3 e0          	add    $0xffffffffffffffe0,%rbx
+   2068c:	75 c2                	jne    20650 <rumba_core::expr::Expr::eval_four+0x90>
+   2068e:	e9 eb 01 00 00       	jmp    2087e <rumba_core::expr::Expr::eval_four+0x2be>
+   20693:	48 8b 76 08          	mov    0x8(%rsi),%rsi
+   20697:	48 89 e7             	mov    %rsp,%rdi
+   2069a:	4c 89 f9             	mov    %r15,%rcx
+   2069d:	e8 1e ff ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   206a2:	66 0f 76 c0          	pcmpeqd %xmm0,%xmm0
+   206a6:	66 0f 6f 0c 24       	movdqa (%rsp),%xmm1
+   206ab:	66 0f ef c8          	pxor   %xmm0,%xmm1
+   206af:	f3 41 0f 7f 0e       	movdqu %xmm1,(%r14)
+   206b4:	66 0f ef 44 24 10    	pxor   0x10(%rsp),%xmm0
+   206ba:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   206c0:	e9 c4 01 00 00       	jmp    20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   206c5:	48 8b 46 10          	mov    0x10(%rsi),%rax
+   206c9:	48 89 e7             	mov    %rsp,%rdi
+   206cc:	48 89 f3             	mov    %rsi,%rbx
+   206cf:	48 89 c6             	mov    %rax,%rsi
+   206d2:	4c 89 f9             	mov    %r15,%rcx
+   206d5:	e8 e6 fe ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   206da:	48 8b 43 08          	mov    0x8(%rbx),%rax
+   206de:	48 8b 0c 24          	mov    (%rsp),%rcx
+   206e2:	48 0f af c8          	imul   %rax,%rcx
+   206e6:	48 8b 54 24 08       	mov    0x8(%rsp),%rdx
+   206eb:	48 0f af d0          	imul   %rax,%rdx
+   206ef:	48 8b 74 24 10       	mov    0x10(%rsp),%rsi
+   206f4:	48 0f af f0          	imul   %rax,%rsi
+   206f8:	48 0f af 44 24 18    	imul   0x18(%rsp),%rax
+   206fe:	49 89 0e             	mov    %rcx,(%r14)
+   20701:	49 89 56 08          	mov    %rdx,0x8(%r14)
+   20705:	49 89 76 10          	mov    %rsi,0x10(%r14)
+   20709:	49 89 46 18          	mov    %rax,0x18(%r14)
+   2070d:	e9 77 01 00 00       	jmp    20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   20712:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   20716:	48 8b 5e 18          	mov    0x18(%rsi),%rbx
+   2071a:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   2071e:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   20724:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   20729:	48 85 db             	test   %rbx,%rbx
+   2072c:	0f 84 57 01 00 00    	je     20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   20732:	48 c1 e3 05          	shl    $0x5,%rbx
+   20736:	49 89 e5             	mov    %rsp,%r13
+   20739:	66 0f ef c9          	pxor   %xmm1,%xmm1
+   2073d:	48 89 d5             	mov    %rdx,%rbp
+   20740:	66 0f 7f 4c 24 20    	movdqa %xmm1,0x20(%rsp)
+   20746:	66 0f 7f 44 24 30    	movdqa %xmm0,0x30(%rsp)
+   2074c:	4c 89 ef             	mov    %r13,%rdi
+   2074f:	4c 89 e6             	mov    %r12,%rsi
+   20752:	48 89 ea             	mov    %rbp,%rdx
+   20755:	4c 89 f9             	mov    %r15,%rcx
+   20758:	e8 63 fe ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   2075d:	66 0f 6f 4c 24 20    	movdqa 0x20(%rsp),%xmm1
+   20763:	66 0f 6f 44 24 30    	movdqa 0x30(%rsp),%xmm0
+   20769:	66 0f d4 04 24       	paddq  (%rsp),%xmm0
+   2076e:	66 0f d4 4c 24 10    	paddq  0x10(%rsp),%xmm1
+   20774:	49 83 c4 20          	add    $0x20,%r12
+   20778:	48 83 c3 e0          	add    $0xffffffffffffffe0,%rbx
+   2077c:	75 c2                	jne    20740 <rumba_core::expr::Expr::eval_four+0x180>
+   2077e:	e9 fb 00 00 00       	jmp    2087e <rumba_core::expr::Expr::eval_four+0x2be>
+   20783:	f3 0f 6f 46 08       	movdqu 0x8(%rsi),%xmm0
+   20788:	66 0f 70 c0 44       	pshufd $0x44,%xmm0,%xmm0
+   2078d:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   20793:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   20798:	e9 ec 00 00 00       	jmp    20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   2079d:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   207a1:	48 8b 5e 18          	mov    0x18(%rsi),%rbx
+   207a5:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   207a9:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   207af:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   207b4:	48 85 db             	test   %rbx,%rbx
+   207b7:	0f 84 cc 00 00 00    	je     20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   207bd:	48 c1 e3 05          	shl    $0x5,%rbx
+   207c1:	49 89 e5             	mov    %rsp,%r13
+   207c4:	66 0f ef c9          	pxor   %xmm1,%xmm1
+   207c8:	48 89 d5             	mov    %rdx,%rbp
+   207cb:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+   207d0:	66 0f 7f 4c 24 20    	movdqa %xmm1,0x20(%rsp)
+   207d6:	66 0f 7f 44 24 30    	movdqa %xmm0,0x30(%rsp)
+   207dc:	4c 89 ef             	mov    %r13,%rdi
+   207df:	4c 89 e6             	mov    %r12,%rsi
+   207e2:	48 89 ea             	mov    %rbp,%rdx
+   207e5:	4c 89 f9             	mov    %r15,%rcx
+   207e8:	e8 d3 fd ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   207ed:	66 0f 6f 4c 24 20    	movdqa 0x20(%rsp),%xmm1
+   207f3:	66 0f 6f 44 24 30    	movdqa 0x30(%rsp),%xmm0
+   207f9:	66 0f eb 04 24       	por    (%rsp),%xmm0
+   207fe:	66 0f eb 4c 24 10    	por    0x10(%rsp),%xmm1
+   20804:	49 83 c4 20          	add    $0x20,%r12
+   20808:	48 83 c3 e0          	add    $0xffffffffffffffe0,%rbx
+   2080c:	75 c2                	jne    207d0 <rumba_core::expr::Expr::eval_four+0x210>
+   2080e:	eb 6e                	jmp    2087e <rumba_core::expr::Expr::eval_four+0x2be>
+   20810:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   20814:	48 8b 5e 18          	mov    0x18(%rsi),%rbx
+   20818:	66 0f ef c0          	pxor   %xmm0,%xmm0
+   2081c:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   20822:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   20827:	48 85 db             	test   %rbx,%rbx
+   2082a:	74 5d                	je     20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   2082c:	48 c1 e3 05          	shl    $0x5,%rbx
+   20830:	49 89 e5             	mov    %rsp,%r13
+   20833:	66 0f ef c9          	pxor   %xmm1,%xmm1
+   20837:	48 89 d5             	mov    %rdx,%rbp
+   2083a:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+   20840:	66 0f 7f 4c 24 20    	movdqa %xmm1,0x20(%rsp)
+   20846:	66 0f 7f 44 24 30    	movdqa %xmm0,0x30(%rsp)
+   2084c:	4c 89 ef             	mov    %r13,%rdi
+   2084f:	4c 89 e6             	mov    %r12,%rsi
+   20852:	48 89 ea             	mov    %rbp,%rdx
+   20855:	4c 89 f9             	mov    %r15,%rcx
+   20858:	e8 63 fd ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   2085d:	66 0f 6f 4c 24 20    	movdqa 0x20(%rsp),%xmm1
+   20863:	66 0f 6f 44 24 30    	movdqa 0x30(%rsp),%xmm0
+   20869:	66 0f ef 04 24       	pxor   (%rsp),%xmm0
+   2086e:	66 0f ef 4c 24 10    	pxor   0x10(%rsp),%xmm1
+   20874:	49 83 c4 20          	add    $0x20,%r12
+   20878:	48 83 c3 e0          	add    $0xffffffffffffffe0,%rbx
+   2087c:	75 c2                	jne    20840 <rumba_core::expr::Expr::eval_four+0x280>
+   2087e:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   20883:	f3 41 0f 7f 4e 10    	movdqu %xmm1,0x10(%r14)
+   20889:	48 83 c4 48          	add    $0x48,%rsp
+   2088d:	5b                   	pop    %rbx
+   2088e:	41 5c                	pop    %r12
+   20890:	41 5d                	pop    %r13
+   20892:	41 5e                	pop    %r14
+   20894:	41 5f                	pop    %r15
+   20896:	5d                   	pop    %rbp
+   20897:	c3                   	ret
+   20898:	4c 8b 66 10          	mov    0x10(%rsi),%r12
+   2089c:	48 8b 6e 18          	mov    0x18(%rsi),%rbp
+   208a0:	66 0f 6f 05 c8 c7 0a 	movdqa 0xac7c8(%rip),%xmm0        # cd070 <anon.3f9a7b8d6b84898296ad20e694920f7c.21.llvm.8036469727620736867+0x50>
+   208a7:	00 
+   208a8:	f3 41 0f 7f 46 10    	movdqu %xmm0,0x10(%r14)
+   208ae:	f3 41 0f 7f 06       	movdqu %xmm0,(%r14)
+   208b3:	48 85 ed             	test   %rbp,%rbp
+   208b6:	74 d1                	je     20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   208b8:	4c 89 74 24 40       	mov    %r14,0x40(%rsp)
+   208bd:	48 c1 e5 05          	shl    $0x5,%rbp
+   208c1:	bb 01 00 00 00       	mov    $0x1,%ebx
+   208c6:	41 bd 01 00 00 00    	mov    $0x1,%r13d
+   208cc:	41 be 01 00 00 00    	mov    $0x1,%r14d
+   208d2:	4c 89 7c 24 30       	mov    %r15,0x30(%rsp)
+   208d7:	41 bf 01 00 00 00    	mov    $0x1,%r15d
+   208dd:	48 89 54 24 20       	mov    %rdx,0x20(%rsp)
+   208e2:	66 66 66 66 66 2e 0f 	data16 data16 data16 data16 cs nopw 0x0(%rax,%rax,1)
+   208e9:	1f 84 00 00 00 00 00 
+   208f0:	48 89 e7             	mov    %rsp,%rdi
+   208f3:	4c 89 e6             	mov    %r12,%rsi
+   208f6:	48 8b 54 24 20       	mov    0x20(%rsp),%rdx
+   208fb:	48 8b 4c 24 30       	mov    0x30(%rsp),%rcx
+   20900:	e8 bb fc ff ff       	call   205c0 <rumba_core::expr::Expr::eval_four>
+   20905:	4c 0f af 3c 24       	imul   (%rsp),%r15
+   2090a:	4c 0f af 74 24 08    	imul   0x8(%rsp),%r14
+   20910:	4c 0f af 6c 24 10    	imul   0x10(%rsp),%r13
+   20916:	48 0f af 5c 24 18    	imul   0x18(%rsp),%rbx
+   2091c:	49 83 c4 20          	add    $0x20,%r12
+   20920:	48 83 c5 e0          	add    $0xffffffffffffffe0,%rbp
+   20924:	75 ca                	jne    208f0 <rumba_core::expr::Expr::eval_four+0x330>
+   20926:	48 8b 44 24 40       	mov    0x40(%rsp),%rax
+   2092b:	4c 89 38             	mov    %r15,(%rax)
+   2092e:	4c 89 70 08          	mov    %r14,0x8(%rax)
+   20932:	4c 89 68 10          	mov    %r13,0x10(%rax)
+   20936:	48 89 58 18          	mov    %rbx,0x18(%rax)
+   2093a:	e9 4a ff ff ff       	jmp    20889 <rumba_core::expr::Expr::eval_four+0x2c9>
+   2093f:	48 8d 15 82 e3 75 00 	lea    0x75e382(%rip),%rdx        # 77ecc8 <anon.3f9a7b8d6b84898296ad20e694920f7c.22.llvm.8036469727620736867+0x38>
+   20946:	4c 89 fe             	mov    %r15,%rsi
+   20949:	ff 15 81 26 76 00    	call   *0x762681(%rip)        # 782fd0 <_GLOBAL_OFFSET_TABLE_+0xbf8>

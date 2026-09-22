@@ -1,0 +1,30 @@
+--- a/core/src/utils/cache.rs
++++ b/core/src/utils/cache.rs
+@@ -38,7 +38,7 @@
+ /// across threads.
+ #[derive(Debug, Default)]
+ pub struct LocalCache {
+-    entries: RefCell<HashMap<Expr, Expr>>,
++    entries: RefCell<Vec<(Expr, Expr)>>,
+ }
+ 
+ impl LocalCache {
+@@ -49,11 +49,16 @@
+ 
+ impl LinearCache for LocalCache {
+     fn get(&self, e: &Expr) -> Option<Expr> {
+-        self.entries.borrow().get(e).cloned()
++        self.entries.borrow().iter().find(|(key, _)| key == e).map(|(_, value)| value.clone())
+     }
+ 
+     fn insert(&self, e: Expr, solved: Expr) {
+-        self.entries.borrow_mut().insert(e, solved);
++        let mut entries = self.entries.borrow_mut();
++        if let Some((_, value)) = entries.iter_mut().find(|(key, _)| key == &e) {
++            *value = solved;
++        } else {
++            entries.push((e, solved));
++        }
+     }
+ }
+ 

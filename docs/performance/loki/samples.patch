@@ -1,0 +1,37 @@
+--- a/core/src/simplify/merge_hidden.rs
++++ b/core/src/simplify/merge_hidden.rs
+@@ -148,11 +148,10 @@
+     }
+ }
+ 
+-fn make_signature_samples(expressions: &[Expr], mask: u64) -> Option<Vec<Vec<u64>>> {
++fn make_signature_samples<'a>(expressions: impl Iterator<Item = &'a Expr>, mask: u64) -> Option<Vec<Vec<u64>>> {
+     let mut variable_map = BiMap::<VarId, VarId>::new();
+     let mut variable_count = 0;
+     let reduced: Vec<_> = expressions
+-        .iter()
+         .cloned()
+         .map(|expression| reduce_vars(expression, &mut variable_map, &mut variable_count))
+         .collect();
+@@ -278,16 +277,15 @@
+             observed_atoms.push((Expr::Var(variable), Expr::Var(variable)));
+         }
+ 
+-        let sampled_expressions: Vec<_> = observed_expressions
++        let sampled_expressions = observed_expressions
+             .iter()
+-            .map(|(_, expression)| expression.clone())
++            .map(|(_, expression)| expression)
+             .chain(
+                 observed_atoms
+                     .iter()
+-                    .map(|(_, expression)| expression.clone()),
+-            )
+-            .collect();
+-        let Some(samples) = make_signature_samples(&sampled_expressions, self.mask) else {
++                    .map(|(_, expression)| expression),
++            );
++        let Some(samples) = make_signature_samples(sampled_expressions, self.mask) else {
+             return HiddenMergeResult {
+                 expr: e,
+                 changed: false,
