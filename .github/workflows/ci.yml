@@ -47,6 +47,8 @@ jobs:
         run: cargo build -p rumba-core -p rumba --all-features --verbose
       - name: Test
         run: cargo test -p rumba-core -p rumba --all-features --verbose
+      - name: Test native evaluation (without JIT)
+        run: cargo test -p rumba-core --features parse --test evaluation
       - name: Test C bindings
         run: cargo test -p c --all-features --verbose
 

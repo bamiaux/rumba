@@ -181,39 +181,35 @@ impl Expr {
 
     /// Evaluates the expression with the given variable values
     pub(crate) fn eval_bits(&self, vars: &[u64]) -> VarInt {
+        self.eval_lanes(&|i: VarId| [vars[i.0].into()])[0]
+    }
+
+    /// Evaluate several assignments per tree traversal. Lanes are independent
+    /// wrapping integers; the same interpreter handles scalar and batch calls.
+    fn eval_lanes<const LANES: usize>(
+        &self,
+        vars: &impl Fn(VarId) -> [VarInt; LANES],
+    ) -> [VarInt; LANES] {
+        let fold = |exprs: &[Expr], identity, op: fn(VarInt, VarInt) -> VarInt| {
+            let mut result = [identity; LANES];
+            for expr in exprs {
+                let values = expr.eval_lanes(vars);
+                for (value, next) in result.iter_mut().zip(values) {
+                    *value = op(*value, next);
+                }
+            }
+            result
+        };
         match self {
-            Expr::Var(i) => vars[i.0].into(),
-
-            Expr::Const(c) => (*c).into(),
-
-            Expr::And(exprs) => exprs
-                .iter()
-                .map(|e| e.eval_bits(vars))
-                .fold(VarInt::MAX, |x, y| x & y),
-
-            Expr::Or(exprs) => exprs
-                .iter()
-                .map(|e| e.eval_bits(vars))
-                .fold(VarInt::ZERO, |x, y| x | y),
-
-            Expr::Xor(exprs) => exprs
-                .iter()
-                .map(|e| e.eval_bits(vars))
-                .fold(VarInt::ZERO, |x, y| x ^ y),
-
-            Expr::Add(exprs) => exprs
-                .iter()
-                .map(|e| e.eval_bits(vars))
-                .fold(VarInt::ZERO, |x, y| x + y),
-
-            Expr::Mul(exprs) => exprs
-                .iter()
-                .map(|e| e.eval_bits(vars))
-                .fold(VarInt::ONE, |x, y| x * y),
-
-            Expr::Scale(v, e) => VarInt::from(*v) * e.eval_bits(vars),
-
-            Expr::Not(e) => !e.eval_bits(vars),
+            Expr::Var(i) => vars(*i),
+            Expr::Const(c) => [(*c).into(); LANES],
+            Expr::And(exprs) => fold(exprs, VarInt::MAX, |x, y| x & y),
+            Expr::Or(exprs) => fold(exprs, VarInt::ZERO, |x, y| x | y),
+            Expr::Xor(exprs) => fold(exprs, VarInt::ZERO, |x, y| x ^ y),
+            Expr::Add(exprs) => fold(exprs, VarInt::ZERO, |x, y| x + y),
+            Expr::Mul(exprs) => fold(exprs, VarInt::ONE, |x, y| x * y),
+            Expr::Scale(v, e) => e.eval_lanes(vars).map(|lane| VarInt::from(*v) * lane),
+            Expr::Not(e) => e.eval_lanes(vars).map(|lane| !lane),
         }
     }
 
@@ -267,45 +263,28 @@ impl Expr {
 
     /// Calculates the truth table of an expression on n values with t variables
     pub(crate) fn truth_table_masked(&self, t: usize, mask: u64) -> Vec<u64> {
-        // if t > 20 {
-        //     panic!("CRAZYY");
-        // }
-
         let size = 1usize << t;
         let mut tt = Vec::with_capacity(size);
 
-        let mut vars = vec![0u64; t];
-
-        // Decode i into 2^t binary values (one value per variable)
-        let vars_from_i = |i: usize, vars: &mut [u64]| {
-            let mut idx = i;
-            for var in vars {
-                *var = (idx & 1) as u64;
-                idx >>= 1;
-            }
-        };
-
         #[cfg(feature = "jit")]
-        {
-            // Compiling costs ~169us; a compiled evaluation is ~4.7ns against
-            // ~114ns interpreted (see `benches/bench.rs`). So the JIT pays for
-            // itself past 169us / (114ns - 4.7ns) ~= 1546 evaluations, i.e.
-            // from t = 11 (2048) up. At t = 10 (1024) it is still a net loss.
-            if t > 10 {
-                let jit_fn = jit::compile(self);
-
-                for i in 0..size {
-                    vars_from_i(i, &mut vars);
-                    tt.push(jit_fn.eval(&vars) & mask);
+        if t > 10 {
+            let jit_fn = jit::compile(self);
+            let mut vars = vec![0u64; t];
+            for i in 0..size {
+                for (bit, var) in vars.iter_mut().enumerate() {
+                    *var = ((i >> bit) & 1) as u64;
                 }
-
-                return tt;
+                tt.push(jit_fn.eval(&vars) & mask);
             }
+            return tt;
         }
 
-        for i in 0..size {
-            vars_from_i(i, &mut vars);
-            tt.push(self.eval_bits(&vars).get(mask));
+        for start in (0..size).step_by(4) {
+            let values: [VarInt; 4] = self.eval_lanes(&|i: VarId| {
+                assert!(i.0 < t, "truth-table variable index out of bounds");
+                std::array::from_fn(|lane| (((start + lane) >> i.0) as u64 & 1).into())
+            });
+            tt.extend(values[..(size - start).min(4)].iter().map(|v| v.get(mask)));
         }
 
         tt

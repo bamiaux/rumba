@@ -86,8 +86,9 @@ Simplification is best-effort: it returns a `SolveError` or leaves the input
 untouched rather than aborting the process.
 
 Cargo features: `parse` (parse expressions from strings via
-`rumba_core::parser::parse_expr`), `jit` (JIT-compiled evaluation for faster
-semantic checks).
+`rumba_core::parser::parse_expr`), `jit` (optional JIT evaluation for large truth
+tables). The JIT is disabled by default; `--features jit` or `--all-features`
+enables it. Use `--features parse` for native evaluation without the JIT.
 
 Bindings for [Python](bindings/python), [C](bindings/c) and
 [WebAssembly](bindings/wasm) live under `bindings/`.

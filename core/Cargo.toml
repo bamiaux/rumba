@@ -24,6 +24,7 @@ criterion = "0.7.0"
 name = "bench"
 harness = false
 path = "benches/bench.rs"
+required-features = ["internal-bench"]
 
 [features]
 parse = ["pest", "pest_derive"]

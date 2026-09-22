@@ -457,7 +457,7 @@ fn bitwise_view_refolded<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> O
 /// under arbitrary AND contexts, so a relation valid only on the hidden
 /// variety is not sufficient.
 fn linearize_free_relation<C: LinearCache>(s: &mut MBASolver<'_, C>, e: Expr) -> Option<Expr> {
-    s.solve_linear(e.reduce_masked(s.mask), false)
+    s.solve_linear(e.reduce_masked(s.mask))
         .ok()
         .map(|q| q.reduce_masked(s.mask))
 }

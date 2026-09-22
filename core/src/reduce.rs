@@ -63,7 +63,7 @@ fn remove_pairs(mut v: Vec<Expr>) -> Vec<Expr> {
 fn dedupe(mut v: Vec<Expr>) -> Vec<Expr> {
     // TODO: Somehow using hashset here makes the program crash
     // We need a better comparison function
-    v.sort();
+    v.sort_unstable();
     v.dedup();
     v
 }
@@ -86,22 +86,39 @@ impl Reducer {
     where
         F: FnMut(Expr) -> FlattenResult,
     {
-        let mut flat = Vec::with_capacity(v.len());
-
-        let mut stack: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
-
-        while let Some(e) = stack.pop() {
-            match handler(e) {
-                FlattenResult::Vec(mut v) => {
-                    stack.append(&mut v);
+        let mut flat: Vec<_> = v.into_iter().map(|e| self.reduce_masked(e)).collect();
+        // Pending nodes occupy the prefix, accepted nodes the suffix. A flat
+        // node needs no new buffer. On expansion, separate them once so that
+        // subsequent appends stay linear even for wide, deeply nested nodes.
+        let mut pending = flat.len();
+        let mut output = flat.len();
+        while pending != 0 {
+            pending -= 1;
+            match handler(std::mem::replace(&mut flat[pending], Expr::zero())) {
+                FlattenResult::Vec(children) => {
+                    let mut result = flat.split_off(output);
+                    result.reverse();
+                    flat.truncate(pending);
+                    flat.extend(children);
+                    while let Some(e) = flat.pop() {
+                        match handler(e) {
+                            FlattenResult::Vec(children) => flat.extend(children),
+                            FlattenResult::Expr(e) => result.push(e),
+                            FlattenResult::None => {}
+                        }
+                    }
+                    return result;
                 }
-
-                FlattenResult::Expr(e) => flat.push(e),
-
+                FlattenResult::Expr(e) => {
+                    output -= 1;
+                    flat[output] = e;
+                }
                 FlattenResult::None => {}
             }
         }
-
+        drop(flat.drain(..output));
+        // Match the original stack's pop order, including nested operands.
+        flat.reverse();
         flat
     }
 
@@ -146,7 +163,7 @@ impl Reducer {
             }
             self.mask != 0
         });
-        exprs.sort();
+        exprs.sort_unstable();
 
         if initial_len > exprs.len() {
             self.reduce_masked(Expr::Add(exprs))
@@ -293,7 +310,7 @@ impl Reducer {
             flat.push(Expr::Const(c));
         }
 
-        flat.sort();
+        flat.sort_unstable();
         flat = remove_pairs(flat);
 
         match flat.len() {
@@ -364,7 +381,7 @@ impl Reducer {
             return self.reduce_masked(Expr::scale(c, distributed));
         }
 
-        flat.sort();
+        flat.sort_unstable();
 
         match flat.len() {
             0 => Expr::Const(c),

@@ -5,7 +5,9 @@
 //! running *between* them. Two implementations are provided: [`LocalCache`] for a
 //! single-threaded caller, and [`MbaCache`] for one shared across threads.
 
-use std::{cell::RefCell, collections::HashMap, sync::Mutex};
+use std::{cell::RefCell, sync::Mutex};
+
+use rustc_hash::FxHashMap as HashMap;
 
 use crate::expr::Expr;
 

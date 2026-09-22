@@ -205,20 +205,14 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     }
 
     /// Solves a linear MBA
-    fn solve_linear_inner(&self, e: Expr, t: usize, from_poly: bool) -> Expr {
-        let signature = self.calc_signature(&e, t);
-
-        if from_poly {
-            // We necessarily want a sum of conjunctions
-            return self.make_conjunction_sum(signature, t);
-        }
-
+    fn solve_linear_inner(&self, e: &Expr, t: usize) -> Expr {
+        let signature = self.calc_signature(e, t);
         // TODO: add a refined solution to identify xor etc
         self.make_conjunction_sum(signature, t)
     }
 
     /// Simplifies a linear MBA
-    fn solve_linear(&mut self, e: Expr, from_poly: bool) -> Result<Expr, SolveError> {
+    fn solve_linear(&mut self, e: Expr) -> Result<Expr, SolveError> {
         let mut var_map = BiMap::<VarId, VarId>::new();
         let mut t = 0;
 
@@ -241,7 +235,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                 });
             }
 
-            let simplified = self.solve_linear_inner(e.clone(), t, from_poly);
+            let simplified = self.solve_linear_inner(&e, t);
             self.l_cache.insert(e, simplified.clone());
             simplified
         };
@@ -349,11 +343,11 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
         // This is a linear MBA
         if self.degree == 1 {
             debug!("This is a linear MBA");
-            return self.solve_linear(e, false);
+            return self.solve_linear(e);
         }
 
         let e = self.poly_to_linear(e, 0);
-        let e: Expr = self.solve_linear(e, true)?;
+        let e: Expr = self.solve_linear(e)?;
         let e = self.linear_to_poly(e)?.reduce_masked(self.mask);
 
         debug!("Found polynomial solution: {}", e);
