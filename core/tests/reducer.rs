@@ -98,3 +98,86 @@ fn de_morgan_outputs_are_ac_canonical() {
         ((!var(2)) & (!var(0)) & (!var(1))).reduce(64)
     );
 }
+
+#[test]
+fn generated_sums_and_xors_preserve_coefficients_and_parity() {
+    use rand::{Rng, SeedableRng, rngs::StdRng, seq::SliceRandom};
+
+    let mut rng = StdRng::seed_from_u64(0x7265_6475_6365);
+    let bases = [
+        var(0),
+        var(31),
+        var(511),
+        var(0) & var(31),
+        var(31) * var(511),
+    ];
+    for n in 1..=64 {
+        let mask = u64::MAX >> (64 - n);
+        for _ in 0..40 {
+            let mut sums = Vec::new();
+            let mut xors = Vec::new();
+            let mut coefficients = [0u64; 5];
+            let mut parity = [false; 5];
+            for _ in 0..rng.random_range(0..=40) {
+                let i = rng.random_range(0..bases.len());
+                let coefficient = [0, 1, mask, rng.random()][rng.random_range(0..4)];
+                sums.push(coefficient * bases[i].clone());
+                coefficients[i] = coefficients[i].wrapping_add(coefficient) & mask;
+                xors.push(bases[i].clone());
+                parity[i] ^= true;
+            }
+            let expected_sum = Expr::Add(
+                bases
+                    .iter()
+                    .zip(coefficients)
+                    .map(|(base, c)| c * base.clone())
+                    .collect(),
+            )
+            .reduce(n);
+            let expected_xor = Expr::Xor(
+                bases
+                    .iter()
+                    .zip(parity)
+                    .filter(|(_, odd)| *odd)
+                    .map(|(base, _)| base.clone())
+                    .collect(),
+            )
+            .reduce(n);
+            for _ in 0..3 {
+                sums.shuffle(&mut rng);
+                xors.shuffle(&mut rng);
+                assert_eq!(Expr::Add(sums.clone()).reduce(n), expected_sum);
+                assert_eq!(Expr::Xor(xors.clone()).reduce(n), expected_xor);
+            }
+        }
+    }
+}
+
+#[test]
+fn zero_width_sum_discards_implicit_unit_coefficients() {
+    assert_eq!((var(0) + var(1)).reduce(0), Expr::zero());
+}
+
+#[test]
+fn variable_traversal_handles_sparse_ids_and_every_operator() {
+    use std::collections::BTreeSet;
+    let expression = Expr::Add(vec![
+        !var(29),
+        17 * var(1001),
+        var(0) & var(29),
+        var(77) | var(0),
+        var(77) ^ var(1001),
+        var(1001) * var(29),
+        Expr::Const(123),
+        Expr::And(vec![]),
+    ]);
+    assert_eq!(
+        expression
+            .get_vars()
+            .into_iter()
+            .map(|v| v.0)
+            .collect::<BTreeSet<_>>(),
+        BTreeSet::from([0, 29, 77, 1001])
+    );
+    assert!(Expr::Const(123).get_vars().is_empty());
+}

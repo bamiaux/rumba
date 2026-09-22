@@ -249,21 +249,7 @@ impl Expr {
         mask: u64,
         count: usize,
     ) -> Result<(), (Vec<u64>, u64, u64)> {
-        let t = max(
-            self.get_vars()
-                .iter()
-                .copied()
-                .map(|v| v.0)
-                .max()
-                .unwrap_or(0),
-            other
-                .get_vars()
-                .iter()
-                .copied()
-                .map(|v| v.0)
-                .max()
-                .unwrap_or(0),
-        );
+        let t = max(self.max_var(), other.max_var());
 
         for _ in 0..count {
             let vars: Vec<_> = (0..=t).map(|_| random_range(0..=mask)).collect();
@@ -325,39 +311,37 @@ impl Expr {
         tt
     }
 
-    /// Calls a function recursively on each node of an expression
-    pub(crate) fn visit<T, F>(&self, mut f: F) -> T
-    where
-        F: FnMut(&Expr, Vec<T>) -> T + Clone,
-    {
+    /// Visits variables without constructing intermediate collections.
+    fn for_each_var(&self, f: &mut impl FnMut(VarId)) {
         match self {
-            Expr::Var(_) | Expr::Const(_) => f(self, vec![]),
-
-            Expr::Not(expr) | Expr::Scale(_, expr) => {
-                let v = vec![expr.visit::<T, F>(f.clone())];
-                f(self, v)
-            }
-
+            Expr::Var(v) => f(*v),
+            Expr::Const(_) => {}
+            Expr::Not(expr) | Expr::Scale(_, expr) => expr.for_each_var(f),
             Expr::And(exprs)
             | Expr::Or(exprs)
             | Expr::Xor(exprs)
             | Expr::Add(exprs)
             | Expr::Mul(exprs) => {
-                let v = exprs.iter().map(|e| e.visit(f.clone())).collect();
-                f(self, v)
+                for expr in exprs {
+                    expr.for_each_var(f);
+                }
             }
         }
     }
 
-    /// Counts the number of variables in the expression
+    pub(crate) fn max_var(&self) -> usize {
+        let mut highest = 0;
+        self.for_each_var(&mut |v| highest = highest.max(v.0));
+        highest
+    }
+
+    /// Collects the variable identifiers used by the expression.
     pub fn get_vars(&self) -> HashSet<VarId> {
-        self.visit(|e, children: Vec<HashSet<VarId>>| {
-            let mut acc: HashSet<VarId> = children.into_iter().flatten().collect();
-            if let Expr::Var(v) = e {
-                acc.insert(*v);
-            }
-            acc
-        })
+        let mut vars = HashSet::default();
+        self.for_each_var(&mut |v| {
+            vars.insert(v);
+        });
+        vars
     }
 
     // Operator precedence
@@ -577,8 +561,18 @@ impl Expr {
         match self {
             Expr::Var(_) | Expr::Const(_) => self,
 
-            Expr::Not(expr) => !f(*expr),
-            Expr::Scale(v, expr) => v * f(*expr),
+            Expr::Not(mut expr) => {
+                *expr = f(std::mem::replace(&mut *expr, Expr::zero()));
+                Expr::Not(expr)
+            }
+            Expr::Scale(v, mut expr) => {
+                *expr = f(std::mem::replace(&mut *expr, Expr::zero()));
+                match v {
+                    0 => Expr::zero(),
+                    1 => *expr,
+                    _ => Expr::Scale(v, expr),
+                }
+            }
 
             Expr::And(exprs) => Expr::And(vec_map(exprs, f)),
             Expr::Or(exprs) => Expr::Or(vec_map(exprs, f)),
@@ -606,8 +600,18 @@ impl Expr {
         Ok(match self {
             Expr::Var(_) | Expr::Const(_) => self,
 
-            Expr::Not(expr) => !f(*expr)?,
-            Expr::Scale(v, expr) => v * f(*expr)?,
+            Expr::Not(mut expr) => {
+                *expr = f(std::mem::replace(&mut *expr, Expr::zero()))?;
+                Expr::Not(expr)
+            }
+            Expr::Scale(v, mut expr) => {
+                *expr = f(std::mem::replace(&mut *expr, Expr::zero()))?;
+                match v {
+                    0 => Expr::zero(),
+                    1 => *expr,
+                    _ => Expr::Scale(v, expr),
+                }
+            }
 
             Expr::And(exprs) => Expr::And(vec_try_map(exprs, f)?),
             Expr::Or(exprs) => Expr::Or(vec_try_map(exprs, f)?),

@@ -126,6 +126,9 @@ benchmark. Reproduce with:
 cargo test datasets --release --all-features -- --nocapture
 ```
 
+See [solver performance](docs/performance.md) for allocation/branch profiling,
+baseline comparison commands and the latest measured optimization results.
+
 ## Artifacts
 
 Build the comparison artifacts with

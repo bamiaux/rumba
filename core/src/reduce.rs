@@ -1,5 +1,3 @@
-use rustc_hash::FxHashMap as HashMap;
-
 use crate::{expr::Expr, varint::make_mask};
 
 /// Distributes an expression
@@ -43,29 +41,22 @@ macro_rules! distribute {
 }
 
 /// Remove pairs of elements in a vector
-fn remove_pairs(v: Vec<Expr>) -> Vec<Expr> {
-    let mut reduced = Vec::with_capacity(v.len());
-    let mut iter = v.into_iter().peekable();
-
-    while let Some(current) = iter.next() {
-        let mut count = 1;
-
-        while let Some(next) = iter.peek() {
-            if *next == current {
-                count += 1;
-                iter.next();
-                continue;
-            }
-
-            break;
+fn remove_pairs(mut v: Vec<Expr>) -> Vec<Expr> {
+    let mut read = 0;
+    let mut write = 0;
+    while read < v.len() {
+        let mut end = read + 1;
+        while end < v.len() && v[end] == v[read] {
+            end += 1;
         }
-
-        if (count & 1) == 1 {
-            reduced.push(current);
+        if (end - read) & 1 != 0 {
+            v.swap(write, read);
+            write += 1;
         }
+        read = end;
     }
-
-    reduced
+    v.truncate(write);
+    v
 }
 
 /// Deduplicates a list
@@ -114,40 +105,53 @@ impl Reducer {
         flat
     }
 
-    pub fn group_terms(&self, exprs: Vec<Expr>) -> Expr {
+    pub fn group_terms(&self, mut exprs: Vec<Expr>) -> Expr {
         let initial_len = exprs.len();
-
-        let mut map =
-            HashMap::<Expr, u64>::with_capacity_and_hasher(initial_len, Default::default());
-
-        for e in exprs.into_iter() {
-            if let Expr::Scale(c, e) = e {
-                let count = map.entry(*e).or_insert(0);
-                *count = count.wrapping_add(c);
-            } else {
-                let count = map.entry(e).or_insert(0);
-                *count = count.wrapping_add(1);
+        fn term(e: &Expr) -> (u64, &Expr) {
+            match e {
+                Expr::Scale(c, e) => (*c, e),
+                e => (1, e),
             }
         }
-
-        let mut out = Vec::with_capacity(map.len());
-
-        for (e, mut count) in map {
-            count &= self.mask;
-
-            if count == 0 {
-                continue;
+        // Group adjacent bases in the existing buffer, avoiding a hash table
+        // and repeated recursive hashing of expression trees.
+        exprs.sort_unstable_by(|a, b| term(a).1.cmp(term(b).1));
+        exprs.dedup_by(|next, previous| {
+            let (next_coefficient, next_base) = term(next);
+            let (coefficient, base) = term(previous);
+            if base != next_base {
+                return false;
             }
+            let combined = coefficient.wrapping_add(next_coefficient);
+            match previous {
+                Expr::Scale(c, _) => *c = combined,
+                _ => {
+                    let base = std::mem::replace(previous, Expr::zero());
+                    *previous = Expr::Scale(combined, Box::new(base));
+                }
+            }
+            // Keep even a zero coefficient until the whole run is consumed:
+            // its base is still needed to compare the next term.
+            true
+        });
+        exprs.retain_mut(|e| {
+            if let Expr::Scale(c, base) = e {
+                *c &= self.mask;
+                if *c == 0 {
+                    return false;
+                }
+                if *c == 1 {
+                    *e = std::mem::replace(base.as_mut(), Expr::zero());
+                }
+            }
+            self.mask != 0
+        });
+        exprs.sort();
 
-            out.push(Expr::scale(count, e));
-        }
-
-        out.sort();
-
-        if initial_len > out.len() {
-            self.reduce_masked(Expr::Add(out))
+        if initial_len > exprs.len() {
+            self.reduce_masked(Expr::Add(exprs))
         } else {
-            Expr::Add(out)
+            Expr::Add(exprs)
         }
     }
 

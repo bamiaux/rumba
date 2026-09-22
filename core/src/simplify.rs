@@ -24,20 +24,13 @@ pub(crate) const MAX_VARS: usize = 20;
 
 const MAX_SIMPLIFICATION_PASSES: usize = 8;
 
-fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize, sublist: &[usize]) {
-    let are_vars_true = |i: usize| sublist[1..].iter().copied().all(|v| ((i >> v) & 1) == 1);
-
-    let gp_size = 1usize << sublist[0];
-    let period = 2 * gp_size;
-
-    let mut start = index;
-    while start < tt.len() {
-        for (i, e) in tt.iter_mut().enumerate().skip(start).take(gp_size) {
-            if sublist.len() == 1 || are_vars_true(i) {
-                *e = e.wrapping_sub(coeff);
-            }
-        }
-        start += period;
+fn sub_coeff(tt: &mut [u64], coeff: u64, index: usize) {
+    // A conjunction contributes exactly to assignments containing all its
+    // variables. Increment only the free bits; no per-variable predicate.
+    let mut assignment = index;
+    while assignment < tt.len() {
+        tt[assignment] = tt[assignment].wrapping_sub(coeff);
+        assignment = (assignment + 1) | index;
     }
 }
 
@@ -100,7 +93,7 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
     fn new(l_cache: &'a C, e: &Expr, n: u8) -> Self {
         Self {
             non_linear_components: BiMap::new(),
-            t: e.get_vars().iter().copied().map(|v| v.0).max().unwrap_or(0) + 1,
+            t: e.max_var() + 1,
             degree: 1,
             n,
             mask: make_mask(n),
@@ -181,7 +174,6 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
             }
         }
 
-        let mut sublist = Vec::with_capacity(t);
         for index in 1..(1usize << t) {
             let coeff = signature[index] & self.mask;
 
@@ -189,26 +181,20 @@ impl<'a, C: LinearCache> MBASolver<'a, C> {
                 continue;
             }
 
-            sublist.clear();
-            for i in 0..t {
-                if ((index >> i) & 1) == 1 {
-                    sublist.push(i);
-                }
+            let mut variables = index;
+            let mut factors = Vec::with_capacity(index.count_ones() as usize);
+            while variables != 0 {
+                factors.push(Expr::Var((variables.trailing_zeros() as usize).into()));
+                variables &= variables - 1;
             }
-            let conjunction = Expr::And(
-                sublist
-                    .iter()
-                    .copied()
-                    .map(|v| Expr::Var(v.into()))
-                    .collect(),
-            );
+            let conjunction = Expr::And(factors);
 
             terms.push(match coeff {
                 1 => conjunction,
                 c => c * conjunction,
             });
 
-            sub_coeff(&mut signature, coeff, index, &sublist);
+            sub_coeff(&mut signature, coeff, index);
         }
 
         match terms.len() {
@@ -729,6 +715,26 @@ fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<
 mod tests {
     use super::*;
     use std::cell::Cell;
+
+    #[test]
+    fn conjunction_updates_exactly_its_supersets() {
+        for t in 0..=9 {
+            for index in 1..1 << t {
+                for coefficient in [1, 2, 0x8000_0000_0000_0000, u64::MAX] {
+                    let mut actual = vec![7; 1 << t];
+                    sub_coeff(&mut actual, coefficient, index);
+                    for (assignment, &value) in actual.iter().enumerate() {
+                        let expected = if assignment & index == index {
+                            7u64.wrapping_sub(coefficient)
+                        } else {
+                            7
+                        };
+                        assert_eq!(value, expected);
+                    }
+                }
+            }
+        }
+    }
 
     #[test]
     fn inverse_pct_round_trip_preserves_variable_index() {

@@ -31,13 +31,7 @@ thread_local! {
 }
 
 fn passes_quick_zero_check(e: &Expr, mask: u64) -> bool {
-    let variable_count = e
-        .get_vars()
-        .into_iter()
-        .map(|variable| variable.0)
-        .max()
-        .unwrap_or(0)
-        + 1;
+    let variable_count = e.max_var() + 1;
     let mut variables = vec![0u64; variable_count];
 
     for sample in 0..3u64 {
@@ -59,46 +53,40 @@ fn passes_quick_zero_check(e: &Expr, mask: u64) -> bool {
     true
 }
 
-fn complete_truth_table(observed: &[Option<bool>]) -> Vec<u8> {
-    let mut tables = vec![0u8];
-    for (input, output) in observed.iter().enumerate() {
-        match output {
-            Some(true) => {
-                for table in &mut tables {
-                    *table |= 1 << input;
-                }
-            }
-            Some(false) => {}
-            None => {
-                let mut with_bit = tables.clone();
-                for table in &mut with_bit {
-                    *table |= 1 << input;
-                }
-                tables.extend(with_bit);
-            }
-        }
-    }
-    tables
-}
-
-fn infer_bitwise_truth_tables(target: &[u64], parents: &[&[u64]], n: u8) -> Vec<u8> {
+fn infer_bitwise_truth_tables(
+    target: &[u64],
+    parents: &[&[u64]],
+    n: u8,
+) -> impl Iterator<Item = u8> {
+    debug_assert!(parents.len() <= 2);
     let input_count = 1usize << parents.len();
-    let mut observed = vec![None; input_count];
-    for sample in 0..target.len() {
-        for bit in 0..n {
-            let mut input = 0usize;
-            for (index, parent) in parents.iter().enumerate() {
-                input |= (((parent[sample] >> bit) & 1) as usize) << index;
-            }
-            let output = ((target[sample] >> bit) & 1) != 0;
-            match observed[input] {
-                Some(previous) if previous != output => return Vec::new(),
-                Some(_) => {}
-                None => observed[input] = Some(output),
+    let mask = crate::varint::make_mask(n);
+    let mut zeros = 0u8;
+    let mut ones = 0u8;
+    for (sample, &output) in target.iter().enumerate() {
+        // Each bit is an independent observation. Partition all 64 lanes by
+        // their parent values at once, then record the outputs seen in each
+        // partition. This is the same test as visiting each bit individually.
+        let mut inputs = [mask, 0, 0, 0];
+        for (index, parent) in parents.iter().enumerate() {
+            let count = 1 << index;
+            let (low, high) = inputs[..2 * count].split_at_mut(count);
+            for (low, high) in low.iter_mut().zip(high) {
+                *high = *low & parent[sample];
+                *low &= !parent[sample];
             }
         }
+        for (input, &bits) in inputs[..input_count].iter().enumerate() {
+            zeros |= u8::from(bits & !output != 0) << input;
+            ones |= u8::from(bits & output != 0) << input;
+        }
+        if zeros & ones != 0 {
+            break;
+        }
     }
-    complete_truth_table(&observed)
+    // Ascending order preserves the original candidate/proof order, including
+    // every completion of unobserved inputs. Conflicts admit no table.
+    (0..1u8 << input_count).filter(move |table| table & zeros == 0 && table & ones == ones)
 }
 
 fn synthesize_unary_bitwise(parent: Expr, truth_table: u8, mask: u64) -> Expr {
@@ -382,11 +370,59 @@ mod tests {
     use crate::varint::make_mask;
 
     #[test]
+    fn packed_observations_match_scalar_truth_tables() {
+        use rand::{Rng, SeedableRng, rngs::StdRng};
+
+        let mut rng = StdRng::seed_from_u64(0x51_4d_44);
+        for n in 0..=64 {
+            for parent_count in 0..=2 {
+                for _ in 0..80 {
+                    let count = rng.random_range(0..=5);
+                    let target: Vec<u64> = (0..count).map(|_| rng.random()).collect();
+                    let parents: Vec<Vec<u64>> = (0..parent_count)
+                        .map(|_| (0..count).map(|_| rng.random()).collect())
+                        .collect();
+                    let parents: Vec<_> = parents.iter().map(Vec::as_slice).collect();
+                    // Independent scalar oracle: try every function, comparing
+                    // each observed bit. Also checks all missing-input completions.
+                    let expected: Vec<u8> = (0..1 << (1 << parent_count))
+                        .filter(|table| {
+                            (0..count).all(|sample| {
+                                (0..n).all(|bit| {
+                                    let input = parents.iter().enumerate().fold(0, |v, (i, p)| {
+                                        v | (((p[sample] >> bit) & 1) as usize) << i
+                                    });
+                                    (table >> input) & 1 == ((target[sample] >> bit) & 1) as u8
+                                })
+                            })
+                        })
+                        .collect();
+                    assert_eq!(
+                        infer_bitwise_truth_tables(&target, &parents, n).collect::<Vec<_>>(),
+                        expected
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
     fn synthesizes_every_binary_bitwise_truth_table() {
         let mask = make_mask(8);
         for table in 0..16u8 {
             let expression =
                 synthesize_binary_bitwise(Expr::Var(0.into()), Expr::Var(1.into()), table, mask);
+            let left = [0, mask, 0, mask];
+            let right = [0, 0, mask, mask];
+            let target: Vec<_> = left
+                .iter()
+                .zip(right)
+                .map(|(&a, b)| expression.eval(&[a, b], 8))
+                .collect();
+            assert_eq!(
+                infer_bitwise_truth_tables(&target, &[&left, &right], 8).collect::<Vec<_>>(),
+                vec![table]
+            );
             for assignment in 0..4usize {
                 let variables = [
                     if assignment & 1 == 0 { 0 } else { mask },
