@@ -505,16 +505,14 @@ type FactorSet = (u64, Vec<Expr>);
 fn union_replacement(
     first: &FactorSet,
     second: &FactorSet,
-    relation: &FactorSet,
+    relation_coefficient: u64,
     mask: u64,
 ) -> Option<Expr> {
-    let first_coefficient = first.0;
-    let second_coefficient = second.0;
-    let relation_coefficient = relation.0;
-    let minus_k = first_coefficient.wrapping_neg() & mask;
-    let minus_two_k = first_coefficient.wrapping_mul(2).wrapping_neg() & mask;
-    if first_coefficient == 0
-        || first_coefficient != second_coefficient
+    let coefficient = first.0;
+    let minus_k = coefficient.wrapping_neg() & mask;
+    let minus_two_k = coefficient.wrapping_mul(2).wrapping_neg() & mask;
+    if coefficient == 0
+        || coefficient != second.0
         || (relation_coefficient != minus_k && relation_coefficient != minus_two_k)
     {
         return None;
@@ -522,16 +520,6 @@ fn union_replacement(
 
     let first_set = &first.1;
     let second_set = &second.1;
-    let relation_set = &relation.1;
-
-    let mut expected_relation = first_set.clone();
-    expected_relation.extend(second_set.iter().cloned());
-    expected_relation.sort_unstable();
-    expected_relation.dedup();
-    if relation_set != &expected_relation {
-        return None;
-    }
-
     let common = factor_intersection(first_set, second_set);
     let first_unique = factor_difference(first_set, &common);
     let second_unique = factor_difference(second_set, &common);
@@ -546,7 +534,6 @@ fn union_replacement(
     } else {
         Some(make_conjunction(common))
     };
-    let coefficient = first_coefficient;
     let output = if relation_coefficient == minus_k {
         Expr::Or(vec![first_unique, second_unique])
     } else if relation_coefficient == minus_two_k {
@@ -556,7 +543,7 @@ fn union_replacement(
     };
 
     Some(scaled_output(
-        coefficient,
+        first.0,
         operands.map_or(output.clone(), |common| Expr::And(vec![common, output])),
         mask,
     ))
@@ -604,10 +591,8 @@ fn union_bitwise_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
             {
                 continue;
             }
-            let relation_set = index.factor_sets[relation]
-                .as_ref()
-                .expect("indexed support");
-            let Some(replacement) = union_replacement(first_set, second_set, relation_set, mask)
+            let Some(replacement) =
+                union_replacement(first_set, second_set, relation_coefficient, mask)
             else {
                 continue;
             };
@@ -615,18 +600,12 @@ fn union_bitwise_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
         }
     }
     let (relation, first, second, replacement) = selected?;
-    if terms.len() == 3 {
-        return Some(replacement);
-    }
-    let mut result = Vec::with_capacity(terms.len() - 2);
-    for (index, term) in terms.iter().enumerate() {
-        if index != relation && index != first && index != second {
-            result.push(term.clone());
-        }
-    }
-    result.push(replacement);
-    result.sort_unstable();
-    Some(Expr::Add(result))
+    Some(replace_indices(
+        terms,
+        &[relation, first, second],
+        replacement,
+        mask,
+    ))
 }
 
 fn factor_set(e: &Expr, mask: u64) -> Option<(u64, Vec<Expr>)> {
@@ -744,16 +723,7 @@ fn as_not_in_add(e: &Expr, mask: u64) -> Option<Expr> {
             let Some(replacement) = replacement else {
                 continue;
             };
-
-            let mut result = Vec::with_capacity(terms.len() - 1);
-            for (index, term) in terms.iter().enumerate() {
-                if index != first && index != second {
-                    result.push(term.clone());
-                }
-            }
-            result.push(replacement);
-            result.sort_unstable();
-            return Some(Expr::Add(result));
+            return Some(replace_indices(terms, &[first, second], replacement, mask));
         }
     }
 
@@ -794,15 +764,6 @@ fn difference_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
             if first == second {
                 continue;
             }
-
-            let (first_coefficient, _) = scaled_term(&terms[first], mask);
-            let (second_coefficient, _) = scaled_term(&terms[second], mask);
-            if first_coefficient == 0
-                || second_coefficient != (first_coefficient.wrapping_neg() & mask)
-            {
-                continue;
-            }
-
             let Some(first_factor_set) = index.factor_sets[first].as_ref() else {
                 continue;
             };
@@ -814,20 +775,7 @@ fn difference_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
             else {
                 continue;
             };
-
-            if terms.len() == 2 {
-                return Some(replacement);
-            }
-
-            let mut result = Vec::with_capacity(terms.len() - 1);
-            for (index, term) in terms.iter().enumerate() {
-                if index != first && index != second {
-                    result.push(term.clone());
-                }
-            }
-            result.push(replacement);
-            result.sort_unstable();
-            return Some(Expr::Add(result));
+            return Some(replace_indices(terms, &[first, second], replacement, mask));
         }
     }
 
