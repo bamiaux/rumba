@@ -2,17 +2,19 @@
 
 ## Scope and verdict
 
-**Verdict: `PROMOTE`.** The candidate processes all 41,000 corpus rows with `NG = 0`, reduces total output AST from 218,018 to 213,542 nodes (−4,476; −2.05%), and never produces a larger AST than the `prettify` baseline on any row. In the final five-run measurement without `qemu-kvm`, total time changes from 2.456 s to 2.492 s (+1.47%), p50 from 29.190 µs to 29.220 µs (+0.10%), and p95 from 166.379 µs to 169.809 µs (+2.06%). The branch is deliberately unmerged.
+**Verdict: `PROMOTE`.** The candidate processes all 41,000 corpus rows with `NG = 0`, reduces total output AST from 218,018 to 213,542 nodes (−4,476; −2.05%), and never produces a larger AST than the `prettify` baseline on any row. Its shared-index refactor reproduces every output of the original candidate exactly. In the final paired five-run measurement without `qemu-kvm`, total time changes from 2.316 s to 2.433 s (+5.06%), p50 from 27.360 µs to 27.990 µs (+2.30%), and p95 from 156.049 µs to 163.060 µs (+4.49%). The branch is deliberately unmerged.
 
 - Repository base branch: `prettify`.
 - Exact base commit: `e1f9f531e2c5a73bf1bd746cbb25931fd5d3c4b9`.
 - Research branch: `research/algebraic-prettify`.
-- Exact candidate implementation and case-census commit: `317ffe545cae4d82b6dfe9b013a57d3e61a2c6df`.
+- Exact case-census and original implementation commit: `317ffe545cae4d82b6dfe9b013a57d3e61a2c6df`.
+- Original quality-authority commit: `7d99f56a5c0b86707eaf944d3d1a5b40881810c6`.
+- Refactored implementation commit: `e25ae94c1c6ef75854e6583ac17fada173b44185`.
 - The supplied `.patch` was not a valid unified diff (`git apply --check` reported “patch with only garbage” at line 5); its algebraic behavior was implemented directly. The solver was not changed.
 
 ## Algorithm
 
-The pass runs after solving, in `core/src/prettify.rs`. Each term is interpreted as a coefficient modulo `2^w` and a sorted conjunction support in the existing `FactorSet` representation. An `FxHashMap` indexes resident supports and coefficients. A higher-order probe checks only the degree-two and degree-three *resident faces* relevant to the laws below. Other terms, including high-degree terms, remain in the sum. No subset of the input polynomial is enumerated.
+The pass runs after solving, in `core/src/prettify.rs`. Each term is interpreted as a coefficient modulo `2^w` and a sorted conjunction support in the existing `FactorSet` representation. One sparse `AddIndex` per sum state stores the factor sets, support-to-(term-index, coefficient) map, and constant-coefficient-to-term-index map. Binary OR/XOR scans pairs of terms and looks up their union support. Difference scans pairs. The higher-order probe uses the same index and checks only the degree-two and degree-three *resident faces* relevant to the laws below. Other terms, including high-degree terms, remain in the sum. No subset of the input polynomial is enumerated.
 
 The existing binary contractions run to completion along one deterministic path. A second path may begin with one higher-order contraction, then use the same binary normalization. Each path retains its smallest AST, since one binary step can temporarily grow before a later complement step shrinks. The smaller path wins; ties retain the binary result. Every higher-order candidate itself must strictly reduce `Expr::size`. At least four resident terms are mathematically required by the smallest new identity; this lower-bound check is not a maximum-size gate. Only coefficient/support relations decide which law applies.
 
@@ -33,13 +35,14 @@ These identities hold for composite Boolean operands as well as variables. The u
 | Check | Result |
 |---|---|
 | Baseline `cargo test --all-features` | Passed |
-| Candidate `cargo fmt --check` | Passed |
-| Candidate `cargo test --all-features` | Passed |
-| Candidate `cargo clippy --all-targets --all-features -- -D warnings` | Passed |
+| Final candidate `cargo fmt --check` | Passed |
+| Final candidate `cargo test --all-features` | Passed |
+| Final candidate `cargo clippy --all-targets --all-features -- -D warnings` | Passed |
 | Corpus semantic check and solver status | 41,000 rows; `OK = 41,000`, `OKZ = 0`, `NG = 0`; no mismatch or panic |
-| Rowwise AST comparison | 0 rows larger than baseline |
+| Rowwise AST comparison against base | 0 rows larger |
+| Output comparison against original candidate | All 41,000 output strings identical |
 
-The baseline was frozen with `just corpus --save /tmp/prettify-baseline.snapshot`. Final timing used `cargo run --release -p rumba-core --example corpus --features parse -- --save /tmp/prettify-baseline-clean.snapshot` on the base worktree, then the same command with `--baseline /tmp/prettify-baseline-clean.snapshot --save /tmp/algebraic-prettify-hash.snapshot` on the candidate worktree. The direct `cargo run` form was used because this repository's `just corpus` recipe hardcodes a worktree-local `target/release/examples/corpus`, while both worktrees shared a compilation cache. The runner measures five runs per dataset after its quality pass. `qemu-kvm` was absent before, between, and after the final pair. Earlier timing under its CPU load was discarded.
+The baseline was frozen with `just corpus --save /tmp/prettify-baseline.snapshot`. Every ablation ran the full 41,000-row corpus and a rowwise comparison with the original candidate's output. Final timing used paired runs of the corpus example in release mode, with five measurements per dataset. The command was `cargo run --release -p rumba-core --example corpus --features parse -- --save <snapshot>`; candidate runs additionally used `--baseline <base-snapshot>`. `qemu-kvm` was absent before, between, and after both final benchmark pairs. Earlier timing under its CPU load was discarded.
 
 ### Corpus quality by dataset
 
@@ -70,44 +73,59 @@ The committed [case file](ALGEBRAIC_PRETTIFY_CASES.tsv) records dataset/row, bas
 | W→W | 13,607 |
 | W→T, W→L, T→L | **0** |
 
+### Ablations
+
+Each ablation ran all 41,000 rows with `OK = 41,000`, `OKZ = 0`, and `NG = 0`. “Larger/smaller” compares each output AST to the original candidate at `7d99f56`; the strict gate also required the original aggregate W/T/L and AST totals or better, with no larger output on any row.
+
+| Step | Change | W / T / L | AST | Larger / smaller | Gate |
+|---|---|---:|---:|---:|---|
+| A | Remove explicit three-atom OR | 13,927 / 26,555 / 518 | 213,580 | 5 / 0 | Fail |
+| B | Remove explicit filtered OR | 13,902 / 26,563 / 535 | 213,706 | 52 / 7 | Fail |
+| C | Remove `higher_first` path | 13,858 / 26,544 / 598 | 214,252 | 201 / 0 | Fail |
+| D | Share `AddIndex`; binary pair scan and support lookup | 13,927 / 26,555 / 518 | 213,542 | 0 / 0 | Pass |
+| E | Remove complement XOR from D | 13,902 / 26,535 / 563 | 213,810 | 52 / 10 | Fail |
+| F | Remove affine XNOR from D | 13,914 / 26,557 / 529 | 213,641 | 75 / 0 | Fail |
+
+A and B were also repeated on top of D: A still had 5 larger rows and AST 213,580; B still had 52 larger rows and AST 213,706. The three-atom OR's five counterexamples are `mba_flatten` rows 926, 978, 989 and `qsynth_ea` rows 259, 411. The proposed binary decompositions are algebraically valid, but this deterministic contraction order does not reach the same compact result in every case. A different rewrite selection or coefficient splitting would need separate qualification before either explicit law could be removed.
+
 ### Five-run performance
 
-Times and percentiles below are medians of the runner's five measurements; throughput is rows divided by median total time. Values are rounded for display; the comparison percentages use snapshot nanoseconds.
+Times and percentiles below are medians of the runner's five measurements; throughput is rows divided by median total time. Values are rounded for display; comparison percentages use snapshot nanoseconds.
 
-| Global metric | Baseline | Candidate | Change |
+| Global metric | `prettify` base | Final candidate D | Change |
 |---|---:|---:|---:|
-| Total time | 2.456 s | 2.492 s | +1.47% |
-| Throughput | 16,693 expr/s | 16,451 expr/s | −1.45% |
-| p50 | 29.190 µs | 29.220 µs | +0.10% |
-| p95 | 166.379 µs | 169.809 µs | +2.06% |
-| p99 | 423.959 µs | 437.159 µs | +3.11% |
-| Maximum | 31.339 ms | 32.987 ms | +5.26% |
+| Total time | 2.316 s | 2.433 s | +5.06% |
+| Throughput | 17,703 expr/s | 16,851 expr/s | −4.81% |
+| p50 | 27.360 µs | 27.990 µs | +2.30% |
+| p95 | 156.049 µs | 163.060 µs | +4.49% |
+| p99 | 410.649 µs | 438.679 µs | +6.83% |
+| Maximum | 31.145 ms | 32.837 ms | +5.43% |
 
-| Dataset | Total base → candidate | p95 base → candidate | p99 base → candidate |
+| Dataset | Total base → D | p95 base → D | p99 base → D |
 |---|---:|---:|---:|
-| loki_tiny | 1.235 → 1.206 s (−2.41%) | 156.689 → 152.090 µs (−2.94%) | 354.110 → 349.399 µs (−1.33%) |
-| mba_flatten | 207.425 → 214.843 ms (+3.58%) | 178.599 → 189.330 µs (+6.01%) | 223.190 → 239.959 µs (+7.51%) |
-| mba_obf_linear | 130.822 → 142.557 ms (+8.97%) | 401.699 → 425.669 µs (+5.97%) | 440.379 → 605.709 µs (+37.54%) |
-| mba_obf_nonlinear | 62.915 → 67.424 ms (+7.17%) | 143.739 → 152.860 µs (+6.35%) | 164.560 → 247.299 µs (+50.28%) |
-| neureduce | 312.683 → 331.609 ms (+6.05%) | 56.250 → 58.960 µs (+4.82%) | 67.040 → 131.890 µs (+96.73%) |
-| qsynth_ea | 488.494 → 508.061 ms (+4.01%) | 3.946 → 4.078 ms (+3.34%) | 9.409 → 9.800 ms (+4.16%) |
-| syntia | 12.565 → 12.934 ms (+2.93%) | 123.319 → 127.060 µs (+3.03%) | 193.540 → 197.549 µs (+2.07%) |
+| loki_tiny | 1.160 → 1.211 s (+4.38%) | 145.070 → 150.809 µs (+3.96%) | 332.919 → 360.889 µs (+8.40%) |
+| mba_flatten | 195.930 → 202.701 ms (+3.46%) | 172.510 → 179.979 µs (+4.33%) | 215.390 → 226.749 µs (+5.27%) |
+| mba_obf_linear | 129.699 → 135.163 ms (+4.21%) | 400.289 → 417.559 µs (+4.31%) | 447.098 → 468.799 µs (+4.85%) |
+| mba_obf_nonlinear | 63.265 → 64.029 ms (+1.21%) | 143.819 → 142.410 µs (−0.98%) | 167.709 → 168.120 µs (+0.25%) |
+| neureduce | 272.551 → 280.955 ms (+3.08%) | 46.990 → 48.420 µs (+3.04%) | 54.699 → 57.090 µs (+4.37%) |
+| qsynth_ea | 478.094 → 542.535 ms (+13.48%) | 3.902 → 4.715 ms (+20.85%) | 9.424 → 10.658 ms (+13.09%) |
+| syntia | 12.679 → 13.336 ms (+5.18%) | 126.890 → 131.899 µs (+3.95%) | 195.889 → 205.799 µs (+5.06%) |
 
-The global p50 and p95 meet the stated preferred ceilings of +3% and +5%. Some dataset p99 values are higher; the runner's per-case wall-clock timings vary with host scheduling, and the maximum is one case. Those tails merit monitoring in a later promotion benchmark, but the five-run global result does not show a material throughput regression.
+The final global p50 and p95 meet the preferred ceilings of +3% and +5%. The `qsynth_ea` tail is less stable and should be watched in a later promotion benchmark. In a separate clean paired run against the original `7d99f56` implementation, D changed total time from 2.443 s to 2.423 s (−0.83%), p50 from 28.880 to 28.960 µs (+0.28%), and p95 from 161.260 to 162.420 µs (+0.72%). This supports no material performance regression from the index refactor itself; the base comparison remains the relevant end-to-end cost.
 
 ## Complexity and architecture audit
 
-Let `t` be resident top-level terms, `d` the largest support degree, and `M = |P|` the total AST size of the sparse polynomial including its operands. The new hash index costs expected `O(M)` to build per candidate pass and at worst `O(tM)` under collisions. Each resident degree-two or degree-three term triggers only a constant number of lookups and at most a constant number of candidate constructions, so the higher-order probe is expected `O(tM)` and worst-case `O(t²M)` per pass. It examines only resident supports; there is no subset enumeration. The pre-existing binary union scan has three nested term loops and dominates at `O(t³ M log(d+1))` conservatively per pass, including factor comparisons and sorting. Every path removes at least one top-level term at each step, so there are at most `t` steps; the two-path choice adds only a factor of two. A conservative whole-Add bound is `O(t⁴ M log(d+1))`. All bounds are polynomial in the stated input parameters.
+Let `t` be resident top-level terms, `d` the largest support degree, and `M = |P|` the total AST size of the sparse polynomial including its operands. The shared index is built once per sum state, in expected `O(M)` time and at worst `O(tM)` under hash collisions. The binary OR/XOR scan considers `O(t²)` pairs, computes each union support and looks it up in the index; a conservative per-state bound including factor comparisons and sorting is expected `O(t² M log(d+1))`. Difference is another pair scan. The higher-order probe checks a constant number of support relations per resident degree-two or degree-three term, using the same index; it has expected `O(tM)` cost and worst-case `O(t²M)` under collisions. It examines only resident supports; there is no subset enumeration. Every contraction removes at least one top-level term, so each of the two deterministic paths has at most `t` steps. A conservative whole-Add expected bound is `O(t³ M log(d+1))`. All bounds are polynomial in the stated input parameters.
 
-1. Every new match uses canonical coefficient, constant, and support relations. `FxHashMap` is used only for key lookup; term order and tie-breaking determine output, so hash iteration order does not decide a rewrite.
+1. Every match uses canonical coefficient, constant, and support relations. `FxHashMap` is used only for key lookup; term order and tie-breaking determine output, so hash iteration order does not decide a rewrite.
 2. No result depends on how the input expression was written before solving. Composite Boolean atoms are accepted.
 3. TARGET is never read by the prettifier. The target is used only by the corpus runner and the report comparison.
 4. There is no hidden exponential search: at most two deterministic contraction paths are evaluated for a sum.
 5. There is no maximum term count, variable count, or global degree rejection. The degree-two/three probe and four-term minimum follow from the laws' support faces. Unrelated high-degree monomials and sums with more than ten terms are tested. The solver's existing `MAX_VARS = 20` was untouched.
-6. The three cube laws share support indexing and replacement. A general incidence-algebra section engine would require enumerating or representing more coefficient faces; no smaller implementation with the same selected outputs was demonstrated. The affine XNOR law uses a distinct constant/singleton/pair relation. The focused laws remain simpler than a general engine.
+6. All four explicit higher-order identities remain because each independent ablation fails the current strict quality gate. The index is shared by binary and higher-order matching. Algebraic decomposition alone did not demonstrate that a smaller deterministic rewrite implementation can preserve all selected outputs.
 
 No SOURCE fingerprint, TARGET comparison, corpus ID, dataset string, row ID, Forest, automaton, Mealy transducer, or arbitrary maximum-size gate appears in the new production reifier. The only changed production file is `core/src/prettify.rs`.
 
 ## Diffstat
 
-The candidate implementation commit changes `core/src/prettify.rs` by **482 insertions and 23 deletions** (505 changed lines). The exhaustive case census adds 2,212 TSV lines including its header. No solver file changes. The report is committed separately on the same research branch.
+Against the `prettify` base, the final implementation changes `core/src/prettify.rs` by **550 insertions and 108 deletions** (658 changed lines). The shared-index refactor itself is **141 insertions and 158 deletions** relative to the original candidate, a net reduction of 17 lines. The exhaustive case census adds 2,212 TSV lines including its header. No solver file changes. The report is committed separately on the same research branch.
