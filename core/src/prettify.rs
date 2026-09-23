@@ -11,17 +11,17 @@
 //! | `a + b - 2 * (a & b)`  | `a ^ b`    |
 //! | `-1 - a`               | `~a`       |
 //!
-//! The same fixed-size identities are also recognised inside a larger `Add`.
-//! Only one algebraically complete tuple is replaced at a time; there is no
-//! arbitrary subset factoring or rewrite search. Results are built through
-//! small canonical constructors so this pass does not recreate redundant
-//! associative or singleton wrappers.
+//! Algebraic identities are recognised from coefficients on canonical meet
+//! supports inside a larger `Add`. A contraction is retained only when it
+//! strictly reduces `Expr::size`.
 //!
 //! This runs once, on the expression handed back to the caller. It must never
 //! run inside the solver's own recursion: the bitwise nodes it produces are
 //! larger in [`Expr::size`] terms than the linear forms they replace, so a
 //! prettified intermediate would perturb the fixed-point loop's size-based
 //! stopping rule.
+
+use rustc_hash::FxHashMap as HashMap;
 
 use crate::{expr::Expr, varint::make_mask};
 
@@ -37,42 +37,60 @@ fn prettify_masked(e: Expr, mask: u64) -> Expr {
     // whether or not they were themselves rewritten.
     let e = canonical_node(e.map(|child| prettify_masked(child, mask)), mask);
 
-    let e = rewrite_add_tuples(e, mask);
+    let e = rewrite_add_algebraic(e, mask);
 
     canonical_node(e, mask)
 }
 
-const MAX_REWRITE_ADD_TERMS: usize = 10;
-
-/// Repeatedly contracts the fixed-size identities recognized by this pass.
-///
-/// Each successful rewrite removes at least one term from the current sum, so
-/// this is a bounded normalization of a complete `Add`, not a general rewrite
-/// search. Larger sums are left alone; keeping the window explicit prevents
-/// prettification from becoming an unbounded simplifier.
-fn rewrite_add_tuples(mut e: Expr, mask: u64) -> Expr {
+/// Contracts a solved sparse sum, considering one higher-order section before
+/// the ordinary binary normalization as well as the binary-first result.
+/// The smaller of these two deterministic paths is retained.
+fn rewrite_add_algebraic(e: Expr, mask: u64) -> Expr {
     let Expr::Add(terms) = &e else {
         return as_not(&e, mask).unwrap_or(e);
     };
-    if terms.len() > MAX_REWRITE_ADD_TERMS {
-        return e;
+    // The smallest higher-order section needs four resident terms.
+    if terms.len() < 4 {
+        return rewrite_add_path(e, mask);
     }
+    let mut factor_sets = vec![None; terms.len()];
+    let higher_first = higher_order_algebraic_in_add(&e, mask, &mut factor_sets);
+    let binary_first = rewrite_add_path(e, mask);
+    let Some(higher_first) = higher_first else {
+        return binary_first;
+    };
+    let higher_first = rewrite_add_path(canonical_node(higher_first, mask), mask);
+    if higher_first.size() < binary_first.size() {
+        higher_first
+    } else {
+        binary_first
+    }
+}
 
+/// Each contraction removes terms. A binary step may temporarily increase
+/// size before a complement step shrinks it, so keep the smallest expression
+/// encountered along the path.
+fn rewrite_add_path(mut e: Expr, mask: u64) -> Expr {
+    let Expr::Add(_) = &e else {
+        return e;
+    };
+    let mut best = e.clone();
     loop {
         let Expr::Add(terms) = &e else {
-            return e;
+            return best;
         };
         let mut factor_sets = vec![None; terms.len()];
         let replacement = union_bitwise_in_add(&e, mask, &mut factor_sets)
             .or_else(|| difference_in_add(&e, mask, &mut factor_sets))
             .or_else(|| as_not_in_add(&e, mask))
-            .or_else(|| as_not(&e, mask));
+            .or_else(|| as_not(&e, mask))
+            .or_else(|| higher_order_algebraic_in_add(&e, mask, &mut factor_sets));
         let Some(next) = replacement else {
-            return e;
+            return best;
         };
         e = canonical_node(next, mask);
-        if !matches!(e, Expr::Add(_)) {
-            return e;
+        if e.size() < best.size() {
+            best = e.clone();
         }
     }
 }
@@ -192,6 +210,284 @@ fn scaled_output(coefficient: u64, e: Expr, mask: u64) -> Expr {
         1 => e,
         coefficient => Expr::Scale(coefficient, Box::new(e)),
     }
+}
+
+fn support(mut factors: Vec<Expr>) -> Vec<Expr> {
+    factors.sort_unstable();
+    factors.dedup();
+    factors
+}
+
+fn constant_coefficient(e: &Expr, mask: u64) -> Option<u64> {
+    match peel(e) {
+        Expr::Const(c) => Some(c & mask),
+        Expr::Scale(k, inner) => match peel(inner) {
+            Expr::Const(c) => Some(k.wrapping_mul(*c) & mask),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn find_support(
+    supports: &HashMap<Vec<Expr>, (usize, u64)>,
+    wanted: &[Expr],
+    coefficient: u64,
+) -> Option<usize> {
+    supports
+        .get(wanted)
+        .and_then(|&(index, found)| (found == coefficient).then_some(index))
+}
+
+fn find_support_any(
+    supports: &HashMap<Vec<Expr>, (usize, u64)>,
+    wanted: &[Expr],
+) -> Option<(usize, u64)> {
+    supports.get(wanted).copied()
+}
+
+fn replace_indices(terms: &[Expr], removed: &[usize], replacement: Expr, mask: u64) -> Expr {
+    if removed
+        .iter()
+        .enumerate()
+        .any(|(position, index)| removed[..position].contains(index))
+    {
+        return Expr::Add(terms.to_vec());
+    }
+    let mut result = Vec::with_capacity(terms.len() + 1 - removed.len());
+    for (index, term) in terms.iter().enumerate() {
+        if !removed.contains(&index) {
+            result.push(term.clone());
+        }
+    }
+    match replacement {
+        Expr::Add(inner) => result.extend(inner),
+        Expr::Const(0) => {}
+        other => result.push(other),
+    }
+    result.sort_unstable();
+    match result.len() {
+        0 => Expr::Const(0),
+        1 => result.pop().expect("single result term"),
+        _ => canonical_node(Expr::Add(result), mask),
+    }
+}
+
+fn sum2(first: Expr, second: Expr, mask: u64) -> Expr {
+    match (&first, &second) {
+        (Expr::Const(0), _) => second,
+        (_, Expr::Const(0)) => first,
+        _ => canonical_node(Expr::Add(vec![first, second]), mask),
+    }
+}
+
+fn keep_best(current: &Expr, best: &mut Option<Expr>, candidate: Expr) {
+    let size = candidate.size();
+    if size >= current.size() {
+        return;
+    }
+    let take = match best {
+        None => true,
+        Some(previous) => {
+            size < previous.size()
+                || (size == previous.size() && candidate.cmp(previous) == std::cmp::Ordering::Less)
+        }
+    };
+    if take {
+        *best = Some(candidate);
+    }
+}
+
+/// Exact local contractions on the coefficient function of the canonical meet
+/// polynomial.  Terms outside the selected support face are untouched.
+///
+/// No rule depends on source syntax.  There is no enumeration of subsets:
+/// each degree-2/3 resident monomial induces only a constant number of support
+/// lookups.
+fn higher_order_algebraic_in_add(
+    e: &Expr,
+    mask: u64,
+    factor_sets: &mut [Option<Option<FactorSet>>],
+) -> Option<Expr> {
+    let Expr::Add(terms) = e else { return None };
+    if terms.len() < 4
+        || !terms.iter().any(|term| {
+            matches!(scaled_term(term, mask).1, Expr::And(factors) if matches!(factors.len(), 2 | 3))
+        })
+    {
+        return None;
+    }
+    let mut supports = HashMap::default();
+    let mut constants = HashMap::default();
+    for (index, term) in terms.iter().enumerate() {
+        ensure_factor_set(term, mask, &mut factor_sets[index]);
+        if let Some((coefficient, factors)) = factor_sets[index].as_ref().and_then(Option::as_ref) {
+            supports
+                .entry(factors.clone())
+                .or_insert((index, *coefficient));
+        }
+        if let Some(coefficient) = constant_coefficient(term, mask) {
+            constants.entry(coefficient).or_insert(index);
+        }
+    }
+    let mut best = None;
+
+    // c(a|b|d) = c(a+b+d-ab-ad-bd+abd).
+    for top_index in 0..terms.len() {
+        ensure_factor_set(&terms[top_index], mask, &mut factor_sets[top_index]);
+        let Some(top) = factor_sets[top_index]
+            .as_ref()
+            .and_then(Option::as_ref)
+            .cloned()
+        else {
+            continue;
+        };
+        if top.1.len() != 3 || top.0 == 0 {
+            continue;
+        }
+        let c = top.0;
+        let neg = c.wrapping_neg() & mask;
+        let a = top.1[0].clone();
+        let b = top.1[1].clone();
+        let d = top.1[2].clone();
+        let sa = vec![a.clone()];
+        let sb = vec![b.clone()];
+        let sd = vec![d.clone()];
+        let sab = support(vec![a.clone(), b.clone()]);
+        let sad = support(vec![a.clone(), d.clone()]);
+        let sbd = support(vec![b.clone(), d.clone()]);
+        if let (Some(ia), Some(ib), Some(id), Some(iab), Some(iad), Some(ibd)) = (
+            find_support(&supports, &sa, c),
+            find_support(&supports, &sb, c),
+            find_support(&supports, &sd, c),
+            find_support(&supports, &sab, neg),
+            find_support(&supports, &sad, neg),
+            find_support(&supports, &sbd, neg),
+        ) {
+            let section = scaled_output(c, Expr::Or(vec![a.clone(), b.clone(), d.clone()]), mask);
+            let candidate = replace_indices(
+                terms,
+                &[top_index, ia, ib, id, iab, iad, ibd],
+                section,
+                mask,
+            );
+            keep_best(e, &mut best, candidate);
+        }
+
+        // c*((a&~b)|d) = c(a+d-ab-ad+abd).
+        let u = [a.clone(), b.clone(), d.clone()];
+        for bi in 0..3 {
+            for di in 0..3 {
+                if bi == di {
+                    continue;
+                }
+                let ai = 3 - bi - di;
+                let a = u[ai].clone();
+                let b = u[bi].clone();
+                let d = u[di].clone();
+                let sa = vec![a.clone()];
+                let sd = vec![d.clone()];
+                let sab = support(vec![a.clone(), b.clone()]);
+                let sad = support(vec![a.clone(), d.clone()]);
+                if let (Some(ia), Some(id), Some(iab), Some(iad)) = (
+                    find_support(&supports, &sa, c),
+                    find_support(&supports, &sd, c),
+                    find_support(&supports, &sab, neg),
+                    find_support(&supports, &sad, neg),
+                ) {
+                    let left = Expr::And(vec![a.clone(), !b.clone()]);
+                    let section = scaled_output(c, Expr::Or(vec![left, d.clone()]), mask);
+                    let candidate =
+                        replace_indices(terms, &[top_index, ia, id, iab, iad], section, mask);
+                    keep_best(e, &mut best, candidate);
+                }
+            }
+        }
+
+        // c*(~a ^ (~b&d)) =
+        //   -c - c*a - c*d + 2c*(a&d) + c*(b&d) - 2c*(a&b&d).
+        for ai in 0..3 {
+            for bi in 0..3 {
+                if ai == bi {
+                    continue;
+                }
+                let di = 3 - ai - bi;
+                let a = u[ai].clone();
+                let b = u[bi].clone();
+                let d = u[di].clone();
+                let sa = vec![a.clone()];
+                let sd = vec![d.clone()];
+                let sad = support(vec![a.clone(), d.clone()]);
+                let sbd = support(vec![b.clone(), d.clone()]);
+                let Some((ibd, c)) = find_support_any(&supports, &sbd) else {
+                    continue;
+                };
+                if c == 0 || top.0 != c.wrapping_mul(2).wrapping_neg() & mask {
+                    continue;
+                }
+                let neg = c.wrapping_neg() & mask;
+                let two = c.wrapping_mul(2) & mask;
+                if let (Some(iconst), Some(ia), Some(id), Some(iad)) = (
+                    constants.get(&neg).copied(),
+                    find_support(&supports, &sa, neg),
+                    find_support(&supports, &sd, neg),
+                    find_support(&supports, &sad, two),
+                ) {
+                    let rhs = Expr::And(vec![!b.clone(), d.clone()]);
+                    let section = scaled_output(c, Expr::Xor(vec![!a.clone(), rhs]), mask);
+                    let candidate = replace_indices(
+                        terms,
+                        &[top_index, iconst, ia, id, iad, ibd],
+                        section,
+                        mask,
+                    );
+                    keep_best(e, &mut best, candidate);
+                }
+            }
+        }
+    }
+
+    // cx*x + cy*y - 2cx*(x&y) + cy
+    //   = (-cx)*~(x^y) + (cx-cy)*~y.
+    for pair_index in 0..terms.len() {
+        ensure_factor_set(&terms[pair_index], mask, &mut factor_sets[pair_index]);
+        let Some(pair) = factor_sets[pair_index]
+            .as_ref()
+            .and_then(Option::as_ref)
+            .cloned()
+        else {
+            continue;
+        };
+        if pair.1.len() != 2 || pair.0 == 0 {
+            continue;
+        }
+        for flip in 0..2 {
+            let x = pair.1[flip].clone();
+            let y = pair.1[1 - flip].clone();
+            let sx = vec![x.clone()];
+            let sy = vec![y.clone()];
+            let Some((ix, cx)) = find_support_any(&supports, &sx) else {
+                continue;
+            };
+            let Some((iy, cy)) = find_support_any(&supports, &sy) else {
+                continue;
+            };
+            if cx == 0 || pair.0 != cx.wrapping_mul(2).wrapping_neg() & mask {
+                continue;
+            }
+            let Some(iconst) = constants.get(&cy).copied() else {
+                continue;
+            };
+            let xnor = !Expr::Xor(vec![x.clone(), y.clone()]);
+            let first = scaled_output(cx.wrapping_neg() & mask, xnor, mask);
+            let second = scaled_output(cx.wrapping_sub(cy) & mask, !y.clone(), mask);
+            let section = sum2(first, second, mask);
+            let candidate = replace_indices(terms, &[pair_index, ix, iy, iconst], section, mask);
+            keep_best(e, &mut best, candidate);
+        }
+    }
+
+    best
 }
 
 /// `kX + kY - k(X&Y)` -> `k*(X|Y)`, and
@@ -485,7 +781,6 @@ fn difference_replacement(first: &FactorSet, second: &FactorSet, mask: u64) -> O
     if first_coefficient == 0
         || second_coefficient != (first_coefficient.wrapping_neg() & mask)
         || first_factors.is_empty()
-        || first_factors.len() != 1
         || !first_factors
             .iter()
             .all(|factor| second_factors.binary_search(factor).is_ok())
@@ -557,4 +852,168 @@ fn difference_in_add(
     }
 
     None
+}
+
+#[cfg(test)]
+mod algebraic_tests {
+    use super::*;
+    use crate::expr::VarId;
+
+    fn var(id: usize) -> Expr {
+        Expr::Var(VarId(id))
+    }
+
+    fn monomial(coefficient: u64, factors: Vec<Expr>, mask: u64) -> Expr {
+        scaled_output(coefficient, make_conjunction(support(factors)), mask)
+    }
+
+    fn sum(mut terms: Vec<Expr>) -> Expr {
+        terms.sort_unstable();
+        Expr::Add(terms)
+    }
+
+    fn check(width: u8, terms: Vec<Expr>, section: Expr, unrelated: Vec<Expr>) {
+        let mut source_terms = terms;
+        source_terms.extend(unrelated.iter().cloned());
+        let source = sum(source_terms);
+        let actual = prettify(source.clone(), width);
+        let mut expected_terms = unrelated;
+        match section {
+            Expr::Add(inner) => expected_terms.extend(inner),
+            other => expected_terms.push(other),
+        }
+        let expected = sum(expected_terms);
+        assert_eq!(actual, expected);
+        assert!(actual.size() < source.size());
+        assert!(source.sem_equal(&actual, width, 200).is_ok());
+    }
+
+    fn unrelated() -> Vec<Expr> {
+        let mut terms = (70..84).map(var).collect::<Vec<_>>();
+        terms.push(Expr::And((90..95).map(var).collect()));
+        terms
+    }
+
+    #[test]
+    fn contracts_three_atom_or_with_unrelated_terms() {
+        for (width, coefficient) in [(8, 3u64), (32, 7), (64, 11)] {
+            let mask = make_mask(width);
+            let [a, b, d] = [var(21), var(22), var(23)];
+            let negative = coefficient.wrapping_neg() & mask;
+            let terms = vec![
+                monomial(coefficient, vec![a.clone()], mask),
+                monomial(coefficient, vec![b.clone()], mask),
+                monomial(coefficient, vec![d.clone()], mask),
+                monomial(negative, vec![a.clone(), b.clone()], mask),
+                monomial(negative, vec![a.clone(), d.clone()], mask),
+                monomial(negative, vec![b.clone(), d.clone()], mask),
+                monomial(coefficient, vec![a.clone(), b.clone(), d.clone()], mask),
+            ];
+            let section = scaled_output(coefficient, Expr::Or(vec![a, b, d]), mask);
+            check(width, terms, section, unrelated());
+        }
+    }
+
+    #[test]
+    fn contracts_filtered_or_with_composite_atoms() {
+        for (width, coefficient) in [(8, 5u64), (32, 17), (64, 23)] {
+            let mask = make_mask(width);
+            let a = Expr::Or(vec![var(21), var(22)]);
+            let b = Expr::Xor(vec![var(23), var(24)]);
+            let d = var(25);
+            let negative = coefficient.wrapping_neg() & mask;
+            let terms = vec![
+                monomial(coefficient, vec![a.clone()], mask),
+                monomial(coefficient, vec![d.clone()], mask),
+                monomial(negative, vec![a.clone(), b.clone()], mask),
+                monomial(negative, vec![a.clone(), d.clone()], mask),
+                monomial(coefficient, vec![a.clone(), b.clone(), d.clone()], mask),
+            ];
+            let section =
+                scaled_output(coefficient, Expr::Or(vec![Expr::And(vec![a, !b]), d]), mask);
+            check(width, terms, section, unrelated());
+        }
+    }
+
+    #[test]
+    fn contracts_complement_xor_section() {
+        for (width, coefficient) in [(8, 3u64), (32, 7), (64, 11)] {
+            let mask = make_mask(width);
+            let [a, b, d] = [var(21), var(22), var(23)];
+            let negative = coefficient.wrapping_neg() & mask;
+            let twice = coefficient.wrapping_mul(2) & mask;
+            let negative_twice = twice.wrapping_neg() & mask;
+            let terms = vec![
+                Expr::Const(negative),
+                monomial(negative, vec![a.clone()], mask),
+                monomial(negative, vec![d.clone()], mask),
+                monomial(twice, vec![a.clone(), d.clone()], mask),
+                monomial(coefficient, vec![b.clone(), d.clone()], mask),
+                monomial(negative_twice, vec![a.clone(), b.clone(), d.clone()], mask),
+            ];
+            let section = scaled_output(
+                coefficient,
+                Expr::Xor(vec![!a, Expr::And(vec![!b, d])]),
+                mask,
+            );
+            check(width, terms, section, unrelated());
+        }
+    }
+
+    #[test]
+    fn contracts_xnor_affine_section_only_when_smaller() {
+        for (width, cx, cy) in [(8, 5u64, 3u64), (32, 17, 7), (64, 23, 11)] {
+            let mask = make_mask(width);
+            let x = Expr::Or(vec![var(21), var(22)]);
+            let y = Expr::Xor(vec![var(23), var(24)]);
+            let terms = vec![
+                monomial(cx, vec![x.clone()], mask),
+                monomial(cy, vec![y.clone()], mask),
+                monomial(
+                    cx.wrapping_mul(2).wrapping_neg() & mask,
+                    vec![x.clone(), y.clone()],
+                    mask,
+                ),
+                Expr::Const(cy),
+            ];
+            let section = sum(vec![
+                scaled_output(
+                    cx.wrapping_neg() & mask,
+                    !Expr::Xor(vec![x, y.clone()]),
+                    mask,
+                ),
+                scaled_output(cx.wrapping_sub(cy) & mask, !y, mask),
+            ]);
+            check(width, terms, section, unrelated());
+        }
+
+        let mask = make_mask(8);
+        let x = var(21);
+        let y = var(22);
+        let source = sum(vec![
+            monomial(1, vec![x.clone()], mask),
+            monomial(2, vec![y.clone()], mask),
+            monomial(254, vec![x, y], mask),
+            Expr::Const(2),
+        ]);
+        let mut factor_sets = vec![None; 4];
+        assert!(higher_order_algebraic_in_add(&source, mask, &mut factor_sets).is_none());
+        assert!(prettify(source.clone(), 8).size() <= source.size());
+    }
+
+    #[test]
+    fn contracts_difference_with_multifactor_left_side() {
+        let mask = make_mask(64);
+        let [a, b, d, e] = [var(21), var(22), var(23), var(24)];
+        let terms = vec![
+            monomial(7, vec![a.clone(), b.clone()], mask),
+            monomial(
+                7u64.wrapping_neg(),
+                vec![a.clone(), b.clone(), d.clone(), e.clone()],
+                mask,
+            ),
+        ];
+        let section = scaled_output(7, Expr::And(vec![a, b, !Expr::And(vec![d, e])]), mask);
+        check(64, terms, section, unrelated());
+    }
 }
