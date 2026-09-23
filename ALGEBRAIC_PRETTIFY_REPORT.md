@@ -2,15 +2,16 @@
 
 ## Scope and verdict
 
-**Verdict: `PROMOTE`.** The candidate processes all 41,000 corpus rows with `NG = 0`, reduces total output AST from 218,018 to 213,542 nodes (−4,476; −2.05%), and never produces a larger AST than the `prettify` baseline on any row. Its shared-index refactor reproduces every output of the original candidate exactly. In the final paired five-run measurement without `qemu-kvm`, total time changes from 2.316 s to 2.433 s (+5.06%), p50 from 27.360 µs to 27.990 µs (+2.30%), and p95 from 156.049 µs to 163.060 µs (+4.49%). The branch is deliberately unmerged.
+**Verdict: `HOLD` for performance qualification of pass 2.** The final candidate processes all 41,000 corpus rows with `NG = 0`, reduces total output AST from 218,018 to 213,542 nodes (−4,476; −2.05%), and never produces a larger AST than the `prettify` baseline on any row. Pass 2 reproduces all 41,000 outputs and AST sizes of the previous candidate exactly. Its two clean paired measurements against `prettify` show p50 increases of +3.59% and +4.81%; p95 increases are +3.52% and +7.25%. The preferred +3% p50 and +5% p95 ceilings are therefore not consistently demonstrated. The branch is deliberately unmerged.
 
 - Repository base branch: `prettify`.
 - Exact base commit: `e1f9f531e2c5a73bf1bd746cbb25931fd5d3c4b9`.
 - Research branch: `research/algebraic-prettify`.
 - Exact case-census and original implementation commit: `317ffe545cae4d82b6dfe9b013a57d3e61a2c6df`.
 - Original quality-authority commit: `7d99f56a5c0b86707eaf944d3d1a5b40881810c6`.
-- Refactored implementation commit: `e25ae94c1c6ef75854e6583ac17fada173b44185`.
-- The supplied `.patch` was not a valid unified diff (`git apply --check` reported “patch with only garbage” at line 5); its algebraic behavior was implemented directly. The solver was not changed.
+- Shared-index implementation commit: `e25ae94c1c6ef75854e6583ac17fada173b44185`.
+- Parsimony pass 2 implementation commit: `a213cb35255a8c57455aa7a3a52c7e54d5aeba64`.
+- The initial algebraic `.patch` was not a valid unified diff (`git apply --check` reported “patch with only garbage” at line 5); its algebraic behavior was implemented directly. The solver was not changed.
 
 ## Algorithm
 
@@ -40,9 +41,9 @@ These identities hold for composite Boolean operands as well as variables. The u
 | Final candidate `cargo clippy --all-targets --all-features -- -D warnings` | Passed |
 | Corpus semantic check and solver status | 41,000 rows; `OK = 41,000`, `OKZ = 0`, `NG = 0`; no mismatch or panic |
 | Rowwise AST comparison against base | 0 rows larger |
-| Output comparison against original candidate | All 41,000 output strings identical |
+| Output comparison against original candidate | All 41,000 output strings and AST sizes identical after pass 2 |
 
-The baseline was frozen with `just corpus --save /tmp/prettify-baseline.snapshot`. Every ablation ran the full 41,000-row corpus and a rowwise comparison with the original candidate's output. Final timing used paired runs of the corpus example in release mode, with five measurements per dataset. The command was `cargo run --release -p rumba-core --example corpus --features parse -- --save <snapshot>`; candidate runs additionally used `--baseline <base-snapshot>`. `qemu-kvm` was absent before, between, and after both final benchmark pairs. Earlier timing under its CPU load was discarded.
+The baseline was frozen with `just corpus --save /tmp/prettify-baseline.snapshot`. Every ablation ran the full 41,000-row corpus and a rowwise comparison with the original candidate's output. Timing used paired runs of the corpus example in release mode, with five measurements per dataset. The command was `cargo run --release -p rumba-core --example corpus --features parse -- --save <snapshot>`; candidate runs additionally used `--baseline <base-snapshot>`. `qemu-kvm` was absent before, between, and after the pass-2 benchmark pairs. Earlier timing under its CPU load was discarded.
 
 ### Corpus quality by dataset
 
@@ -88,11 +89,11 @@ Each ablation ran all 41,000 rows with `OK = 41,000`, `OKZ = 0`, and `NG = 0`. �
 
 A and B were also repeated on top of D: A still had 5 larger rows and AST 213,580; B still had 52 larger rows and AST 213,706. The three-atom OR's five counterexamples are `mba_flatten` rows 926, 978, 989 and `qsynth_ea` rows 259, 411. The proposed binary decompositions are algebraically valid, but this deterministic contraction order does not reach the same compact result in every case. A different rewrite selection or coefficient splitting would need separate qualification before either explicit law could be removed.
 
-### Five-run performance
+### Five-run performance before pass 2
 
-Times and percentiles below are medians of the runner's five measurements; throughput is rows divided by median total time. Values are rounded for display; comparison percentages use snapshot nanoseconds.
+The table below records the earlier shared-index candidate at `e25ae94`, before the parsimony pass. Times and percentiles below are medians of the runner's five measurements; throughput is rows divided by median total time. Values are rounded for display; comparison percentages use snapshot nanoseconds.
 
-| Global metric | `prettify` base | Final candidate D | Change |
+| Global metric | `prettify` base | Shared-index D | Change |
 |---|---:|---:|---:|
 | Total time | 2.316 s | 2.433 s | +5.06% |
 | Throughput | 17,703 expr/s | 16,851 expr/s | −4.81% |
@@ -111,7 +112,21 @@ Times and percentiles below are medians of the runner's five measurements; throu
 | qsynth_ea | 478.094 → 542.535 ms (+13.48%) | 3.902 → 4.715 ms (+20.85%) | 9.424 → 10.658 ms (+13.09%) |
 | syntia | 12.679 → 13.336 ms (+5.18%) | 126.890 → 131.899 µs (+3.95%) | 195.889 → 205.799 µs (+5.06%) |
 
-The final global p50 and p95 meet the preferred ceilings of +3% and +5%. The `qsynth_ea` tail is less stable and should be watched in a later promotion benchmark. In a separate clean paired run against the original `7d99f56` implementation, D changed total time from 2.443 s to 2.423 s (−0.83%), p50 from 28.880 to 28.960 µs (+0.28%), and p95 from 161.260 to 162.420 µs (+0.72%). This supports no material performance regression from the index refactor itself; the base comparison remains the relevant end-to-end cost.
+At the shared-index commit, the global p50 and p95 met the preferred ceilings of +3% and +5%. The `qsynth_ea` tail was less stable. In a separate clean paired run against the original `7d99f56` implementation, D changed total time from 2.443 s to 2.423 s (−0.83%), p50 from 28.880 to 28.960 µs (+0.28%), and p95 from 161.260 to 162.420 µs (+0.72%). This supports no material performance regression from the index refactor itself; the base comparison remains the relevant end-to-end cost.
+
+### Parsimony pass 2 verification
+
+The pass-2 patch omitted unified-diff hunk ranges, so `git apply --check` rejected it. Its hunks were matched uniquely against the source and applied. It also left a reference to the removed `first_coefficient` binding; that compilation error was corrected by removing the stale assignment. `cargo fmt --check`, `cargo test --all-features`, and `cargo clippy --all-targets --all-features -- -D warnings` passed. A separate release-mode comparison found **0 changed output strings and 0 changed AST sizes across all 41,000 rows**. The full corpus runner again recorded `OK = 41,000`, `OKZ = 0`, `NG = 0`, and `(W,T,L,AST) = (13927,26555,518,213542)`.
+
+The table shows paired five-run medians from clean runs without `qemu-kvm`; both base-to-pass-2 orders used a separately rebuilt binary for each revision. Percentages compare snapshot nanoseconds. The reverse pair ran pass 2 before the base.
+
+| Pair | Total time | p50 | p95 | p99 |
+|---|---:|---:|---:|---:|
+| Shared-index D → pass 2 | 2.461 → 2.420 s (−1.66%) | 28.990 → 28.540 µs (−1.55%) | 162.479 → 167.299 µs (+2.97%) | 423.719 → 418.089 µs (−1.33%) |
+| `prettify` → pass 2 | 2.418 → 2.471 s (+2.20%) | 27.830 → 28.830 µs (+3.59%) | 161.810 → 167.500 µs (+3.52%) | 434.409 → 437.429 µs (+0.70%) |
+| `prettify` → pass 2, reverse order | 2.387 → 2.491 s (+4.35%) | 27.470 → 28.790 µs (+4.81%) | 160.490 → 172.130 µs (+7.25%) | 410.699 → 440.489 µs (+7.25%) |
+
+The two direct base comparisons do not establish the preferred latency ceilings, although the pass-2-to-D pair shows no total-time regression from this refactor. Individual dataset times vary between runs; for example, the base `neureduce` median total changed from 270 ms to 309 ms between the direct pairs. These timings do not justify a stable per-dataset performance claim.
 
 ## Complexity and architecture audit
 
@@ -128,4 +143,4 @@ No SOURCE fingerprint, TARGET comparison, corpus ID, dataset string, row ID, For
 
 ## Diffstat
 
-Against the `prettify` base, the final implementation changes `core/src/prettify.rs` by **550 insertions and 108 deletions** (658 changed lines). The shared-index refactor itself is **141 insertions and 158 deletions** relative to the original candidate, a net reduction of 17 lines. The exhaustive case census adds 2,212 TSV lines including its header. No solver file changes. The report is committed separately on the same research branch.
+Against the `prettify` base, the final implementation changes `core/src/prettify.rs` by **550 insertions and 160 deletions** (710 changed lines). The shared-index refactor was **141 insertions and 158 deletions** relative to the original candidate, a net reduction of 17 lines. Parsimony pass 2 is **17 insertions and 69 deletions** relative to that refactor, a further net reduction of 52 lines. The exhaustive case census adds 2,212 TSV lines including its header. No solver file changes. The report is committed separately on the same research branch.
