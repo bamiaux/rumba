@@ -51,15 +51,15 @@ fn rewrite_add_algebraic(e: Expr, mask: u64) -> Expr {
     };
     // The smallest higher-order section needs four resident terms.
     if terms.len() < 4 {
-        return rewrite_add_path(e, mask);
+        return rewrite_add_path(e, mask, None);
     }
-    let mut factor_sets = vec![None; terms.len()];
-    let higher_first = higher_order_algebraic_in_add(&e, mask, &mut factor_sets);
-    let binary_first = rewrite_add_path(e, mask);
+    let index = AddIndex::new(terms, mask);
+    let higher_first = higher_order_algebraic_in_add(&e, mask, &index);
+    let binary_first = rewrite_add_path(e, mask, Some(index));
     let Some(higher_first) = higher_first else {
         return binary_first;
     };
-    let higher_first = rewrite_add_path(canonical_node(higher_first, mask), mask);
+    let higher_first = rewrite_add_path(canonical_node(higher_first, mask), mask, None);
     if higher_first.size() < binary_first.size() {
         higher_first
     } else {
@@ -70,7 +70,7 @@ fn rewrite_add_algebraic(e: Expr, mask: u64) -> Expr {
 /// Each contraction removes terms. A binary step may temporarily increase
 /// size before a complement step shrinks it, so keep the smallest expression
 /// encountered along the path.
-fn rewrite_add_path(mut e: Expr, mask: u64) -> Expr {
+fn rewrite_add_path(mut e: Expr, mask: u64, mut first_index: Option<AddIndex>) -> Expr {
     let Expr::Add(_) = &e else {
         return e;
     };
@@ -79,12 +79,14 @@ fn rewrite_add_path(mut e: Expr, mask: u64) -> Expr {
         let Expr::Add(terms) = &e else {
             return best;
         };
-        let mut factor_sets = vec![None; terms.len()];
-        let replacement = union_bitwise_in_add(&e, mask, &mut factor_sets)
-            .or_else(|| difference_in_add(&e, mask, &mut factor_sets))
+        let index = first_index
+            .take()
+            .unwrap_or_else(|| AddIndex::new(terms, mask));
+        let replacement = union_bitwise_in_add(&e, mask, &index)
+            .or_else(|| difference_in_add(&e, mask, &index))
             .or_else(|| as_not_in_add(&e, mask))
             .or_else(|| as_not(&e, mask))
-            .or_else(|| higher_order_algebraic_in_add(&e, mask, &mut factor_sets));
+            .or_else(|| higher_order_algebraic_in_add(&e, mask, &index));
         let Some(next) = replacement else {
             return best;
         };
@@ -229,21 +231,50 @@ fn constant_coefficient(e: &Expr, mask: u64) -> Option<u64> {
     }
 }
 
-fn find_support(
-    supports: &HashMap<Vec<Expr>, (usize, u64)>,
-    wanted: &[Expr],
-    coefficient: u64,
-) -> Option<usize> {
-    supports
-        .get(wanted)
-        .and_then(|&(index, found)| (found == coefficient).then_some(index))
+/// Resident canonical supports and constants for one sparse sum state.
+struct AddIndex {
+    factor_sets: Vec<Option<FactorSet>>,
+    supports: HashMap<Vec<Expr>, (usize, u64)>,
+    constants: HashMap<u64, usize>,
 }
 
-fn find_support_any(
-    supports: &HashMap<Vec<Expr>, (usize, u64)>,
-    wanted: &[Expr],
-) -> Option<(usize, u64)> {
-    supports.get(wanted).copied()
+impl AddIndex {
+    fn new(terms: &[Expr], mask: u64) -> Self {
+        let mut factor_sets = Vec::with_capacity(terms.len());
+        let mut supports = HashMap::default();
+        let mut constants = HashMap::default();
+        for (index, term) in terms.iter().enumerate() {
+            let factors = factor_set(term, mask);
+            if let Some((coefficient, support)) = &factors {
+                supports
+                    .entry(support.clone())
+                    .or_insert((index, *coefficient));
+            }
+            if let Some(coefficient) = constant_coefficient(term, mask) {
+                constants.entry(coefficient).or_insert(index);
+            }
+            factor_sets.push(factors);
+        }
+        Self {
+            factor_sets,
+            supports,
+            constants,
+        }
+    }
+
+    fn find(&self, wanted: &[Expr], coefficient: u64) -> Option<usize> {
+        self.supports
+            .get(wanted)
+            .and_then(|&(index, found)| (found == coefficient).then_some(index))
+    }
+
+    fn find_any(&self, wanted: &[Expr]) -> Option<(usize, u64)> {
+        self.supports.get(wanted).copied()
+    }
+
+    fn constant(&self, coefficient: u64) -> Option<usize> {
+        self.constants.get(&coefficient).copied()
+    }
 }
 
 fn replace_indices(terms: &[Expr], removed: &[usize], replacement: Expr, mask: u64) -> Expr {
@@ -304,42 +335,21 @@ fn keep_best(current: &Expr, best: &mut Option<Expr>, candidate: Expr) {
 /// No rule depends on source syntax.  There is no enumeration of subsets:
 /// each degree-2/3 resident monomial induces only a constant number of support
 /// lookups.
-fn higher_order_algebraic_in_add(
-    e: &Expr,
-    mask: u64,
-    factor_sets: &mut [Option<Option<FactorSet>>],
-) -> Option<Expr> {
+fn higher_order_algebraic_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
     let Expr::Add(terms) = e else { return None };
     if terms.len() < 4
-        || !terms.iter().any(|term| {
-            matches!(scaled_term(term, mask).1, Expr::And(factors) if matches!(factors.len(), 2 | 3))
-        })
+        || !index
+            .factor_sets
+            .iter()
+            .any(|factors| matches!(factors, Some((_, support)) if matches!(support.len(), 2 | 3)))
     {
         return None;
-    }
-    let mut supports = HashMap::default();
-    let mut constants = HashMap::default();
-    for (index, term) in terms.iter().enumerate() {
-        ensure_factor_set(term, mask, &mut factor_sets[index]);
-        if let Some((coefficient, factors)) = factor_sets[index].as_ref().and_then(Option::as_ref) {
-            supports
-                .entry(factors.clone())
-                .or_insert((index, *coefficient));
-        }
-        if let Some(coefficient) = constant_coefficient(term, mask) {
-            constants.entry(coefficient).or_insert(index);
-        }
     }
     let mut best = None;
 
     // c(a|b|d) = c(a+b+d-ab-ad-bd+abd).
     for top_index in 0..terms.len() {
-        ensure_factor_set(&terms[top_index], mask, &mut factor_sets[top_index]);
-        let Some(top) = factor_sets[top_index]
-            .as_ref()
-            .and_then(Option::as_ref)
-            .cloned()
-        else {
+        let Some(top) = index.factor_sets[top_index].as_ref().cloned() else {
             continue;
         };
         if top.1.len() != 3 || top.0 == 0 {
@@ -357,12 +367,12 @@ fn higher_order_algebraic_in_add(
         let sad = support(vec![a.clone(), d.clone()]);
         let sbd = support(vec![b.clone(), d.clone()]);
         if let (Some(ia), Some(ib), Some(id), Some(iab), Some(iad), Some(ibd)) = (
-            find_support(&supports, &sa, c),
-            find_support(&supports, &sb, c),
-            find_support(&supports, &sd, c),
-            find_support(&supports, &sab, neg),
-            find_support(&supports, &sad, neg),
-            find_support(&supports, &sbd, neg),
+            index.find(&sa, c),
+            index.find(&sb, c),
+            index.find(&sd, c),
+            index.find(&sab, neg),
+            index.find(&sad, neg),
+            index.find(&sbd, neg),
         ) {
             let section = scaled_output(c, Expr::Or(vec![a.clone(), b.clone(), d.clone()]), mask);
             let candidate = replace_indices(
@@ -390,10 +400,10 @@ fn higher_order_algebraic_in_add(
                 let sab = support(vec![a.clone(), b.clone()]);
                 let sad = support(vec![a.clone(), d.clone()]);
                 if let (Some(ia), Some(id), Some(iab), Some(iad)) = (
-                    find_support(&supports, &sa, c),
-                    find_support(&supports, &sd, c),
-                    find_support(&supports, &sab, neg),
-                    find_support(&supports, &sad, neg),
+                    index.find(&sa, c),
+                    index.find(&sd, c),
+                    index.find(&sab, neg),
+                    index.find(&sad, neg),
                 ) {
                     let left = Expr::And(vec![a.clone(), !b.clone()]);
                     let section = scaled_output(c, Expr::Or(vec![left, d.clone()]), mask);
@@ -419,7 +429,7 @@ fn higher_order_algebraic_in_add(
                 let sd = vec![d.clone()];
                 let sad = support(vec![a.clone(), d.clone()]);
                 let sbd = support(vec![b.clone(), d.clone()]);
-                let Some((ibd, c)) = find_support_any(&supports, &sbd) else {
+                let Some((ibd, c)) = index.find_any(&sbd) else {
                     continue;
                 };
                 if c == 0 || top.0 != c.wrapping_mul(2).wrapping_neg() & mask {
@@ -428,10 +438,10 @@ fn higher_order_algebraic_in_add(
                 let neg = c.wrapping_neg() & mask;
                 let two = c.wrapping_mul(2) & mask;
                 if let (Some(iconst), Some(ia), Some(id), Some(iad)) = (
-                    constants.get(&neg).copied(),
-                    find_support(&supports, &sa, neg),
-                    find_support(&supports, &sd, neg),
-                    find_support(&supports, &sad, two),
+                    index.constant(neg),
+                    index.find(&sa, neg),
+                    index.find(&sd, neg),
+                    index.find(&sad, two),
                 ) {
                     let rhs = Expr::And(vec![!b.clone(), d.clone()]);
                     let section = scaled_output(c, Expr::Xor(vec![!a.clone(), rhs]), mask);
@@ -450,12 +460,7 @@ fn higher_order_algebraic_in_add(
     // cx*x + cy*y - 2cx*(x&y) + cy
     //   = (-cx)*~(x^y) + (cx-cy)*~y.
     for pair_index in 0..terms.len() {
-        ensure_factor_set(&terms[pair_index], mask, &mut factor_sets[pair_index]);
-        let Some(pair) = factor_sets[pair_index]
-            .as_ref()
-            .and_then(Option::as_ref)
-            .cloned()
-        else {
+        let Some(pair) = index.factor_sets[pair_index].as_ref().cloned() else {
             continue;
         };
         if pair.1.len() != 2 || pair.0 == 0 {
@@ -466,16 +471,16 @@ fn higher_order_algebraic_in_add(
             let y = pair.1[1 - flip].clone();
             let sx = vec![x.clone()];
             let sy = vec![y.clone()];
-            let Some((ix, cx)) = find_support_any(&supports, &sx) else {
+            let Some((ix, cx)) = index.find_any(&sx) else {
                 continue;
             };
-            let Some((iy, cy)) = find_support_any(&supports, &sy) else {
+            let Some((iy, cy)) = index.find_any(&sy) else {
                 continue;
             };
             if cx == 0 || pair.0 != cx.wrapping_mul(2).wrapping_neg() & mask {
                 continue;
             }
-            let Some(iconst) = constants.get(&cy).copied() else {
+            let Some(iconst) = index.constant(cy) else {
                 continue;
             };
             let xnor = !Expr::Xor(vec![x.clone(), y.clone()]);
@@ -558,81 +563,70 @@ fn union_replacement(
 }
 
 /// Finds and replaces one fixed three-term union tuple in an `Add`.
-fn union_bitwise_in_add(
-    e: &Expr,
-    mask: u64,
-    factor_sets: &mut [Option<Option<FactorSet>>],
-) -> Option<Expr> {
+fn union_bitwise_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
     let Expr::Add(terms) = e else { return None };
     if terms.len() < 3 {
         return None;
     }
 
-    for relation in 0..terms.len() {
-        for first in 0..terms.len() {
-            if first == relation {
+    // Preserve the previous relation/first/second priority while probing each
+    // pair only once. The support index finds the required relation monomial.
+    let mut selected: Option<(usize, usize, usize, Expr)> = None;
+    for first in 0..terms.len() {
+        let Some(first_set) = index.factor_sets[first].as_ref() else {
+            continue;
+        };
+        for second in (first + 1)..terms.len() {
+            let Some(second_set) = index.factor_sets[second].as_ref() else {
+                continue;
+            };
+            let coefficient = first_set.0;
+            if coefficient == 0 || second_set.0 != coefficient {
                 continue;
             }
-            for second in (first + 1)..terms.len() {
-                if second == relation {
-                    continue;
-                }
-
-                let (first_coefficient, _) = scaled_term(&terms[first], mask);
-                let (second_coefficient, _) = scaled_term(&terms[second], mask);
-                let (relation_coefficient, _) = scaled_term(&terms[relation], mask);
-                let minus_k = first_coefficient.wrapping_neg() & mask;
-                let minus_two_k = first_coefficient.wrapping_mul(2).wrapping_neg() & mask;
-                if first_coefficient == 0
-                    || first_coefficient != second_coefficient
-                    || (relation_coefficient != minus_k && relation_coefficient != minus_two_k)
-                {
-                    continue;
-                }
-
-                ensure_factor_set(&terms[first], mask, &mut factor_sets[first]);
-                ensure_factor_set(&terms[second], mask, &mut factor_sets[second]);
-                ensure_factor_set(&terms[relation], mask, &mut factor_sets[relation]);
-                let Some(first_factor_set) = factor_sets[first].as_ref().and_then(Option::as_ref)
-                else {
-                    continue;
-                };
-                let Some(second_factor_set) = factor_sets[second].as_ref().and_then(Option::as_ref)
-                else {
-                    continue;
-                };
-                let Some(relation_factor_set) =
-                    factor_sets[relation].as_ref().and_then(Option::as_ref)
-                else {
-                    continue;
-                };
-                let Some(replacement) = union_replacement(
-                    first_factor_set,
-                    second_factor_set,
-                    relation_factor_set,
-                    mask,
-                ) else {
-                    continue;
-                };
-
-                if terms.len() == 3 {
-                    return Some(replacement);
-                }
-
-                let mut result = Vec::with_capacity(terms.len() - 2);
-                for (index, term) in terms.iter().enumerate() {
-                    if index != relation && index != first && index != second {
-                        result.push(term.clone());
-                    }
-                }
-                result.push(replacement);
-                result.sort_unstable();
-                return Some(Expr::Add(result));
+            let mut wanted = first_set.1.clone();
+            wanted.extend(second_set.1.iter().cloned());
+            let wanted = support(wanted);
+            let Some((relation, relation_coefficient)) = index.find_any(&wanted) else {
+                continue;
+            };
+            if relation == first || relation == second {
+                continue;
             }
+            let minus_k = coefficient.wrapping_neg() & mask;
+            let minus_two_k = coefficient.wrapping_mul(2).wrapping_neg() & mask;
+            if relation_coefficient != minus_k && relation_coefficient != minus_two_k {
+                continue;
+            }
+            if selected
+                .as_ref()
+                .is_some_and(|(r, f, s, _)| (relation, first, second) >= (*r, *f, *s))
+            {
+                continue;
+            }
+            let relation_set = index.factor_sets[relation]
+                .as_ref()
+                .expect("indexed support");
+            let Some(replacement) = union_replacement(first_set, second_set, relation_set, mask)
+            else {
+                continue;
+            };
+            selected = Some((relation, first, second, replacement));
         }
     }
-
-    None
+    let (relation, first, second, replacement) = selected?;
+    if terms.len() == 3 {
+        return Some(replacement);
+    }
+    let mut result = Vec::with_capacity(terms.len() - 2);
+    for (index, term) in terms.iter().enumerate() {
+        if index != relation && index != first && index != second {
+            result.push(term.clone());
+        }
+    }
+    result.push(replacement);
+    result.sort_unstable();
+    Some(Expr::Add(result))
 }
 
 fn factor_set(e: &Expr, mask: u64) -> Option<(u64, Vec<Expr>)> {
@@ -652,12 +646,6 @@ fn factor_set(e: &Expr, mask: u64) -> Option<(u64, Vec<Expr>)> {
         term => vec![term.clone()],
     };
     Some((coefficient, factors))
-}
-
-fn ensure_factor_set(term: &Expr, mask: u64, slot: &mut Option<Option<FactorSet>>) {
-    if slot.is_none() {
-        *slot = Some(factor_set(term, mask));
-    }
 }
 
 fn factor_intersection(first: &[Expr], second: &[Expr]) -> Vec<Expr> {
@@ -795,11 +783,7 @@ fn difference_replacement(first: &FactorSet, second: &FactorSet, mask: u64) -> O
     Some(scaled_output(first_coefficient, Expr::And(operands), mask))
 }
 
-fn difference_in_add(
-    e: &Expr,
-    mask: u64,
-    factor_sets: &mut [Option<Option<FactorSet>>],
-) -> Option<Expr> {
+fn difference_in_add(e: &Expr, mask: u64, index: &AddIndex) -> Option<Expr> {
     let Expr::Add(terms) = e else { return None };
     if terms.len() < 2 {
         return None;
@@ -819,14 +803,10 @@ fn difference_in_add(
                 continue;
             }
 
-            ensure_factor_set(&terms[first], mask, &mut factor_sets[first]);
-            ensure_factor_set(&terms[second], mask, &mut factor_sets[second]);
-            let Some(first_factor_set) = factor_sets[first].as_ref().and_then(Option::as_ref)
-            else {
+            let Some(first_factor_set) = index.factor_sets[first].as_ref() else {
                 continue;
             };
-            let Some(second_factor_set) = factor_sets[second].as_ref().and_then(Option::as_ref)
-            else {
+            let Some(second_factor_set) = index.factor_sets[second].as_ref() else {
                 continue;
             };
             let Some(replacement) =
@@ -996,8 +976,11 @@ mod algebraic_tests {
             monomial(254, vec![x, y], mask),
             Expr::Const(2),
         ]);
-        let mut factor_sets = vec![None; 4];
-        assert!(higher_order_algebraic_in_add(&source, mask, &mut factor_sets).is_none());
+        let Expr::Add(terms) = &source else {
+            unreachable!()
+        };
+        let index = AddIndex::new(terms, mask);
+        assert!(higher_order_algebraic_in_add(&source, mask, &index).is_none());
         assert!(prettify(source.clone(), 8).size() <= source.size());
     }
 
