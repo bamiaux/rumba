@@ -2,6 +2,7 @@ use std::cmp::max;
 
 use crate::{
     expr::{Expr, VarId},
+    polarity::bounded_polarity,
     prettify::prettify,
     utils::bimap::BiMap,
     utils::cache::{LinearCache, LocalCache, MbaCache},
@@ -722,7 +723,7 @@ fn simplify_mba_with_cache<C: LinearCache>(cache: &C, e: Expr, n: u8) -> Result<
 
     // The only place prettify may run: on the way out, after the fixed point has
     // settled. See the module docs for why it must stay out of the loop.
-    Ok(prettify(e, n))
+    Ok(bounded_polarity(prettify(e, n), n))
 }
 
 #[cfg(test)]

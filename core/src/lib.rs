@@ -53,6 +53,7 @@ pub mod expr;
 /// MBA simplification entry points.
 pub mod simplify;
 
+pub(crate) mod polarity;
 pub(crate) mod prettify;
 pub(crate) mod reduce;
 pub(crate) mod utils;
